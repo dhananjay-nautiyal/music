@@ -5,23 +5,25 @@
     android:viewportHeight="24">
     <!-- Silhouette variant: system keeps alpha only, so opaque white. -->
     <group
-        android:scaleX="0.03313"
-        android:scaleY="0.03313"
-        android:translateX="-4.96"
-        android:translateY="-4.96">
-        <path
-            android:fillColor="#FFFFFFFF"
-            android:pathData="M212,512 A300,300 0 1 1 812,512 A300,300 0 1 1 212,512 Z" />
-        <path
-            android:fillColor="#FFFFFFFF"
-            android:strokeColor="#FFFFFFFF"
-            android:strokeWidth="64"
-            android:pathData="M212,512 A300,300 0 1 1 812,512 A300,300 0 1 1 212,512 Z" />
-        <path
-            android:fillColor="#FFFFFFFF"
-            android:strokeColor="#FFFFFFFF"
-            android:strokeWidth="10"
-            android:strokeLineJoin="round"
-            android:pathData="M448,392 L448,632 L628,512 Z" />
+        android:scaleX="0.03143"
+        android:scaleY="0.03143"
+        android:translateX="6.91"
+        android:translateY="6.91">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M322,660 A78,60 0 1 1 478,660 A78,60 0 1 1 322,660 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M570,620 A78,60 0 1 1 726,620 A78,60 0 1 1 570,620 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M452,300 L496,300 L496,660 L452,660 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M700,260 L744,260 L744,620 L700,620 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M452,300 L744,252 L744,330 L452,378 Z" />
     </group>
 </vector>

@@ -3,7 +3,7 @@
     android:height="19dp"
     android:viewportWidth="730"
     android:viewportHeight="484">
-    <!-- Original Music mark v2 (transparent; callers tint it). Viewport kept at
+    <!-- Eighth-note mark (transparent; callers tint it). Viewport kept at
          730x484 so LOGO_ASPECT / LOGO_W / LOGO_H layout math is unchanged. -->
     <group
         android:scaleX="0.47266"
@@ -12,27 +12,19 @@
         android:translateY="0">
 
     <path
-        android:fillColor="#22FFFFFF"
-        android:pathData="M212,512 A300,300 0 1 1 812,512 A300,300 0 1 1 212,512 Z" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#D8FFFFFF"
-        android:strokeWidth="64"
-        android:pathData="M212,512 A300,300 0 1 1 812,512 A300,300 0 1 1 212,512 Z" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#96FFFFFF"
-        android:strokeWidth="28"
-        android:strokeLineCap="round"
-        android:pathData="M268,368 A252,252 0 0 1 400,276" />
-    <path
-        android:fillColor="#C8FFFFFF"
-        android:pathData="M333.5,332.0 A22.5,22.5 0 1 1 378.5,332.0 A22.5,22.5 0 1 1 333.5,332.0 Z" />
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M322,660 A78,60 0 1 1 478,660 A78,60 0 1 1 322,660 Z" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="10"
-        android:strokeLineJoin="round"
-        android:pathData="M448,392 L448,632 L628,512 Z" />
+        android:pathData="M570,620 A78,60 0 1 1 726,620 A78,60 0 1 1 570,620 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M452,300 L496,300 L496,660 L452,660 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M700,260 L744,260 L744,620 L700,620 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M452,300 L744,252 L744,330 L452,378 Z" />
     </group>
 </vector>
