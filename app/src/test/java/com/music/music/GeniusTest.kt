@@ -116,7 +116,8 @@ class GeniusTest {
         Assume.assumeTrue(
             "live test; set MUSIC_LIVE_TESTS=1 to run",
             System.getenv("MUSIC_LIVE_TESTS") == "1",
-        )        println("--- TEST 1: Queen - Bohemian Rhapsody (Official Video) ---")
+        )
+        println("--- TEST 1: Queen - Bohemian Rhapsody (Official Video) ---")
         val lyrics1 = Genius.lyrics("Bohemian Rhapsody (Official Video)", "Queen")
         assertNotNull(lyrics1)
         assertTrue(lyrics1!!.isNotEmpty())
