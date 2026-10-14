@@ -1269,4 +1269,6 @@
     <string name="update">アップデート</string>
     <string name="amoled_black">AMOLEDブラック</string>
     <string name="amoled_black_subtitle">OLED画面向けの純黒背景</string>
+    <string name="liquid_theme">リキッドテーマ</string>
+    <string name="liquid_theme_subtitle">設定に半透明のガラスカード</string>
 </resources>

@@ -3,13 +3,18 @@
     android:height="19dp"
     android:viewportWidth="730"
     android:viewportHeight="484">
-    <!-- Eighth-note mark (transparent; callers tint it). Viewport kept at
+    <!-- Droplet + note (transparent; callers tint it). Viewport kept at
          730x484 so LOGO_ASPECT / LOGO_W / LOGO_H layout math is unchanged. -->
     <group
-        android:scaleX="0.47266"
-        android:scaleY="0.47266"
-        android:translateX="123.00"
-        android:translateY="0">
+        android:scaleX="0.75625"
+        android:scaleY="0.75625"
+        android:translateX="-22.20"
+        android:translateY="-136.12">
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="56"
+            android:pathData="M192,500 A320,320 0 1 1 832,500 A320,320 0 1 1 192,500 Z" />
 
     <path
         android:fillColor="#FFFFFFFF"

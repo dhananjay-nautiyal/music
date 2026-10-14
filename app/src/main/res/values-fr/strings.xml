@@ -1292,4 +1292,6 @@
     <string name="update">Mettre à jour</string>
     <string name="amoled_black">Noir AMOLED</string>
     <string name="amoled_black_subtitle">Fonds noirs purs pour les écrans OLED</string>
+    <string name="liquid_theme">Thème liquide</string>
+    <string name="liquid_theme_subtitle">Cartes en verre translucide dans les réglages</string>
 </resources>

@@ -394,6 +394,14 @@ object AppSettings {
     /** Pure-black dark backgrounds for OLED screens instead of the navy-tinted theme. */
     val amoledBlack = MutableStateFlow(false)
 
+    /**
+     * Liquid-glass Settings: group cards go translucent with a luminous
+     * hairline instead of solid fills. Purely static translucency — no
+     * backdrop sampling — so it costs nothing next to real blur. On by
+     * default; Normal is the old solid look.
+     */
+    val liquidTheme = MutableStateFlow(true)
+
     /** Real backdrop-sampled glass (blur, lens refraction) on the floating nav bar, Android 12+ only. */
     val liquidGlass = MutableStateFlow(false)
 
@@ -855,6 +863,7 @@ object AppSettings {
         smartVersionAlignment.value = prefs.getBoolean(KEY_SMART_VERSION_ALIGNMENT, true)
         reduceDynamicBlur.value = prefs.getBoolean(KEY_REDUCE_BLUR, false)
         amoledBlack.value = prefs.getBoolean(KEY_AMOLED_BLACK, false)
+        liquidTheme.value = prefs.getBoolean(KEY_LIQUID_THEME, true)
         liquidGlass.value = prefs.getBoolean(KEY_LIQUID_GLASS, false)
         lyricsBlur.value = prefs.getBoolean(KEY_LYRICS_BLUR, true)
         lyricsOffsetMs.value = prefs.getInt(KEY_LYRICS_OFFSET_MS, 0)
@@ -1253,6 +1262,11 @@ object AppSettings {
     fun setAmoledBlack(value: Boolean) {
         amoledBlack.value = value
         prefs.edit().putBoolean(KEY_AMOLED_BLACK, value).apply()
+    }
+
+    fun setLiquidTheme(value: Boolean) {
+        liquidTheme.value = value
+        prefs.edit().putBoolean(KEY_LIQUID_THEME, value).apply()
     }
 
     fun setLiquidGlass(value: Boolean) {
@@ -1987,6 +2001,7 @@ object AppSettings {
     private const val KEY_SMART_VERSION_ALIGNMENT = "smart_version_alignment"
     private const val KEY_REDUCE_BLUR = "reduce_dynamic_blur"
     private const val KEY_AMOLED_BLACK = "amoled_black"
+    private const val KEY_LIQUID_THEME = "liquid_theme"
     private const val KEY_LIQUID_GLASS = "liquid_glass"
     private const val KEY_LYRICS_BLUR = "lyrics_blur"
     private const val KEY_LYRICS_OFFSET_MS = "lyrics_offset_ms"

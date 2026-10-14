@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -200,6 +201,7 @@ fun SettingsScreen(
     val reduceAnimation by AppSettings.reduceAnimation.collectAsStateWithLifecycle()
     val reduceDynamicBlur by AppSettings.reduceDynamicBlur.collectAsStateWithLifecycle()
     val amoledBlack by AppSettings.amoledBlack.collectAsStateWithLifecycle()
+    val liquidTheme by AppSettings.liquidTheme.collectAsStateWithLifecycle()
     val liquidGlass by AppSettings.liquidGlass.collectAsStateWithLifecycle()
     val liquidGlassSupported = isGlassSupported()
     val lyricsBlur by AppSettings.lyricsBlur.collectAsStateWithLifecycle()
@@ -769,6 +771,25 @@ fun SettingsScreen(
                         )
                     },
                     onClick = { AppSettings.setAmoledBlack(!amoledBlack) },
+                )
+            }
+            val liquidThemeTitle = stringResource(R.string.liquid_theme)
+            row(liquidThemeTitle, "liquid", "glass", "normal") {
+                SettingsRow(
+                    icon = Icons.Rounded.AutoAwesome,
+                    title = liquidThemeTitle,
+                    subtitle = stringResource(R.string.liquid_theme_subtitle),
+                    trailing = {
+                        Switch(
+                            checked = liquidTheme,
+                            onCheckedChange = AppSettings::setLiquidTheme,
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                checkedBorderColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        )
+                    },
+                    onClick = { AppSettings.setLiquidTheme(!liquidTheme) },
                 )
             }
             val reduceAnimationTitle = stringResource(R.string.reduce_animation)
@@ -2235,6 +2256,7 @@ internal fun SettingsGroup(
     topSpacing: Dp = 26.dp,
     content: @Composable () -> Unit,
 ) {
+    val liquidTheme by AppSettings.liquidTheme.collectAsStateWithLifecycle()
     if (header != null) {
         Text(
             text = header.uppercase(Locale.ROOT),
@@ -2255,7 +2277,19 @@ internal fun SettingsGroup(
             .fillMaxWidth()
             .padding(horizontal = GROUP_INSET)
             .clip(GroupShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .then(
+                if (liquidTheme) {
+                    Modifier
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f),
+                            GroupShape,
+                        )
+                } else {
+                    Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+                },
+            ),
     ) {
         content()
     }

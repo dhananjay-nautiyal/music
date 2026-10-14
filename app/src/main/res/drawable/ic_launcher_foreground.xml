@@ -1,35 +1,30 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="1024"
     android:viewportHeight="1024">
-    <!-- Glass tile + eighth-note, echoing the photo icon. -->
-    <path android:pathData="M172,172 h680 a120,120 0 0 1 120,120 v440 a120,120 0 0 1 -120,120 h-680 a120,120 0 0 1 -120,-120 v-440 a120,120 0 0 1 120,-120 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:startX="200"
-                android:startY="150"
-                android:endX="850"
-                android:endY="900"
-                android:type="linear">
-                <item android:color="#FFF3F5FA" android:offset="0.0" />
-                <item android:color="#FFD9E2F2" android:offset="0.55" />
-                <item android:color="#FFC4D2EA" android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
+    <!-- Liquid droplet + beamed note, echoing the photo icon. -->
+
+    <path
+        android:fillColor="#26FFFFFF"
+        android:pathData="M192,500 A320,320 0 1 1 832,500 A320,320 0 1 1 192,500 Z" />
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
+        android:strokeColor="#E2FFFFFF"
+        android:strokeWidth="56"
+        android:pathData="M192,500 A320,320 0 1 1 832,500 A320,320 0 1 1 192,500 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#8CFFFFFF"
         android:strokeWidth="26"
-        android:pathData="M172,172 h680 a120,120 0 0 1 120,120 v440 a120,120 0 0 1 -120,120 h-680 a120,120 0 0 1 -120,-120 v-440 a120,120 0 0 1 120,-120 Z" />
+        android:strokeLineCap="round"
+        android:pathData="M272,392 A268,268 0 0 1 430,266" />
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="14"
+        android:strokeColor="#B4FFFFFF"
+        android:strokeWidth="34"
         android:strokeLineCap="round"
-        android:pathData="M300,330 A300,300 0 0 1 470,240" />
+        android:pathData="M300,668 A268,268 0 0 0 724,668" />
 
     <path
         android:fillColor="#FFFFFFFF"

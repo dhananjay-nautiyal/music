@@ -1263,4 +1263,6 @@
     <string name="update">Actualizar</string>
     <string name="amoled_black">Negro AMOLED</string>
     <string name="amoled_black_subtitle">Fondos negros puros para pantallas OLED</string>
+    <string name="liquid_theme">Tema líquido</string>
+    <string name="liquid_theme_subtitle">Tarjetas de cristal translúcidas en los ajustes</string>
 </resources>

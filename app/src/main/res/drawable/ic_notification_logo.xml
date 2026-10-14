@@ -5,10 +5,18 @@
     android:viewportHeight="24">
     <!-- Silhouette variant: system keeps alpha only, so opaque white. -->
     <group
-        android:scaleX="0.03143"
-        android:scaleY="0.03143"
-        android:translateX="6.91"
-        android:translateY="6.91">
+        android:scaleX="0.03438"
+        android:scaleY="0.03438"
+        android:translateX="-5.60"
+        android:translateY="-5.60">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M192,500 A320,320 0 1 1 832,500 A320,320 0 1 1 192,500 Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="56"
+            android:pathData="M192,500 A320,320 0 1 1 832,500 A320,320 0 1 1 192,500 Z" />
 
     <path
         android:fillColor="#FFFFFFFF"

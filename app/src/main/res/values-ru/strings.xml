@@ -1323,4 +1323,6 @@
     <string name="update">Обновить</string>
     <string name="amoled_black">AMOLED-чёрный</string>
     <string name="amoled_black_subtitle">Чисто чёрный фон для OLED-экранов</string>
+    <string name="liquid_theme">Жидкая тема</string>
+    <string name="liquid_theme_subtitle">Полупрозрачные стеклянные карточки в настройках</string>
 </resources>

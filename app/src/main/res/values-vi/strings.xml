@@ -1208,4 +1208,6 @@
     <string name="update">Cập nhật</string>
     <string name="amoled_black">Đen AMOLED</string>
     <string name="amoled_black_subtitle">Nền đen tuyền cho màn hình OLED</string>
+    <string name="liquid_theme">Chủ đề lỏng</string>
+    <string name="liquid_theme_subtitle">Thẻ kính trong mờ trong phần Cài đặt</string>
 </resources>

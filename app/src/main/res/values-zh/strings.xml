@@ -1268,4 +1268,6 @@
     <string name="update">更新</string>
     <string name="amoled_black">AMOLED 纯黑</string>
     <string name="amoled_black_subtitle">适用于 OLED 屏幕的纯黑背景</string>
+    <string name="liquid_theme">液态主题</string>
+    <string name="liquid_theme_subtitle">设置中的半透明玻璃卡片</string>
 </resources>

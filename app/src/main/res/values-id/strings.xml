@@ -1268,4 +1268,6 @@
     <string name="update">Perbarui</string>
     <string name="amoled_black">Hitam AMOLED</string>
     <string name="amoled_black_subtitle">Latar hitam pekat untuk layar OLED</string>
+    <string name="liquid_theme">Tema cair</string>
+    <string name="liquid_theme_subtitle">Kartu kaca tembus pandang di Pengaturan</string>
 </resources>

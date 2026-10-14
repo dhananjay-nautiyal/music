@@ -1331,4 +1331,6 @@
     <string name="update">Zaktualizuj</string>
     <string name="amoled_black">Czerń AMOLED</string>
     <string name="amoled_black_subtitle">Czysto czarne tła dla ekranów OLED</string>
+    <string name="liquid_theme">Motyw płynny</string>
+    <string name="liquid_theme_subtitle">Przezroczyste szklane karty w ustawieniach</string>
 </resources>

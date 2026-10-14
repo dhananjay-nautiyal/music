@@ -1274,4 +1274,6 @@
     <string name="update">อัปเดต</string>
     <string name="amoled_black">ดำ AMOLED</string>
     <string name="amoled_black_subtitle">พื้นหลังดำสนิทสำหรับจอ OLED</string>
+    <string name="liquid_theme">ธีมลิควิด</string>
+    <string name="liquid_theme_subtitle">การ์ดกระจกโปร่งแสงในการตั้งค่า</string>
 </resources>

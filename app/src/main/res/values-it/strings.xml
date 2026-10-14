@@ -1230,4 +1230,6 @@
     <string name="update">Aggiorna</string>
     <string name="amoled_black">Nero AMOLED</string>
     <string name="amoled_black_subtitle">Sfondi nero puro per schermi OLED</string>
+    <string name="liquid_theme">Tema liquido</string>
+    <string name="liquid_theme_subtitle">Schede in vetro traslucido nelle impostazioni</string>
 </resources>

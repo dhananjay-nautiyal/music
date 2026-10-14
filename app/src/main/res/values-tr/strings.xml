@@ -1248,4 +1248,6 @@
     <string name="update">Güncelle</string>
     <string name="amoled_black">AMOLED siyahı</string>
     <string name="amoled_black_subtitle">OLED ekranlar için saf siyah arka planlar</string>
+    <string name="liquid_theme">Sıvı tema</string>
+    <string name="liquid_theme_subtitle">Ayarlarda yarı saydam cam kartlar</string>
 </resources>

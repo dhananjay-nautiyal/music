@@ -1291,4 +1291,6 @@
     <string name="update">Aktualisieren</string>
     <string name="amoled_black">AMOLED-Schwarz</string>
     <string name="amoled_black_subtitle">Rein schwarze Hintergründe für OLED-Displays</string>
+    <string name="liquid_theme">Liquid-Theme</string>
+    <string name="liquid_theme_subtitle">Durchscheinende Glaskarten in den Einstellungen</string>
 </resources>

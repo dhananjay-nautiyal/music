@@ -1296,4 +1296,6 @@
     <string name="update">עדכון</string>
     <string name="amoled_black">שחור AMOLED</string>
     <string name="amoled_black_subtitle">רקעים שחורים לחלוטין למסכי OLED</string>
+    <string name="liquid_theme">ערכת נושא נוזלית</string>
+    <string name="liquid_theme_subtitle">כרטיסי זכוכית שקופים בהגדרות</string>
 </resources>
