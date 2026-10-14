@@ -199,6 +199,7 @@ fun SettingsScreen(
     val nerdStats by AppSettings.showNerdStats.collectAsStateWithLifecycle()
     val reduceAnimation by AppSettings.reduceAnimation.collectAsStateWithLifecycle()
     val reduceDynamicBlur by AppSettings.reduceDynamicBlur.collectAsStateWithLifecycle()
+    val amoledBlack by AppSettings.amoledBlack.collectAsStateWithLifecycle()
     val liquidGlass by AppSettings.liquidGlass.collectAsStateWithLifecycle()
     val liquidGlassSupported = isGlassSupported()
     val lyricsBlur by AppSettings.lyricsBlur.collectAsStateWithLifecycle()
@@ -749,6 +750,25 @@ fun SettingsScreen(
                     selectedIndex = ThemeMode.entries.indexOf(theme),
                     onSelect = { AppSettings.setThemeMode(ThemeMode.entries[it]) },
                     modifier = Modifier.padding(start = ROW_INSET, end = ROW_INSET, bottom = 14.dp),
+                )
+            }
+            val amoledBlackTitle = stringResource(R.string.amoled_black)
+            row(amoledBlackTitle, "amoled", "black", "oled") {
+                SettingsRow(
+                    icon = Icons.Rounded.Contrast,
+                    title = amoledBlackTitle,
+                    subtitle = stringResource(R.string.amoled_black_subtitle),
+                    trailing = {
+                        Switch(
+                            checked = amoledBlack,
+                            onCheckedChange = AppSettings::setAmoledBlack,
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                checkedBorderColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        )
+                    },
+                    onClick = { AppSettings.setAmoledBlack(!amoledBlack) },
                 )
             }
             val reduceAnimationTitle = stringResource(R.string.reduce_animation)

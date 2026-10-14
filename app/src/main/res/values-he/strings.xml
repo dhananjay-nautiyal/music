@@ -1294,4 +1294,6 @@
     <string name="chinese_simplified">סינית (מפושטת)</string>
     <string name="chinese_traditional">סינית (מסורתית)</string>
     <string name="update">עדכון</string>
+    <string name="amoled_black">שחור AMOLED</string>
+    <string name="amoled_black_subtitle">רקעים שחורים לחלוטין למסכי OLED</string>
 </resources>

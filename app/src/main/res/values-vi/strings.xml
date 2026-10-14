@@ -1206,4 +1206,6 @@
     <string name="chinese_simplified">Tiếng Trung (Giản thể)</string>
     <string name="chinese_traditional">Tiếng Trung (Phồn thể)</string>
     <string name="update">Cập nhật</string>
+    <string name="amoled_black">Đen AMOLED</string>
+    <string name="amoled_black_subtitle">Nền đen tuyền cho màn hình OLED</string>
 </resources>

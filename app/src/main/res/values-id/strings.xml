@@ -1266,4 +1266,6 @@
     <string name="chinese_simplified">China (Sederhana)</string>
     <string name="chinese_traditional">China (Tradisional)</string>
     <string name="update">Perbarui</string>
+    <string name="amoled_black">Hitam AMOLED</string>
+    <string name="amoled_black_subtitle">Latar hitam pekat untuk layar OLED</string>
 </resources>

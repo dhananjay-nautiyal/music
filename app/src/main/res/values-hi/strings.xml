@@ -1289,4 +1289,6 @@
     <string name="chinese_simplified">चीनी (सरलीकृत)</string>
     <string name="chinese_traditional">चीनी (पारंपरिक)</string>
     <string name="update">अपडेट करें</string>
+    <string name="amoled_black">AMOLED ब्लैक</string>
+    <string name="amoled_black_subtitle">OLED स्क्रीन के लिए शुद्ध काली पृष्ठभूमि</string>
 </resources>

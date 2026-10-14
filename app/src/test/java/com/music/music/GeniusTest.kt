@@ -5,6 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Assume
 import org.junit.Test
 
 class GeniusTest {
@@ -109,7 +110,13 @@ class GeniusTest {
 
     @Test
     fun `live genius search and scraping test with noisy titles`() = kotlinx.coroutines.runBlocking {
-        println("--- TEST 1: Queen - Bohemian Rhapsody (Official Video) ---")
+        // Hits genius.com over the network: rates, HTML shape and CI egress
+        // all vary, so this runs only on explicit opt-in
+        // (MUSIC_LIVE_TESTS=1) and CI stays deterministic.
+        Assume.assumeTrue(
+            "live test; set MUSIC_LIVE_TESTS=1 to run",
+            System.getenv("MUSIC_LIVE_TESTS") == "1",
+        )        println("--- TEST 1: Queen - Bohemian Rhapsody (Official Video) ---")
         val lyrics1 = Genius.lyrics("Bohemian Rhapsody (Official Video)", "Queen")
         assertNotNull(lyrics1)
         assertTrue(lyrics1!!.isNotEmpty())

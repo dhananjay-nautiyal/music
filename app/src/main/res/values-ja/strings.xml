@@ -1267,4 +1267,6 @@
     <string name="chinese_simplified">中国語（簡体字）</string>
     <string name="chinese_traditional">中国語（繁体字）</string>
     <string name="update">アップデート</string>
+    <string name="amoled_black">AMOLEDブラック</string>
+    <string name="amoled_black_subtitle">OLED画面向けの純黒背景</string>
 </resources>

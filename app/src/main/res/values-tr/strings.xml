@@ -1246,4 +1246,6 @@
     <string name="chinese_simplified">Çince (Basitleştirilmiş)</string>
     <string name="chinese_traditional">Çince (Geleneksel)</string>
     <string name="update">Güncelle</string>
+    <string name="amoled_black">AMOLED siyahı</string>
+    <string name="amoled_black_subtitle">OLED ekranlar için saf siyah arka planlar</string>
 </resources>

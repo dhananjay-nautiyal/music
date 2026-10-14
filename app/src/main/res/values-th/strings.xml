@@ -1272,4 +1272,6 @@
     <string name="chinese_simplified">จีน (ตัวย่อ)</string>
     <string name="chinese_traditional">จีน (ตัวเต็ม)</string>
     <string name="update">อัปเดต</string>
+    <string name="amoled_black">ดำ AMOLED</string>
+    <string name="amoled_black_subtitle">พื้นหลังดำสนิทสำหรับจอ OLED</string>
 </resources>

@@ -1321,4 +1321,6 @@
     <string name="chinese_simplified">Китайский (упрощённый)</string>
     <string name="chinese_traditional">Китайский (традиционный)</string>
     <string name="update">Обновить</string>
+    <string name="amoled_black">AMOLED-чёрный</string>
+    <string name="amoled_black_subtitle">Чисто чёрный фон для OLED-экранов</string>
 </resources>

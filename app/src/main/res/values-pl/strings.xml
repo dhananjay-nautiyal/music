@@ -1329,4 +1329,6 @@
     <string name="chinese_simplified">Chiński (uproszczony)</string>
     <string name="chinese_traditional">Chiński (tradycyjny)</string>
     <string name="update">Zaktualizuj</string>
+    <string name="amoled_black">Czerń AMOLED</string>
+    <string name="amoled_black_subtitle">Czysto czarne tła dla ekranów OLED</string>
 </resources>

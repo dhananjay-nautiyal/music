@@ -1266,4 +1266,6 @@
     <string name="spotify_sign_in">使用 Spotify 登录</string>
     <string name="spotify_track_unavailable">在 YouTube Music 上找不到该歌曲</string>
     <string name="update">更新</string>
+    <string name="amoled_black">AMOLED 纯黑</string>
+    <string name="amoled_black_subtitle">适用于 OLED 屏幕的纯黑背景</string>
 </resources>

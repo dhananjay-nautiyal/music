@@ -94,22 +94,53 @@ object AppUpdateChecker {
     }
 
     /**
-     * The release usually carries exactly one `.apk`; take its direct download
-     * URL. A release without one (source-only draft, renamed asset) leaves
-     * [UpdateInfo.apkUrl] null and the UI falls back to opening the releases
-     * page as before.
+     * Picks the smallest APK this device can install: the per-ABI split named
+     * in [Build.SUPPORTED_ABIS] first (`…_arm64-v8a.apk`, ~58 MB instead of the
+     * ~151 MB universal), then the universal build (no `_arch` suffix), then
+     * anything left. A release without one leaves [UpdateInfo.apkUrl] null and
+     * the UI falls back to opening the releases page as before.
      */
     private fun apkAssetUrl(release: JsonObject): String? = runCatching {
-        release["assets"]?.jsonArray
+        val names = release["assets"]?.jsonArray
             ?.mapNotNull { it as? JsonObject }
-            ?.firstOrNull { asset ->
+            ?.filter { asset ->
                 asset["name"]?.jsonPrimitive?.contentOrNull?.endsWith(".apk", ignoreCase = true) == true &&
                     asset["state"]?.jsonPrimitive?.contentOrNull == "uploaded"
             }
+            ?.mapNotNull { it["name"]?.jsonPrimitive?.contentOrNull }
+            ?: return@runCatching null
+        val picked = pickApkAsset(names, Build.SUPPORTED_ABIS.toList()) ?: return@runCatching null
+        release["assets"]?.jsonArray
+            ?.mapNotNull { it as? JsonObject }
+            ?.firstOrNull { it["name"]?.jsonPrimitive?.contentOrNull == picked }
             ?.get("browser_download_url")
             ?.jsonPrimitive
             ?.contentOrNull
     }.getOrNull()
+
+    /**
+     * Pure half of [apkAssetUrl], kept static-testable: given uploaded `.apk`
+     * names and the device's ABI preference order, returns the chosen name.
+     */
+    internal fun pickApkAsset(names: List<String>, supportedAbis: List<String>): String? {
+        if (names.isEmpty()) return null
+        val byArch = names.mapNotNull { name ->
+            archOfApk(name)?.let { it to name }
+        }.toMap()
+        for (abi in supportedAbis) {
+            byArch[abi]?.let { return it }
+        }
+        names.firstOrNull { archOfApk(it) == null }?.let { return it }
+        return names.firstOrNull()
+    }
+
+    /** `Music-v1.0.2_arm64-v8a.apk` -> `arm64-v8a`; the universal build -> null. */
+    internal fun archOfApk(name: String): String? {
+        if (!name.endsWith(".apk", ignoreCase = true)) return null
+        val base = name.substring(0, name.length - 4)
+        if (!base.contains("_")) return null
+        return base.substringAfterLast("_").ifEmpty { null }
+    }
 
     /**
      * Streams the current update's APK into the app cache, reporting progress

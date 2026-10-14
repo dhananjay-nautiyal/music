@@ -50,6 +50,22 @@ private val LightColors = lightColorScheme(
 )
 
 /**
+ * Pure-black variant of the dark scheme for OLED screens: every pixel off
+ * where the navy theme paints surfaces, same blue primary on top.
+ */
+private val AmoledColors = darkColorScheme(
+    primary = Color(0xFF5B9CFF),
+    onPrimary = Color.White,
+    background = Color.Black,
+    onBackground = Color.White,
+    surface = Color.Black,
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF0A0F1E),
+    onSurfaceVariant = Color(0xFF8E9BB8),
+    outline = Color(0xFF16213A),
+)
+
+/**
  * SF Pro Display, the face Apple Music itself is set in. Only the weights the
  * type scale actually asks for are bundled; Compose synthesises nothing, so a
  * missing weight would silently fall back to the nearest one shipped.
@@ -97,10 +113,15 @@ private fun Typography.withFamily(family: FontFamily) = Typography(
 @Composable
 fun MusicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    amoledBlack: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else LightColors,
+        colorScheme = when {
+            darkTheme && amoledBlack -> AmoledColors
+            darkTheme -> DarkColors
+            else -> LightColors
+        },
         typography = MusicTypography,
         content = content,
     )
