@@ -755,7 +755,7 @@ fun SettingsScreen(
             val amoledBlackTitle = stringResource(R.string.amoled_black)
             row(amoledBlackTitle, "amoled", "black", "oled") {
                 SettingsRow(
-                    icon = Icons.Rounded.Contrast,
+                    icon = Icons.Rounded.Gradient,
                     title = amoledBlackTitle,
                     subtitle = stringResource(R.string.amoled_black_subtitle),
                     trailing = {
