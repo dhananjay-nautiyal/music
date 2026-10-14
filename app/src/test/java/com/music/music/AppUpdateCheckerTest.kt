@@ -51,7 +51,9 @@ class AppUpdateCheckerTest {
     @Test
     fun archOfApk_names() {
         assertEquals("arm64-v8a", AppUpdateChecker.archOfApk("Music-v1.0.2_arm64-v8a.apk"))
+        assertEquals("x86_64", AppUpdateChecker.archOfApk("Music-v1.0.2_x86_64.apk"))
         assertEquals(null, AppUpdateChecker.archOfApk("Music-v1.0.2.apk"))
+        assertEquals(null, AppUpdateChecker.archOfApk("Music-v1.0.2_beta2.apk"))
         assertEquals(null, AppUpdateChecker.archOfApk("notes.txt"))
     }
 }

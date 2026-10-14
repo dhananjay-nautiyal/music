@@ -138,9 +138,14 @@ object AppUpdateChecker {
     internal fun archOfApk(name: String): String? {
         if (!name.endsWith(".apk", ignoreCase = true)) return null
         val base = name.substring(0, name.length - 4)
-        if (!base.contains("_")) return null
-        return base.substringAfterLast("_").ifEmpty { null }
+        // Matched against known ABIs rather than split on "_" because an ABI
+        // itself can contain one ("x86_64" naive-splits to "64").
+        return KNOWN_ABIS.firstOrNull { base.endsWith("_$it") }
     }
+
+    private val KNOWN_ABIS = listOf(
+        "arm64-v8a", "armeabi-v7a", "armeabi", "x86_64", "x86", "mips64", "mips",
+    )
 
     /**
      * Streams the current update's APK into the app cache, reporting progress
