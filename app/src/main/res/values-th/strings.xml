@@ -107,10 +107,8 @@
     <string name="update_downloading_body">กำลังดาวน์โหลด music %1$s…</string>
     <string name="update_ready_body">music %1$s พร้อมติดตั้งแล้ว</string>
     <string name="update_failed_body">ดาวน์โหลด music %1$s ไม่สำเร็จ</string>
-    <string name="download_now">ดาวน์โหลดตอนนี้</string>
     <string name="install_now">ติดตั้งตอนนี้</string>
     <string name="later">ภายหลัง</string>
-    <string name="remind_me_later">เตือนฉันภายหลัง</string>
     <string name="try_again">ลองอีกครั้ง</string>
     <string name="open_releases_page">เปิดหน้าเวอร์ชันที่เผยแพร่</string>
     <string name="whats_new">มีอะไรใหม่</string>
@@ -1273,4 +1271,5 @@
     <string name="spotify_track_unavailable">หาเพลงนั้นบน YouTube Music ไม่พบ</string>
     <string name="chinese_simplified">จีน (ตัวย่อ)</string>
     <string name="chinese_traditional">จีน (ตัวเต็ม)</string>
+    <string name="update">อัปเดต</string>
 </resources>

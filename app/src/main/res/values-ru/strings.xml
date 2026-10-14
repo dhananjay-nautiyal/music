@@ -118,10 +118,8 @@
     <string name="update_downloading_body">Загрузка music %1$s…</string>
     <string name="update_ready_body">music %1$s готов к установке.</string>
     <string name="update_failed_body">Не удалось загрузить music %1$s.</string>
-    <string name="download_now">Загрузить сейчас</string>
     <string name="install_now">Установить сейчас</string>
     <string name="later">Позже</string>
-    <string name="remind_me_later">Напомнить позже</string>
     <string name="try_again">Повторить попытку</string>
     <string name="open_releases_page">Открыть страницу релизов</string>
     <string name="whats_new">Что нового</string>
@@ -1322,4 +1320,5 @@
     <string name="spotify_track_unavailable">Не удалось найти этот трек на YouTube Music</string>
     <string name="chinese_simplified">Китайский (упрощённый)</string>
     <string name="chinese_traditional">Китайский (традиционный)</string>
+    <string name="update">Обновить</string>
 </resources>

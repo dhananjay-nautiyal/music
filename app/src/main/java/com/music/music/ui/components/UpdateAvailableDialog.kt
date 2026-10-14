@@ -99,7 +99,7 @@ fun UpdateAvailableDialog(
         modifier = modifier
             .fillMaxSize()
             .background(SCRIM_COLOR)
-            // Tapping the scrim reads the same as Remind Me Later — nothing
+            // Tapping the scrim reads the same as Later — nothing
             // about this update is mandatory, so backing out of it should be as
             // easy as getting into it. Mid-download it only closes the sheet;
             // the download keeps going and the top-bar icon reopens this.
@@ -255,9 +255,9 @@ fun UpdateAvailableDialog(
                     AlertAction(label = stringResource(R.string.open_releases_page), emphasised = false, onClick = onOpenReleasePage)
                 }
                 else -> {
-                    AlertAction(label = stringResource(R.string.download_now), emphasised = true, onClick = onDownload)
+                    AlertAction(label = stringResource(R.string.update), emphasised = true, onClick = onDownload)
                     AlertRule()
-                    AlertAction(label = stringResource(R.string.remind_me_later), emphasised = false, onClick = onDismiss)
+                    AlertAction(label = stringResource(R.string.later), emphasised = false, onClick = onDismiss)
                 }
             }
         }

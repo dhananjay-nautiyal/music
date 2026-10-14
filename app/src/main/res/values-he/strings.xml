@@ -110,10 +110,8 @@
     <string name="update_downloading_body">מוריד את music %1$s…</string>
     <string name="update_ready_body">music %1$s מוכן להתקנה.</string>
     <string name="update_failed_body">לא ניתן היה להוריד את music %1$s.</string>
-    <string name="download_now">הורדה עכשיו</string>
     <string name="install_now">התקנה עכשיו</string>
     <string name="later">מאוחר יותר</string>
-    <string name="remind_me_later">תזכיר לי מאוחר יותר</string>
     <string name="try_again">נסה שוב</string>
     <string name="open_releases_page">פתיחת דף הגרסאות</string>
     <string name="whats_new">מה חדש</string>
@@ -1295,4 +1293,5 @@
     <string name="spotify_track_unavailable">לא נמצא שיר כזה ב-YouTube Music</string>
     <string name="chinese_simplified">סינית (מפושטת)</string>
     <string name="chinese_traditional">סינית (מסורתית)</string>
+    <string name="update">עדכון</string>
 </resources>

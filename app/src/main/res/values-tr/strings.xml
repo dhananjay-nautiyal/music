@@ -113,10 +113,8 @@
     <string name="update_downloading_body">music %1$s indiriliyor…</string>
     <string name="update_ready_body">music %1$s yüklenmeye hazır.</string>
     <string name="update_failed_body">music %1$s indirilemedi.</string>
-    <string name="download_now">Şimdi İndir</string>
     <string name="install_now">Şimdi Yükle</string>
     <string name="later">Daha sonra</string>
-    <string name="remind_me_later">Sonra Hatırlat</string>
     <string name="try_again">Tekrar Dene</string>
     <string name="open_releases_page">Sürümler Sayfasını Aç</string>
     <string name="whats_new">Yenilikler</string>
@@ -1247,4 +1245,5 @@
     <string name="spotify_track_unavailable">O şarkı YouTube Music’de bulunamadı</string>
     <string name="chinese_simplified">Çince (Basitleştirilmiş)</string>
     <string name="chinese_traditional">Çince (Geleneksel)</string>
+    <string name="update">Güncelle</string>
 </resources>

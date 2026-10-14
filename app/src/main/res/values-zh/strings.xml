@@ -103,10 +103,8 @@
     <string name="update_downloading_body">正在下载 music %1$s…</string>
     <string name="update_ready_body">music %1$s 已准备好安装。</string>
     <string name="update_failed_body">无法下载 music %1$s。</string>
-    <string name="download_now">立即下载</string>
     <string name="install_now">立即安装</string>
     <string name="later">以后再说</string>
-    <string name="remind_me_later">以后提醒我</string>
     <string name="try_again">重试</string>
     <string name="open_releases_page">打开发布页面</string>
     <string name="whats_new">新版本说明</string>
@@ -1267,4 +1265,5 @@
     <string name="spotify_library_subtitle">你的 Spotify 播放列表</string>
     <string name="spotify_sign_in">使用 Spotify 登录</string>
     <string name="spotify_track_unavailable">在 YouTube Music 上找不到该歌曲</string>
+    <string name="update">更新</string>
 </resources>

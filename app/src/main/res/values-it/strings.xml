@@ -131,10 +131,8 @@
     <string name="update_downloading_body">Download di music %1$s in corso…</string>
     <string name="update_ready_body">music %1$s è pronto da installare.</string>
     <string name="update_failed_body">Impossibile scaricare music %1$s.</string>
-    <string name="download_now">Scarica ora</string>
     <string name="install_now">Installa ora</string>
     <string name="later">Più tardi</string>
-    <string name="remind_me_later">Ricordamelo più tardi</string>
     <string name="try_again">Riprova</string>
     <string name="open_releases_page">Apri la pagina delle release</string>
     <string name="whats_new">Novità</string>
@@ -1229,4 +1227,5 @@
     <string name="spotify_track_unavailable">Impossibile trovare quel brano su YouTube Music</string>
     <string name="chinese_simplified">Cinese (semplificato)</string>
     <string name="chinese_traditional">Cinese (tradizionale)</string>
+    <string name="update">Aggiorna</string>
 </resources>

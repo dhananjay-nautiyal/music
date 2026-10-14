@@ -103,10 +103,8 @@
     <string name="update_downloading_body">Mengunduh music %1$s…</string>
     <string name="update_ready_body">music %1$s siap dipasang.</string>
     <string name="update_failed_body">Gagal mengunduh music %1$s.</string>
-    <string name="download_now">Unduh Sekarang</string>
     <string name="install_now">Pasang Sekarang</string>
     <string name="later">Nanti</string>
-    <string name="remind_me_later">Ingatkan Nanti</string>
     <string name="try_again">Coba Lagi</string>
     <string name="open_releases_page">Buka Halaman Rilis</string>
     <string name="whats_new">Yang baru</string>
@@ -1267,4 +1265,5 @@
     <string name="spotify_track_unavailable">Lagu itu tidak ditemukan di YouTube Music</string>
     <string name="chinese_simplified">China (Sederhana)</string>
     <string name="chinese_traditional">China (Tradisional)</string>
+    <string name="update">Perbarui</string>
 </resources>

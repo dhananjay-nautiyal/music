@@ -110,10 +110,8 @@
     <string name="update_downloading_body">Đang tải xuống Music %1$s…</string>
     <string name="update_ready_body">Music %1$s đã sẵn sàng để cài đặt.</string>
     <string name="update_failed_body">Không thể tải xuống Music %1$s.</string>
-    <string name="download_now">Tải ngay</string>
     <string name="install_now">Cài đặt ngay</string>
     <string name="later">Để sau</string>
-    <string name="remind_me_later">Nhắc tôi sau</string>
     <string name="try_again">Thử lại</string>
     <string name="open_releases_page">Mở trang Bản phát hành</string>
     <string name="whats_new">Có gì mới</string>
@@ -1207,4 +1205,5 @@
     <string name="spotify_track_unavailable">Không tìm thấy bài hát đó trên YouTube Music</string>
     <string name="chinese_simplified">Tiếng Trung (Giản thể)</string>
     <string name="chinese_traditional">Tiếng Trung (Phồn thể)</string>
+    <string name="update">Cập nhật</string>
 </resources>
