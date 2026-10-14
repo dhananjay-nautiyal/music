@@ -8,9 +8,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/KabirSinghBhatia/Music/backend/clock"
-	"github.com/KabirSinghBhatia/Music/backend/codes"
-	"github.com/KabirSinghBhatia/Music/backend/config"
+	"github.com/dhani748/music/backend/clock"
+	"github.com/dhani748/music/backend/codes"
+	"github.com/dhani748/music/backend/config"
 )
 
 // PartyError represents an error with an HTTP status code and wire error code.

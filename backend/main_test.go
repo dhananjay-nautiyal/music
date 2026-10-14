@@ -13,10 +13,10 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/KabirSinghBhatia/Music/backend/clock"
-	"github.com/KabirSinghBhatia/Music/backend/config"
-	"github.com/KabirSinghBhatia/Music/backend/presence"
-	"github.com/KabirSinghBhatia/Music/backend/protocol"
+	"github.com/dhani748/music/backend/clock"
+	"github.com/dhani748/music/backend/config"
+	"github.com/dhani748/music/backend/presence"
+	"github.com/dhani748/music/backend/protocol"
 )
 
 func setupTestServer() *httptest.Server {

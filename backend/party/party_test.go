@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/KabirSinghBhatia/Music/backend/codes"
-	"github.com/KabirSinghBhatia/Music/backend/config"
+	"github.com/dhani748/music/backend/codes"
+	"github.com/dhani748/music/backend/config"
 )
 
 func TestCodeNormalisation(t *testing.T) {

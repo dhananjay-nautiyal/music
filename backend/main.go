@@ -18,13 +18,13 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/KabirSinghBhatia/Music/backend/clock"
-	"github.com/KabirSinghBhatia/Music/backend/codes"
-	"github.com/KabirSinghBhatia/Music/backend/config"
-	"github.com/KabirSinghBhatia/Music/backend/hub"
-	"github.com/KabirSinghBhatia/Music/backend/party"
-	"github.com/KabirSinghBhatia/Music/backend/presence"
-	"github.com/KabirSinghBhatia/Music/backend/protocol"
+	"github.com/dhani748/music/backend/clock"
+	"github.com/dhani748/music/backend/codes"
+	"github.com/dhani748/music/backend/config"
+	"github.com/dhani748/music/backend/hub"
+	"github.com/dhani748/music/backend/party"
+	"github.com/dhani748/music/backend/presence"
+	"github.com/dhani748/music/backend/protocol"
 )
 
 var (
