@@ -4,6 +4,7 @@
     android:height="108dp"
     android:viewportWidth="1024"
     android:viewportHeight="1024">
+    <!-- Deep translucent base so the tile keeps depth on light wallpapers. -->
     <path android:pathData="M0,0h1024v1024h-1024z">
         <aapt:attr name="android:fillColor">
             <gradient
@@ -12,9 +13,8 @@
                 android:endX="512"
                 android:endY="1024"
                 android:type="linear">
-                <item android:color="#FF0A1628" android:offset="0.0" />
-                <item android:color="#FF12325E" android:offset="0.55" />
-                <item android:color="#FF1E5AA8" android:offset="1.0" />
+                <item android:color="#28142030" android:offset="0.0" />
+                <item android:color="#3D0A1428" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>

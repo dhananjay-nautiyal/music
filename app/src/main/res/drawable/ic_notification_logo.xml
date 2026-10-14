@@ -5,33 +5,31 @@
     android:viewportHeight="24">
     <!-- Silhouette variant: system keeps alpha only, so opaque white. -->
     <group
-        android:scaleX="0.03438"
-        android:scaleY="0.03438"
-        android:translateX="-5.60"
-        android:translateY="-5.60">
+        android:scaleX="0.03143"
+        android:scaleY="0.03143"
+        android:translateX="6.91"
+        android:translateY="6.91">
         <path
-            android:fillColor="#FFFFFFFF"
-            android:pathData="M192,500 A320,320 0 1 1 832,500 A320,320 0 1 1 192,500 Z" />
-        <path
-            android:fillColor="#FFFFFFFF"
+            android:fillColor="#00000000"
             android:strokeColor="#FFFFFFFF"
-            android:strokeWidth="56"
-            android:pathData="M192,500 A320,320 0 1 1 832,500 A320,320 0 1 1 192,500 Z" />
+            android:strokeWidth="150"
+            android:strokeLineJoin="round"
+            android:pathData="M390,140 h244 a250,250 0 0 1 250,250 v244 a250,250 0 0 1 -250,250 h-244 a250,250 0 0 1 -250,-250 v-244 a250,250 0 0 1 250,-250 Z" />
 
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M322,660 A78,60 0 1 1 478,660 A78,60 0 1 1 322,660 Z" />
+        android:pathData="M361,320 L439,320 L439,660 L361,660 Z" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M570,620 A78,60 0 1 1 726,620 A78,60 0 1 1 570,620 Z" />
+        android:pathData="M661,280 L739,280 L739,620 L661,620 Z" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M452,300 L496,300 L496,660 L452,660 Z" />
+        android:pathData="M320,660 A80,62 0 1 1 480,660 A80,62 0 1 1 320,660 Z" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M700,260 L744,260 L744,620 L700,620 Z" />
+        android:pathData="M620,620 A80,62 0 1 1 780,620 A80,62 0 1 1 620,620 Z" />
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M452,300 L744,252 L744,330 L452,378 Z" />
+        android:pathData="M361,320 L739,262 L739,350 L361,408 Z" />
     </group>
 </vector>
