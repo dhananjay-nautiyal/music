@@ -2,7 +2,7 @@
 # One-shot installer for the Listen Together server on an Oracle Cloud
 # (or any Ubuntu 22.04/24.04) VM. Safe to re-run: it rebuilds and restarts.
 #
-#   sudo DOMAIN=jam.bitchord.kushagrasingh.in bash deploy/setup.sh
+#   sudo DOMAIN=jam.music.kushagrasingh.in bash deploy/setup.sh
 #
 # First run on a fresh VM also takes DEPLOY_PUBKEY (the public half of the
 # GitHub Actions deploy key) to create the restricted `deploy` user.
@@ -12,7 +12,7 @@
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
-DOMAIN="${DOMAIN:?set DOMAIN, e.g. DOMAIN=jam.bitchord.kushagrasingh.in}"
+DOMAIN="${DOMAIN:?set DOMAIN, e.g. DOMAIN=jam.music.kushagrasingh.in}"
 GO_VERSION="${GO_VERSION:-1.27.0}"
 BACKEND_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -35,20 +35,20 @@ if ! /usr/local/go/bin/go version 2>/dev/null | grep -q "go$GO_VERSION"; then
 fi
 
 echo "== build"
-id bitchord >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin bitchord
-install -d -o bitchord -g bitchord /opt/bitchord-jam
-(cd "$BACKEND_DIR" && /usr/local/go/bin/go build -o /opt/bitchord-jam/server .)
-chown bitchord:bitchord /opt/bitchord-jam/server
+id music >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin music
+install -d -o music -g music /opt/music-jam
+(cd "$BACKEND_DIR" && /usr/local/go/bin/go build -o /opt/music-jam/server .)
+chown music:music /opt/music-jam/server
 
 echo "== service"
-install -m 644 "$BACKEND_DIR/deploy/bitchord-jam.service" /etc/systemd/system/bitchord-jam.service
+install -m 644 "$BACKEND_DIR/deploy/music-jam.service" /etc/systemd/system/music-jam.service
 systemctl daemon-reload
-systemctl enable bitchord-jam
-systemctl restart bitchord-jam
+systemctl enable music-jam
+systemctl restart music-jam
 # The CPU keepalive burner is retired; clean it off VMs that still have it.
-if [ -f /etc/systemd/system/bitchord-keepalive.service ]; then
-  systemctl disable --now bitchord-keepalive || true
-  rm -f /etc/systemd/system/bitchord-keepalive.service
+if [ -f /etc/systemd/system/music-keepalive.service ]; then
+  systemctl disable --now music-keepalive || true
+  rm -f /etc/systemd/system/music-keepalive.service
   systemctl daemon-reload
 fi
 
@@ -65,18 +65,18 @@ if ! cmp -s /tmp/Caddyfile /etc/caddy/Caddyfile; then
 fi
 
 echo "== deploy hook"
-echo "$DOMAIN" > /etc/bitchord-domain
-install -m 755 "$BACKEND_DIR/deploy/bitchord-deploy.sh" /usr/local/sbin/bitchord-deploy
+echo "$DOMAIN" > /etc/music-domain
+install -m 755 "$BACKEND_DIR/deploy/music-deploy.sh" /usr/local/sbin/music-deploy
 
 if [ -n "${DEPLOY_PUBKEY:-}" ]; then
   echo "== deploy user"
   # The GitHub Actions key may only run the deploy hook (forced command).
   id deploy >/dev/null 2>&1 || useradd --create-home --shell /bin/bash deploy
   install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
-  printf 'command="sudo /usr/local/sbin/bitchord-deploy",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty %s\n' "$DEPLOY_PUBKEY" > /home/deploy/.ssh/authorized_keys
+  printf 'command="sudo /usr/local/sbin/music-deploy",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty %s\n' "$DEPLOY_PUBKEY" > /home/deploy/.ssh/authorized_keys
   chown deploy:deploy /home/deploy/.ssh/authorized_keys && chmod 600 /home/deploy/.ssh/authorized_keys
-  echo 'deploy ALL=(root) NOPASSWD: /usr/local/sbin/bitchord-deploy' > /etc/sudoers.d/bitchord-deploy
-  chmod 440 /etc/sudoers.d/bitchord-deploy && visudo -cf /etc/sudoers.d/bitchord-deploy
+  echo 'deploy ALL=(root) NOPASSWD: /usr/local/sbin/music-deploy' > /etc/sudoers.d/music-deploy
+  chmod 440 /etc/sudoers.d/music-deploy && visudo -cf /etc/sudoers.d/music-deploy
 fi
 
 echo "== firewall"

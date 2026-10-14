@@ -1,11 +1,11 @@
-# REA reverse notes — BitChord v1.8 -> Music
+# REA reverse notes — Music v1.8 -> Music
 
 Method: REA shipped-artifact + source corroboration (source repo is complete,
 so per skill no decompilation loop was needed beyond inventory).
 
 ## 1. Shipped artifact (observed, REA)
 
-- File: `BitChord-v1.8.apk` (universal, from
+- File: `Music-v1.8.apk` (universal, from
   `gh release download v1.8 --repo kushagrasinghx/BitChord`)
 - SHA-256: `cdd7b955fbcf9ff9e8286bb8334cb2c6887461af78582bcc0ca1da658f447a03`
 - Size: ~151 MB
@@ -27,9 +27,9 @@ Clone: `https://github.com/kushagrasinghx/BitChord` (`main`, 716 commits,
 Kotlin 8.8M, 683 `.kt` files, GPL-3.0).
 
 - Install identity (observed in `app/build.gradle.kts` + `AndroidManifest.xml`):
-  `namespace/applicationId com.music.bitchord`, `compileSdk 37`,
+  `namespace/applicationId com.music.music`, `compileSdk 37`,
   `minSdk 26 / targetSdk 36`, `versionName 1.8 / versionCode 26`,
-  per-ABI splits + universal APK, `dev` flavor `com.dev.bitchord`.
+  per-ABI splits + universal APK, `dev` flavor `com.dev.music`.
 - Playback sources (observed): `MusicSource.kt` interface
   (`search` + `resolve stream` + `health`), `SourceKind.kt` rank
   ADDON/CUSTOM_MODULE 0, MODULE 1, JIOSAAVN 2, YOUTUBE 3;
@@ -45,10 +45,10 @@ Kotlin 8.8M, 683 `.kt` files, GPL-3.0).
 
 ## 3. What the Music rebrand changes (design choices, not observations)
 
-- `applicationId com.music.bitchord` -> `com.music.music`
-  (`com.dev.bitchord` -> `com.dev.music`); `app_name` `BitChord` -> `Music`
-  (`BitChord Dev` -> `Music Dev`); `rootProject.name` -> `music`.
-- Internal package `com.music.bitchord` kept (all sources + manifest
+- `applicationId com.music.music` -> `com.music.music`
+  (`com.dev.music` -> `com.dev.music`); `app_name` `Music` -> `Music`
+  (`Music Dev` -> `Music Dev`); `rootProject.name` -> `music`.
+- Internal package `com.music.music` kept (all sources + manifest
   references unchanged) — install identity differs, code identical.
 - Added `MusicPlatforms.kt` facade (delegates, no new protocol) + `MUSIC.md`.
 - License: GPL-3.0 retained with upstream attribution.

@@ -3,15 +3,15 @@
 Modern multi-platform music client, install identity `com.music.music`
 (dev: `com.dev.music`, launcher "Music" / "Music Dev").
 
-Same logic as BitChord v1.8 — this repo is a rebrand, not a rewrite:
-internal Kotlin package stays `com.music.bitchord` so all 683 sources keep
+Same logic as Music v1.8 — this repo is a rebrand, not a rewrite:
+internal Kotlin package stays `com.music.music` so all 683 sources keep
 building; only the Play-store identity (`applicationId`), launcher name
 (`app_name`), and repo name changed.
 
 Upstream: https://github.com/kushagrasinghx/BitChord — GPL-3.0, see LICENSE.
 All GPL notices and attribution preserved. This fork stays GPL-3.0.
 
-## Music platforms (same as BitChord)
+## Music platforms (same as Music)
 
 | Platform | Type | Implementation |
 |---|---|---|
@@ -24,11 +24,11 @@ All GPL notices and attribution preserved. This fork stays GPL-3.0.
 | Lyrics (11) | word-synced | lrc.red, BiniLyrics, BetterLyrics, PaxSenix, LyricsPlus, SimpMusic, Unison, Megalobiz, KuGou, LRCLIB, Musixmatch, Genius |
 | Social | scrobble/presence | Last.fm, ListenBrainz, Discord Rich Presence, Listen Together backend (`backend/`, Go) |
 
-Unified entry point: `app/src/main/java/com/music/bitchord/data/sources/MusicPlatforms.kt`.
+Unified entry point: `app/src/main/java/com/music/music/data/sources/MusicPlatforms.kt`.
 
 ## Build the "music" APK
 
-Android SDK required (this machine has none — BitChord's `settings.gradle.kts`
+Android SDK required (this machine has none — Music's `settings.gradle.kts`
 skips `:app` without one and builds desktop only).
 
 ```bash

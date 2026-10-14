@@ -1,4 +1,4 @@
-# BitChord — Listen Together
+# Music — Listen Together
 
 The party server behind **Listen together**: create a six-character code, share
 it, and up to five signed-in devices listen to the same thing at the same time.
@@ -241,7 +241,7 @@ To keep memory, bandwidth, and latency strictly bounded:
 
 ## Deploying to Oracle Cloud (Always Free)
 
-This is what runs `https://api.bitchord.kushagrasingh.in`: one Always Free
+This is what runs `https://api.music.kushagrasingh.in`: one Always Free
 `VM.Standard.E2.1.Micro` (1 OCPU, 1 GB) on Ubuntu 24.04 in ap-mumbai-1, with
 Caddy in front for HTTPS and WebSockets. Files are in `deploy/`.
 
@@ -256,17 +256,17 @@ Caddy in front for HTTPS and WebSockets. Files are in `deploy/`.
 4. **Install** (from a copy of `backend/` on the VM):
 
    ```sh
-   sudo DOMAIN=api.bitchord.kushagrasingh.in bash deploy/setup.sh
+   sudo DOMAIN=api.music.kushagrasingh.in bash deploy/setup.sh
    ```
 
-   It installs Go, builds the server into `/opt/bitchord-jam`, runs it as the
-   `bitchord-jam` systemd service on `:8000`, installs Caddy for the domain, and
+   It installs Go, builds the server into `/opt/music-jam`, runs it as the
+   `music-jam` systemd service on `:8000`, installs Caddy for the domain, and
    opens 80/443 in the VM's own iptables. Oracle's Ubuntu images carry a REJECT
    rule besides the security list, so both have to be opened. Re-run the same
    command to deploy a new build.
 
 Check it with `curl https://<domain>/healthz`. Logs are in
-`journalctl -u bitchord-jam` and `journalctl -u caddy`.
+`journalctl -u music-jam` and `journalctl -u caddy`.
 
 ## Deploying to Render
 
