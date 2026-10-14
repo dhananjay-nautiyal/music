@@ -23,27 +23,30 @@ import com.music.music.R
 val AccentRed = Color(0xFFFA2D48)
 
 private val DarkColors = darkColorScheme(
-    primary = Color.White,
-    onPrimary = Color.Black,
-    background = Color.Black,
+    // Brand blue: the default accent across buttons, sliders, progress and
+    // links, matched to the glass-note icon. Artwork-driven surfaces still
+    // re-tint per album; this is the resting identity underneath them.
+    primary = Color(0xFF5B9CFF),
+    onPrimary = Color.White,
+    background = Color(0xFF05080F),
     onBackground = Color.White,
-    surface = Color(0xFF0D0D0F),
+    surface = Color(0xFF0B1220),
     onSurface = Color.White,
-    surfaceVariant = Color(0xFF1C1C1E),
-    onSurfaceVariant = Color(0xFF8E8E93),
-    outline = Color(0xFF2C2C2E),
+    surfaceVariant = Color(0xFF14203A),
+    onSurfaceVariant = Color(0xFF93A4C4),
+    outline = Color(0xFF1E2C4A),
 )
 
 private val LightColors = lightColorScheme(
-    primary = Color.Black,
+    primary = Color(0xFF0B3D91),
     onPrimary = Color.White,
     background = Color.White,
     onBackground = Color.Black,
-    surface = Color(0xFFF7F7F9),
+    surface = Color(0xFFF4F7FD),
     onSurface = Color.Black,
-    surfaceVariant = Color(0xFFF2F2F7),
-    onSurfaceVariant = Color(0xFF6E6E73),
-    outline = Color(0xFFE5E5EA),
+    surfaceVariant = Color(0xFFE7EEF9),
+    onSurfaceVariant = Color(0xFF5A6B8C),
+    outline = Color(0xFFD3DFF1),
 )
 
 /**

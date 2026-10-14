@@ -1,6 +1,7 @@
 package com.music.music.data.settings
 
 import com.music.music.data.webdav.update
+import android.app.ActivityManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
@@ -752,7 +753,24 @@ object AppSettings {
         this.authStore = authStore
         com.music.music.data.spotify.LocalPlaylistStore.init(context)
         readAll()
+        applyLowRamDefaults(context)
         watchConnection(context)
+    }
+
+    /**
+     * First-run speed default: low-RAM devices start with the two expensive
+     * effects (player gradient drift, frosted-glass blur) off. Keyed on
+     * absence, not value, so an explicit user choice — or a backup import —
+     * is never overridden. Takes effect on the very first launch, which is
+     * the one that shapes whether the app feels fast.
+     */
+    private fun applyLowRamDefaults(context: Context) {
+        if (prefs.contains(KEY_REDUCE_ANIMATION) || prefs.contains(KEY_REDUCE_BLUR)) return
+        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+        if (am?.isLowRamDevice == true) {
+            setReduceAnimation(true)
+            setReduceDynamicBlur(true)
+        }
     }
 
     /**
