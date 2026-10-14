@@ -5,22 +5,23 @@
     android:viewportHeight="24">
     <!-- Silhouette variant: system keeps alpha only, so opaque white. -->
     <group
-        android:scaleX="0.030137"
-        android:scaleY="0.030137"
-        android:translateX="1.0"
-        android:translateY="4.7">
+        android:scaleX="0.03313"
+        android:scaleY="0.03313"
+        android:translateX="-4.96"
+        android:translateY="-4.96">
         <path
-            android:fillColor="#00000000"
-            android:strokeColor="#FFFFFFFF"
-            android:strokeWidth="80"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round"
-            android:pathData="M135,404 L135,80 L300,280 L465,80 L465,404" />
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M212,512 A300,300 0 1 1 812,512 A300,300 0 1 1 212,512 Z" />
         <path
             android:fillColor="#FFFFFFFF"
             android:strokeColor="#FFFFFFFF"
-            android:strokeWidth="6"
+            android:strokeWidth="64"
+            android:pathData="M212,512 A300,300 0 1 1 812,512 A300,300 0 1 1 212,512 Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="10"
             android:strokeLineJoin="round"
-            android:pathData="M510,162 L510,322 L650,242 Z" />
+            android:pathData="M448,392 L448,632 L628,512 Z" />
     </group>
 </vector>

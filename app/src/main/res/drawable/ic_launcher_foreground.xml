@@ -3,18 +3,29 @@
     android:height="108dp"
     android:viewportWidth="1024"
     android:viewportHeight="1024">
-    <!-- Original Music mark: rounded M + play triangle. Safe-zone centred. -->
+    <!-- Original Music mark v2: liquid-glass play disc. -->
+
+    <path
+        android:fillColor="#22FFFFFF"
+        android:pathData="M212,512 A300,300 0 1 1 812,512 A300,300 0 1 1 212,512 Z" />
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="112"
+        android:strokeColor="#D8FFFFFF"
+        android:strokeWidth="64"
+        android:pathData="M212,512 A300,300 0 1 1 812,512 A300,300 0 1 1 212,512 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#96FFFFFF"
+        android:strokeWidth="28"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M190,739 L190,285 L421,565 L652,285 L652,739" />
+        android:pathData="M268,368 A252,252 0 0 1 400,276" />
+    <path
+        android:fillColor="#C8FFFFFF"
+        android:pathData="M333.5,332.0 A22.5,22.5 0 1 1 378.5,332.0 A22.5,22.5 0 1 1 333.5,332.0 Z" />
     <path
         android:fillColor="#FFFFFFFF"
         android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="8"
+        android:strokeWidth="10"
         android:strokeLineJoin="round"
-        android:pathData="M715,400 L715,624 L911,512 Z" />
+        android:pathData="M448,392 L448,632 L628,512 Z" />
 </vector>
