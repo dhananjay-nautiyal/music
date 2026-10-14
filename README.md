@@ -14,7 +14,7 @@
 [![Latest release](https://img.shields.io/github/v/release/dhani748/music?style=for-the-badge&labelColor=0d1117)](https://github.com/dhani748/music/releases)
 [![License](https://img.shields.io/github/license/dhani748/music?style=for-the-badge&labelColor=0d1117)](https://github.com/dhani748/music/blob/main/LICENSE)
 [![Downloads](https://img.shields.io/github/downloads/dhani748/music/total?style=for-the-badge&labelColor=0d1117)](https://github.com/dhani748/music/releases)
-[![Listening now](https://api.music.kushagrasingh.in/api/stats/live/badge.svg)](https://api.music.kushagrasingh.in/api/stats/live)
+
 
 <br/>
 
@@ -22,9 +22,6 @@
 
 <br/>
 
-<a href="https://fmhy.net/mobile#youtube-music" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/available/fmhy/cozy.svg" alt="Featured on FMHY" height="55"/></a>
-<a href="https://trendshift.io/repositories/177639?utm_source=trendshift-badge&utm_medium=badge&utm_campaign=badge-trendshift-177639" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/177639/daily?language=Kotlin" alt="kushagrasinghx%2FMusic | Trendshift" width="250" height="55"/></a>
-<a href="https://trendshift.io/repositories/177639?utm_source=trendshift-badge&utm_medium=badge&utm_campaign=badge-trendshift-177639" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/177639/weekly?language=Kotlin" alt="kushagrasinghx%2FMusic | Trendshift" width="250" height="55"/></a>
 
 </div>
 
