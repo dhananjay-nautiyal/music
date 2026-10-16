@@ -1349,7 +1349,7 @@
     </plurals>
     <string name="privacy">Privacy</string>
     <string name="incognito_mode">Incognito listening</string>
-    <string name="incognito_mode_subtitle">Don't record search history, listening stats, YouTube history or scrobbles</string>
+    <string name="incognito_mode_subtitle">Don\'t record search history, listening stats, YouTube history or scrobbles</string>
     <string name="clear_search_history">Clear search history</string>
     <string name="clear_search_history_subtitle">Removes recent searches on this device</string>
     <string name="clear_listening_stats">Clear listening stats</string>

@@ -114,9 +114,12 @@ object DesktopLocalMusic {
      * and a configurable short-clip floor. A filesystem states none of that, so the same intent is
      * read off the name, the folder and the size — a clip short enough to be a system sound is a
      * small file, and probing every track's real duration would mean decoding the whole library
-     * on every scan. WAV is a supported music extension here (matches Android S4).
+     * on every scan. WAV stays excluded here: without MediaStore durations a
+     * filesystem cannot tell a song from a system sound, so Android (which can)
+     * includes WAV while desktop keeps dropping it — see DesktopSmallSettingsTest.
      */
     internal fun isMusic(path: Path): Boolean {
+        if (path.extension.lowercase(Locale.ROOT) == "wav") return false
         if (runCatching { Files.size(path) }.getOrDefault(Long.MAX_VALUE) < MIN_MUSIC_BYTES) return false
         val haystack = path.toString().lowercase(Locale.ROOT)
         return NON_MUSIC_MARKERS.none { it in haystack }
