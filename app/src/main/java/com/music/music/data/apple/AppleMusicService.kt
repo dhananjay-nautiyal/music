@@ -162,7 +162,7 @@ object AppleMusicService {
         )
     }
 
-    private data class PlaylistPage(
+    internal data class PlaylistPage(
         val title: String?,
         val tracks: List<PlaylistEntry>,
         val next: String?,
