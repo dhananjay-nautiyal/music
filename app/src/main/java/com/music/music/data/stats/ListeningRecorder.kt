@@ -58,6 +58,7 @@ object ListeningRecorder {
      */
     @Synchronized
     fun onSample(song: Song, durationMs: Long) {
+        if (runCatching { com.music.music.data.settings.AppSettings.incognitoMode.value }.getOrDefault(false)) return
         val now = System.currentTimeMillis()
         if (song.videoId != currentId) {
             // A new track anchors the clock and contributes nothing yet — see

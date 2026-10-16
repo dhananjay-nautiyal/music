@@ -1298,4 +1298,37 @@
     <string name="amoled_black_subtitle">רקעים שחורים לחלוטין למסכי OLED</string>
     <string name="liquid_theme">ערכת נושא נוזלית</string>
     <string name="liquid_theme_subtitle">כרטיסי זכוכית שקופים בהגדרות</string>
+    <string name="hide_short_clips">Hide short clips</string>
+    <string name="hide_short_clips_subtitle">Hides songs shorter than %1$d seconds. Turn off to include them.</string>
+    <string name="short_clip_threshold">Short-clip limit</string>
+    <string name="short_clip_seconds">%1$d sec</string>
+    <string name="local_music_folders">Local music folders</string>
+    <string name="local_music_folders_all_subtitle">Scanning all folders where music exists</string>
+    <string name="local_music_folders_count">%1$d folders selected</string>
+    <string name="add_folder">Add folder</string>
+    <string name="add_folder_subtitle">Pick another folder to include in Local Music</string>
+    <string name="remove_folder">Remove</string>
+    <string name="folders">Folders</string>
+    <string name="folder_song_count">%1$d songs</string>
+    <string name="short_tracks_hidden">%1$d short tracks hidden</string>
+    <string name="show_short_tracks">Show</string>
+    <string name="last_scan">Last scan: %1$s</string>
+    <string name="never_scanned">Never scanned yet</string>
+    <string name="rescan">Rescan</string>
+    <string name="rescan_subtitle">Re-read all audio folders on this device</string>
+    <plurals name="folder_count">
+        <item quantity="one">%1$d folder</item>
+        <item quantity="other">%1$d folders</item>
+    </plurals>
+    <string name="privacy">Privacy</string>
+    <string name="incognito_mode">Incognito listening</string>
+    <string name="incognito_mode_subtitle">Don\'t record search history, listening stats, YouTube history or scrobbles</string>
+    <string name="clear_search_history">Clear search history</string>
+    <string name="clear_search_history_subtitle">Removes recent searches on this device</string>
+    <string name="clear_listening_stats">Clear listening stats</string>
+    <string name="clear_listening_stats_subtitle">Removes Replay counts on this device</string>
+    <string name="clear_cookies">Clear browser cookies</string>
+    <string name="clear_cookies_subtitle">Signs the in-app browser out of Google</string>
+    <string name="cleared">Cleared</string>
+    <string name="import_playlist_link_hint">Paste Spotify, YouTube or JioSaavn link</string>
 </resources>

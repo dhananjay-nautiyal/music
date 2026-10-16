@@ -414,6 +414,22 @@ object ListeningStats {
         }
     }
 
+    /**
+     * Deletes all listening history on this device. Used by the Privacy
+     * settings row; incognito prevents new writes, this removes old ones.
+     */
+    fun clear() {
+        if (!ready) return
+        synchronized(lock) {
+            open = null
+            dirty = false
+            runCatching { directory.listFiles()?.forEach { it.delete() } }
+            runCatching { directory.mkdirs() }
+            version++
+            cached = null
+        }
+    }
+
     // ── Shapes ──────────────────────────────────────────────────────────────
 
     /**
