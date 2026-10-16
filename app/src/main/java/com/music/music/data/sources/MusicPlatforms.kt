@@ -12,6 +12,10 @@ package com.music.music.data.sources
  *   related queue. Lossy Opus ~171kbps. Only source for feeds/radio.
  * - [SourceKind.JIOSAAVN] -> [JioSaavnSource]: optional 320kbps AAC/MP4,
  *   prefetched (~0.4s) ahead of playback. Catalogue matching can mismatch.
+ * - [SourceKind.APPLE_MUSIC] -> [AppleMusicSource]: Apple catalogue search
+ *   with 30-second previews (ranked below YouTube, never auto-substituted)
+ *   plus playlist import matched to YouTube. Full tracks need the Apple
+ *   Music app (FairPlay DRM).
  * - [SourceKind.ADDON] -> [AddonSource]: user-hosted HTTP addon server
  *   (/manifest.json, /search, /stream). Hi-Res/FLAC capable, no code download.
  * - [SourceKind.MODULE] / [SourceKind.CUSTOM_MODULE] -> [ModuleSource]:
@@ -27,7 +31,7 @@ package com.music.music.data.sources
  * - Scrobble/connect: Last.fm, ListenBrainz, Discord Rich Presence.
  *
  * Rank order (low first) is defined by [SourceKind.rank]: user addons (0),
- * module (1), JioSaavn (2), YouTube (3). See [SourceResolver] for the walk.
+ * module (1), JioSaavn (2), YouTube (3), Apple Music (4). See [SourceResolver] for the walk.
  */
 object MusicPlatforms {
     const val APP_NAME = "Music"
@@ -43,6 +47,7 @@ object MusicPlatforms {
         SourceKind.MODULE,
         SourceKind.JIOSAAVN,
         SourceKind.YOUTUBE,
+        SourceKind.APPLE_MUSIC,
     )
 
     fun describe(): String = buildString {

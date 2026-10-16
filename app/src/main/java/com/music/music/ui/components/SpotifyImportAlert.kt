@@ -90,6 +90,30 @@ fun SpotifyImportAlert(
                 failed = true
                 return
             }
+            is com.music.music.data.sources.ParsedPlaylistLink.AppleMusic -> {
+                working = true
+                failed = false
+                status = context.getString(R.string.spotify_import_fetching)
+                scope.launch {
+                    try {
+                        val (name, tracks) = com.music.music.data.apple.AppleMusicImporter
+                            .fetchPlaylistTracks(parsed.playlistId)
+                        val (songs, missed) = SpotifyImporter.resolveToSongs(tracks) { done, total ->
+                            status = context.getString(R.string.spotify_import_matching, done, total)
+                        }
+                        if (songs.isEmpty()) error(context.getString(R.string.spotify_import_none))
+                        onImported(name, privacy, songs)
+                        if (missed.isEmpty()) onDismiss() else unmatched = missed
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        status = context.getString(R.string.spotify_import_failed, e.message.orEmpty())
+                        failed = true
+                    }
+                    working = false
+                }
+                return
+            }
             is com.music.music.data.sources.ParsedPlaylistLink.Unsupported -> {
                 // Fall through to the Spotify-specific message below.
                 if (parsed.reason == "empty link") {

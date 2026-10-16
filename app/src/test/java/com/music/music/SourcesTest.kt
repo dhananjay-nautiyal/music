@@ -607,6 +607,16 @@ class SourcesTest {
     }
 
     @Test
+    fun `Apple Music is seeded off and never supplies downloads`() {
+        assertFalse(SourceConfig(kind = SourceKind.APPLE_MUSIC).enabled)
+        val sources = SourceRegistry.sourcesForInit(emptyList(), forceJioSaavnOff = true)
+
+        val apple = sources.single { it.kind == SourceKind.APPLE_MUSIC }
+        assertFalse(apple.enabled)
+        assertFalse(apple.allowDownloads)
+    }
+
+    @Test
     fun `the opt-in migration disables JioSaavn once for existing installs`() {
         val previouslyEnabled = SourceConfig(kind = SourceKind.JIOSAAVN, enabled = true)
 

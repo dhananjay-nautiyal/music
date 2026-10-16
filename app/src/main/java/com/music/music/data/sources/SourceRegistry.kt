@@ -36,8 +36,8 @@ data class SourceConfig(
     /** What the user called it. Blank falls back to the server's host, or the kind's own label. */
     val label: String = "",
     val baseUrl: String = "",
-    /** JioSaavn is opt-in because catalogue matches can select the wrong recording. */
-    val enabled: Boolean = kind != SourceKind.JIOSAAVN,
+    /** JioSaavn and Apple Music are opt-in: catalogue matches can select the wrong recording (Apple plays previews only). */
+    val enabled: Boolean = kind != SourceKind.JIOSAAVN && kind != SourceKind.APPLE_MUSIC,
     /**
      * The addon's `allowDownloads`, as its manifest last said. Stored rather
      * than asked each time so the answer is there without a request — see
@@ -139,10 +139,16 @@ object SourceRegistry {
     ): List<SourceConfig> {
         // Seeded rather than persisted-on-first-write, so a build adding a new
         // built-in kind picks it up for existing installs too. SourceConfig's
-        // default is the policy: JioSaavn off, YouTube on.
+        // default is the policy: JioSaavn and Apple Music off, YouTube on.
+        // Apple Music additionally never supplies downloads: its streams are
+        // 30-second previews, and filing one as the track would keep a preview
+        // where the full song belongs.
         val seeded = stored + BUILT_IN_KINDS
             .filter { kind -> stored.none { it.kind == kind } }
-            .map { SourceConfig(kind = it) }
+            .map {
+                if (it == SourceKind.APPLE_MUSIC) SourceConfig(kind = it, allowDownloads = false)
+                else SourceConfig(kind = it)
+            }
 
         // The retired built-in module is removed, while a custom module entered
         // by the user is preserved.
@@ -457,6 +463,7 @@ object SourceRegistry {
         SourceKind.CUSTOM_MODULE -> ModuleSource(config)
         SourceKind.MODULE -> ModuleSource(config)
         SourceKind.JIOSAAVN -> JioSaavnSource(config)
+        SourceKind.APPLE_MUSIC -> AppleMusicSource(config)
         SourceKind.YOUTUBE -> YouTubeSource(config)
     }
 
@@ -501,7 +508,7 @@ object SourceRegistry {
             .build()
             .toString()
 
-    private val BUILT_IN_KINDS = listOf(SourceKind.JIOSAAVN, SourceKind.YOUTUBE)
+    private val BUILT_IN_KINDS = listOf(SourceKind.JIOSAAVN, SourceKind.YOUTUBE, SourceKind.APPLE_MUSIC)
 
     private const val KEY_SOURCES = "sources"
     /** One-shot migration: existing users must explicitly opt in again. */

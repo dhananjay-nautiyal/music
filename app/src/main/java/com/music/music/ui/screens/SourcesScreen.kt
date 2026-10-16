@@ -27,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Bluetooth
 import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.DeleteSweep
@@ -794,6 +795,7 @@ private fun SourceRow(
                 SourceKind.CUSTOM_MODULE -> Icons.Rounded.Extension
                 SourceKind.MODULE -> Icons.Rounded.Extension
                 SourceKind.JIOSAAVN -> Icons.Rounded.GraphicEq // or some other icon
+                SourceKind.APPLE_MUSIC -> Icons.Rounded.MusicNote
                 SourceKind.YOUTUBE -> Icons.Rounded.PlayCircle
             },
             contentDescription = null,
