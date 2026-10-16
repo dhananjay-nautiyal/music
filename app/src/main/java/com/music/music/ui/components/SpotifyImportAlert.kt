@@ -73,8 +73,8 @@ fun SpotifyImportAlert(
     fun start() {
         when (val parsed = com.music.music.data.sources.PlaylistLink.parse(link)) {
             is com.music.music.data.sources.ParsedPlaylistLink.YouTubePlaylist -> {
-                status = context.getString(R.string.spotify_import_invalid)
-                    + " — YouTube link detected. Open it via Search instead."
+                status = context.getString(R.string.spotify_import_invalid) +
+                    " — YouTube link detected. Open it via Search instead."
                 failed = true
                 return
             }
