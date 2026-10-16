@@ -365,6 +365,7 @@
     <string name="short_clip_threshold">Short-clip limit</string>
     <string name="short_clip_seconds">%1$d sec</string>
     <string name="local_music_folders">Local music folders</string>
+    <string name="tap_to_scan_all">Tap to scan all music on this device</string>
     <string name="local_music_folders_all_subtitle">Scanning all folders where music exists</string>
     <string name="local_music_folders_count">%1$d folders selected</string>
     <string name="add_folder">Add folder</string>

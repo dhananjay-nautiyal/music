@@ -1109,19 +1109,31 @@ fun SettingsScreen(
             val folderLabels = remember(allFolderUris) {
                 LocalMediaRepository.selectedFolderLabels(allFolderUris)
             }
-            val foldersTitle = stringResource(R.string.local_music_folders)
-            row(foldersTitle, "folder", "offline", "files", "all") {
+            val foldersTitle = stringResource(R.string.local_music)
+            row(foldersTitle, "folder", "offline", "files", "all", "scan") {
                 SettingsRow(
-                    icon = Icons.Rounded.Folder,
+                    icon = Icons.Rounded.LibraryMusic,
                     title = foldersTitle,
                     subtitle = if (allFolderUris.isEmpty()) {
                         stringResource(R.string.local_music_folders_all_subtitle)
                     } else {
                         val count = stringResource(R.string.local_music_folders_count, allFolderUris.size)
-                        if (folderLabels.isEmpty()) count
+                        val where = if (folderLabels.isEmpty()) count
                         else "$count · ${folderLabels.take(3).joinToString(", ")}"
+                        "$where · ${stringResource(R.string.tap_to_scan_all)}"
                     },
-                    onClick = { localMusicFolderPicker.launch(null) },
+                    // Tapping scans all music on the device into Local Music —
+                    // it never opens the system Files picker. Limiting to
+                    // specific folders is the "Add folder" row below.
+                    onClick = {
+                        AppSettings.clearLocalMusicFolders()
+                        AppSettings.setLocalMusicLastScanMs(0L)
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.local_music_folders_all_subtitle),
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    },
                 )
             }
             row(stringResource(R.string.add_folder), "add folder", divided = false) {
