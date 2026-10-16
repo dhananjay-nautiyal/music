@@ -29,6 +29,22 @@ class PlaylistLinkTest {
     }
 
     @Test
+    fun parsesAppleMusicPlaylistLinks() {
+        val slug = PlaylistLink.parse("https://music.apple.com/us/playlist/todays-hits/pl.f4d106fed2bd41149")
+        assertTrue(slug is ParsedPlaylistLink.AppleMusic)
+        assertEquals("pl.f4d106fed2bd41149", (slug as ParsedPlaylistLink.AppleMusic).playlistId)
+        val bare = PlaylistLink.parse("pl.f4d106fed2bd41149")
+        assertTrue(bare is ParsedPlaylistLink.AppleMusic)
+    }
+
+    @Test
+    fun rejectsNonPlaylistAppleLinks() {
+        assertTrue(
+            PlaylistLink.parse("https://music.apple.com/us/album/after-hours/1559523357") is ParsedPlaylistLink.Unsupported,
+        )
+    }
+
+    @Test
     fun rejectsGarbage() {
         assertTrue(PlaylistLink.parse("not a link") is ParsedPlaylistLink.Unsupported)
         assertTrue(PlaylistLink.parse("") is ParsedPlaylistLink.Unsupported)

@@ -340,12 +340,16 @@ object AppleMusicCanvas {
      * accepted here — the others come back 401 — so this picks by issuer
      * rather than taking the first one that parses.
      *
+     * Internal (not private) so the Apple Music catalogue source can share the
+     * same scraped token instead of running a second scrape with its own
+     * cache that could disagree about which token is current.
+     *
      * A failed scrape backs off for [TOKEN_RETRY_MS] rather than retrying per
      * track: if Apple has changed the page shape, hammering it on every skip
      * fixes nothing and makes every canvas lookup pay for the round trip.
      */
     @Synchronized
-    private fun token(): String? {
+    internal fun token(): String? {
         val now = System.currentTimeMillis()
         cachedToken?.let { if (now < tokenExpiresAtMs - 60_000) return it }
         if (now < retryTokenAfterMs) return null

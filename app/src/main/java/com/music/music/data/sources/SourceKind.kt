@@ -138,6 +138,27 @@ enum class SourceKind(
     ),
 
     /**
+     * Apple Music catalogue search, previews and playlist import.
+     *
+     * Opt-in and off by default, like JioSaavn: it needs no account or token
+     * (the anonymous web-player token is scraped, as the canvas lookup
+     * already does), but what it plays are 30-second previews, not full
+     * tracks — full-length Apple streams are FairPlay DRM no third-party
+     * player can open. Ranked *below* YouTube on purpose: nothing here may
+     * ever silently replace a full song, so its rows sit under YouTube's in
+     * search and only an explicit tap plays a preview. Playlist import
+     * matches tracks to YouTube, exactly like the Spotify path.
+     */
+    APPLE_MUSIC(
+        label = "Apple Music",
+        detail = "Apple catalogue search with 30-second previews, plus playlist import. Full tracks stay in the Apple Music app (DRM).",
+        labels = listOf("Preview", "Import"),
+        needsServer = false,
+        canServeLossless = false,
+        rank = 4,
+    ),
+
+    /**
      * The source the app was built on, listed here so it always has a fixed
      * place: second, behind the module source. It cannot be removed — see
      * [SourceRegistry]. Nothing else in the app can supply a home feed, a
