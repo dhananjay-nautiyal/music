@@ -1331,4 +1331,5 @@
     <string name="clear_cookies_subtitle">Signs the in-app browser out of Google</string>
     <string name="cleared">Cleared</string>
     <string name="import_playlist_link_hint">Paste Spotify, YouTube or JioSaavn link</string>
+    <string name="tap_to_scan_all">Tap to scan all music on this device</string>
 </resources>
