@@ -48,6 +48,8 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.FileUpload
+import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.MoreHoriz
@@ -81,6 +83,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -121,6 +124,7 @@ import java.util.Locale
 private const val LOCAL_TAB_SONGS = 0
 private const val LOCAL_TAB_ARTISTS = 1
 private const val LOCAL_TAB_ALBUMS = 2
+private const val LOCAL_TAB_FOLDERS = 3
 
 /**
  * Local Music folder view with three tabs: Songs (default), Artists, Albums.
@@ -351,6 +355,58 @@ fun LocalMusicScreen(
                     leaveDrillDown()
                 },
             )
+            if (!isDownloads) {
+                LocalTab(
+                    icon = Icons.Rounded.Folder,
+                    label = stringResource(R.string.folders),
+                    selected = selectedTab == LOCAL_TAB_FOLDERS,
+                    onClick = {
+                        selectedTab = LOCAL_TAB_FOLDERS
+                        leaveDrillDown()
+                    },
+                )
+            }
+        }
+
+        // Short-clip notice: the scan already dropped them, so this only
+        // offers a one-tap way back. Re-scan happens on next library load.
+        if (!isDownloads) {
+            val filterShort by AppSettings.filterShortTracks.collectAsStateWithLifecycle()
+            val shortSecs by AppSettings.shortTrackMinSecs.collectAsStateWithLifecycle()
+            if (filterShort) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = PAGE_GUTTER, vertical = 4.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.VisibilityOff,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Text(
+                        text = stringResource(R.string.hide_short_clips_subtitle, shortSecs),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = stringResource(R.string.show_short_tracks),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { AppSettings.setFilterShortTracks(false) }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+                }
+            }
         }
 
         // ── Content ──────────────────────────────────────────────────────────
@@ -459,6 +515,19 @@ fun LocalMusicScreen(
                             drillDownArt = null
                         },
                         onArtistLongPress = onCollectionLongPress,
+                        contentPadding = bodyContentPadding,
+                    )
+                }
+
+                key == "tab:$LOCAL_TAB_FOLDERS" -> {
+                    FoldersTab(
+                        songs = sortedSongs,
+                        searchQuery = searchQuery,
+                        onFolderClick = { folder, folderSongs ->
+                            drillDownLabel = folder
+                            drillDownSongs = folderSongs
+                            drillDownArt = null
+                        },
                         contentPadding = bodyContentPadding,
                     )
                 }
@@ -1024,6 +1093,101 @@ private fun AlbumsTab(
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun FoldersTab(
+    songs: List<Song>,
+    searchQuery: String,
+    onFolderClick: (String, List<Song>) -> Unit,
+    contentPadding: PaddingValues,
+) {
+    val excluded by AppSettings.localMusicExcludedPaths.collectAsStateWithLifecycle()
+    val folders = remember(songs, searchQuery) {
+        val grouped = songs.groupBy { com.music.music.data.LocalMediaRepository.folderNameOf(it.localPath) }
+            .map { (name, rows) ->
+                Triple(
+                    name,
+                    rows,
+                    com.music.music.data.LocalMediaRepository.folderPathOf(rows.firstOrNull()?.localPath),
+                )
+            }
+            .filter { searchQuery.isBlank() || it.first.contains(searchQuery, ignoreCase = true) }
+            .sortedBy { it.first.lowercase(Locale.ROOT) }
+        grouped
+    }
+    val listState = rememberLazyListState()
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = contentPadding,
+    ) {
+        item {
+            SectionHeader(
+                icon = Icons.Rounded.Folder,
+                title = pluralStringResource(R.plurals.folder_count, folders.size, folders.size),
+            )
+        }
+        if (folders.isEmpty()) {
+            item {
+                MessageState(message = stringResource(R.string.no_local_audio_found))
+            }
+        }
+        items(folders, key = { it.first }) { (name, rows, path) ->
+            val normalized = path?.replace('\\', '/')?.trimEnd('/')?.lowercase(Locale.ROOT)
+            val isExcluded = normalized != null && excluded.any { ex ->
+                normalized == ex.lowercase(Locale.ROOT) || normalized.startsWith(ex.lowercase(Locale.ROOT) + "/")
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onFolderClick(name, rows) }
+                    .alpha(if (isExcluded) 0.45f else 1f)
+                    .padding(horizontal = PAGE_GUTTER, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Folder,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = pluralStringResource(R.plurals.song_count_plural, rows.size, rows.size) +
+                            (path?.let { " · $it" } ?: ""),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                if (path != null) {
+                    Text(
+                        text = if (isExcluded) "Unhide" else "Hide",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { AppSettings.toggleLocalMusicExcludedPath(path) }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+                }
+            }
+            HorizontalDivider(
+                modifier = Modifier.padding(start = ROW_DIVIDER_INSET),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            )
         }
     }
 }

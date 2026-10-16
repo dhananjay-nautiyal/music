@@ -6167,10 +6167,11 @@ class PlaybackService : MediaLibraryService() {
                 AppSettings.scrobbleMinDuration,
                 AppSettings.scrobbleDelayPercent,
                 AppSettings.scrobbleDelaySeconds,
+                AppSettings.incognitoMode,
             ) { values ->
                 ScrobblingSnapshot(
                     lastfmEnabled = values[0] as Boolean,
-                    scrobbleEnabled = values[1] as Boolean,
+                    scrobbleEnabled = (values[1] as Boolean) && !(values[11] as Boolean),
                     nowPlaying = values[2] as Boolean,
                     primaryArtistOnly = values[3] as Boolean,
                     sessionKey = values[4] as String,

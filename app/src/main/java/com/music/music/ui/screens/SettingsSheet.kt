@@ -235,6 +235,11 @@ fun SettingsScreen(
     val smartVersionAlignment by AppSettings.smartVersionAlignment.collectAsStateWithLifecycle()
     val filterNonMusicAudio by AppSettings.filterNonMusicAudio.collectAsStateWithLifecycle()
     val localMusicFolderUri by AppSettings.localMusicFolderUri.collectAsStateWithLifecycle()
+    val localMusicFolderUris by AppSettings.localMusicFolderUris.collectAsStateWithLifecycle()
+    val filterShortTracks by AppSettings.filterShortTracks.collectAsStateWithLifecycle()
+    val shortTrackMinSecs by AppSettings.shortTrackMinSecs.collectAsStateWithLifecycle()
+    val localMusicLastScanMs by AppSettings.localMusicLastScanMs.collectAsStateWithLifecycle()
+    val incognitoMode by AppSettings.incognitoMode.collectAsStateWithLifecycle()
     val highPerformanceMode by AppSettings.highPerformanceMode.collectAsStateWithLifecycle()
     val performanceRefreshRate by AppSettings.performanceRefreshRate.collectAsStateWithLifecycle()
     val currentDisplay = LocalView.current.display
@@ -302,7 +307,7 @@ fun SettingsScreen(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION,
             )
         }
-        AppSettings.setLocalMusicFolderUri(folder.toString())
+        AppSettings.addLocalMusicFolderUri(folder.toString())
     }
 
     /**
@@ -1095,24 +1100,127 @@ fun SettingsScreen(
         }
 
         SearchableSettingsGroup(search, header = stringResource(R.string.local_music)) {
-            val localMusicFolderTitle = stringResource(R.string.local_music_folder)
-            row(localMusicFolderTitle, "folder", "offline", "files") {
+            val allFolderUris = remember(localMusicFolderUris, localMusicFolderUri) {
+                buildSet {
+                    addAll(localMusicFolderUris)
+                    if (localMusicFolderUri.isNotBlank()) add(localMusicFolderUri)
+                }
+            }
+            val folderLabels = remember(allFolderUris) {
+                LocalMediaRepository.selectedFolderLabels(allFolderUris)
+            }
+            val foldersTitle = stringResource(R.string.local_music_folders)
+            row(foldersTitle, "folder", "offline", "files", "all") {
                 SettingsRow(
                     icon = Icons.Rounded.Folder,
-                    title = localMusicFolderTitle,
-                    subtitle = LocalMediaRepository.selectedFolderLabel(localMusicFolderUri)
-                        ?: stringResource(R.string.all_audio_folders),
+                    title = foldersTitle,
+                    subtitle = if (allFolderUris.isEmpty()) {
+                        stringResource(R.string.local_music_folders_all_subtitle)
+                    } else {
+                        val count = stringResource(R.string.local_music_folders_count, allFolderUris.size)
+                        if (folderLabels.isEmpty()) count
+                        else "$count · ${folderLabels.take(3).joinToString(", ")}"
+                    },
                     onClick = { localMusicFolderPicker.launch(null) },
                 )
             }
-            if (localMusicFolderUri.isNotBlank()) {
+            row(stringResource(R.string.add_folder), "add folder", divided = false) {
+                SettingsRow(
+                    icon = Icons.Rounded.LibraryMusic,
+                    title = stringResource(R.string.add_folder),
+                    subtitle = stringResource(R.string.add_folder_subtitle),
+                    onClick = { localMusicFolderPicker.launch(null) },
+                )
+            }
+            allFolderUris.forEach { uri ->
+                val label = LocalMediaRepository.selectedFolderLabel(uri) ?: uri
+                row(label, "folder", divided = false) {
+                    SettingsRow(
+                        icon = Icons.Rounded.Folder,
+                        title = label,
+                        subtitle = uri,
+                        trailing = {
+                            Text(
+                                text = stringResource(R.string.remove_folder),
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier
+                                    .clickable {
+                                        AppSettings.removeLocalMusicFolderUri(uri)
+                                        runCatching {
+                                            context.contentResolver.releasePersistableUriPermission(
+                                                Uri.parse(uri),
+                                                Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                                            )
+                                        }
+                                    }
+                                    .padding(8.dp),
+                            )
+                        },
+                        onClick = null,
+                    )
+                }
+            }
+            if (allFolderUris.isNotEmpty()) {
                 val useAllAudioFoldersTitle = stringResource(R.string.use_all_audio_folders)
                 row(useAllAudioFoldersTitle, "folder") {
                     SettingsRow(
                         icon = Icons.Rounded.LibraryMusic,
                         title = useAllAudioFoldersTitle,
                         subtitle = stringResource(R.string.use_all_audio_folders_subtitle),
-                        onClick = { AppSettings.setLocalMusicFolderUri("") },
+                        onClick = { AppSettings.clearLocalMusicFolders() },
+                    )
+                }
+            }
+            val hideShortTitle = stringResource(R.string.hide_short_clips)
+            row(hideShortTitle, "short", "clip", "30", "seconds") {
+                SettingsRow(
+                    icon = Icons.Rounded.FilterAlt,
+                    title = hideShortTitle,
+                    subtitle = stringResource(R.string.hide_short_clips_subtitle, shortTrackMinSecs),
+                    trailing = {
+                        Switch(
+                            checked = filterShortTracks,
+                            onCheckedChange = AppSettings::setFilterShortTracks,
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                checkedBorderColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        )
+                    },
+                    onClick = { AppSettings.setFilterShortTracks(!filterShortTracks) },
+                )
+            }
+            if (filterShortTracks) {
+                row(stringResource(R.string.short_clip_threshold), "15 30 60", divided = false) {
+                    SettingsRow(
+                        icon = Icons.Rounded.MusicOff,
+                        title = stringResource(R.string.short_clip_threshold),
+                        subtitleContent = {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(top = 8.dp),
+                            ) {
+                                AppSettings.SHORT_TRACK_OPTIONS_SECS.forEach { secs ->
+                                    val selected = secs == shortTrackMinSecs
+                                    Text(
+                                        text = stringResource(R.string.short_clip_seconds, secs),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = if (selected) MaterialTheme.colorScheme.onPrimary
+                                        else MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(
+                                                if (selected) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                            )
+                                            .clickable { AppSettings.setShortTrackMinSecs(secs) }
+                                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    )
+                                }
+                            }
+                        },
+                        onClick = null,
                     )
                 }
             }
@@ -1133,6 +1241,99 @@ fun SettingsScreen(
                         )
                     },
                     onClick = { AppSettings.setFilterNonMusicAudio(!filterNonMusicAudio) },
+                )
+            }
+            val lastScanText = remember(localMusicLastScanMs) {
+                if (localMusicLastScanMs <= 0L) null
+                else runCatching {
+                    java.text.DateFormat.getDateTimeInstance(
+                        java.text.DateFormat.SHORT,
+                        java.text.DateFormat.SHORT,
+                    ).format(java.util.Date(localMusicLastScanMs))
+                }.getOrNull()
+            }
+            row(stringResource(R.string.rescan), "rescan", "refresh", "scan") {
+                SettingsRow(
+                    icon = Icons.Rounded.Cached,
+                    title = stringResource(R.string.rescan),
+                    subtitle = lastScanText?.let { stringResource(R.string.last_scan, it) }
+                        ?: stringResource(R.string.never_scanned),
+                    onClick = {
+                        AppSettings.setLocalMusicLastScanMs(0L)
+                        Toast.makeText(context, context.getString(R.string.rescan_subtitle), Toast.LENGTH_SHORT).show()
+                    },
+                )
+            }
+            val revokedFolders = remember(allFolderUris) {
+                runCatching {
+                    val persisted = context.contentResolver.persistedUriPermissions.map { it.uri.toString() }.toSet()
+                    allFolderUris.filter { it !in persisted }
+                }.getOrDefault(emptyList())
+            }
+            if (revokedFolders.isNotEmpty()) {
+                row("permission", "revoked", "access", divided = false) {
+                    SettingsRow(
+                        icon = Icons.Rounded.VisibilityOff,
+                        title = stringResource(R.string.storage_required_read),
+                        subtitle = folderLabels.takeIf { it.isNotEmpty() }?.joinToString(", ")
+                            ?: stringResource(R.string.use_all_audio_folders_subtitle),
+                        onClick = { localMusicFolderPicker.launch(null) },
+                    )
+                }
+            }
+        }
+
+        SearchableSettingsGroup(search, header = stringResource(R.string.privacy)) {
+            val incognitoTitle = stringResource(R.string.incognito_mode)
+            row(incognitoTitle, "incognito", "private", "history") {
+                SettingsRow(
+                    icon = Icons.Rounded.VisibilityOff,
+                    title = incognitoTitle,
+                    subtitle = stringResource(R.string.incognito_mode_subtitle),
+                    trailing = {
+                        Switch(
+                            checked = incognitoMode,
+                            onCheckedChange = AppSettings::setIncognitoMode,
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                checkedBorderColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        )
+                    },
+                    onClick = { AppSettings.setIncognitoMode(!incognitoMode) },
+                )
+            }
+            row(stringResource(R.string.clear_search_history), "clear history", divided = false) {
+                SettingsRow(
+                    icon = Icons.Rounded.History,
+                    title = stringResource(R.string.clear_search_history),
+                    subtitle = stringResource(R.string.clear_search_history_subtitle),
+                    onClick = {
+                        com.music.music.data.settings.SearchHistory.clear()
+                        Toast.makeText(context, context.getString(R.string.cleared), Toast.LENGTH_SHORT).show()
+                    },
+                )
+            }
+            row(stringResource(R.string.clear_listening_stats), "clear stats replay", divided = false) {
+                SettingsRow(
+                    icon = Icons.Rounded.BarChart,
+                    title = stringResource(R.string.clear_listening_stats),
+                    subtitle = stringResource(R.string.clear_listening_stats_subtitle),
+                    onClick = {
+                        com.music.music.data.stats.ListeningStats.clear()
+                        Toast.makeText(context, context.getString(R.string.cleared), Toast.LENGTH_SHORT).show()
+                    },
+                )
+            }
+            row(stringResource(R.string.clear_cookies), "cookies sign out", divided = false) {
+                SettingsRow(
+                    icon = Icons.Rounded.Cloud,
+                    title = stringResource(R.string.clear_cookies),
+                    subtitle = stringResource(R.string.clear_cookies_subtitle),
+                    onClick = {
+                        com.music.music.auth.BrowserSession.clearGoogleCookies()
+                        Toast.makeText(context, context.getString(R.string.cleared), Toast.LENGTH_SHORT).show()
+                    },
                 )
             }
         }

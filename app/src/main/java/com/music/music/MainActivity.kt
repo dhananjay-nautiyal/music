@@ -1905,6 +1905,29 @@ private fun MusicApp(
             Toast.makeText(context, context.getString(R.string.storage_required_read), Toast.LENGTH_SHORT).show()
         }
     }
+    // Auto-refresh Local Music when its filters change: toggling short clips,
+    // thresholds, folders or the non-music switch re-reads MediaStore so the
+    // list updates without leaving the screen.
+    val localFilterKey by androidx.compose.runtime.remember {
+        kotlinx.coroutines.flow.combine(
+            com.music.music.data.settings.AppSettings.filterShortTracks,
+            com.music.music.data.settings.AppSettings.shortTrackMinSecs,
+            com.music.music.data.settings.AppSettings.localMusicFolderUris,
+            com.music.music.data.settings.AppSettings.localMusicFolderUri,
+            com.music.music.data.settings.AppSettings.filterNonMusicAudio,
+            com.music.music.data.settings.AppSettings.localMusicExcludedPaths,
+        ) { values -> values.toList() }
+    }.collectAsStateWithLifecycle(initialValue = emptyList<Any?>())
+    var localFilterFirst by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+    LaunchedEffect(localFilterKey) {
+        if (localFilterFirst) {
+            localFilterFirst = false
+            return@LaunchedEffect
+        }
+        viewModel.loadLibrarySongs()
+        viewModel.reloadLocalDetail("local:all")
+        viewModel.reloadLocalDetail("local:downloads")
+    }
     val mediaPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         Manifest.permission.READ_MEDIA_AUDIO
     } else {

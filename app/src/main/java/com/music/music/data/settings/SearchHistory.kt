@@ -56,8 +56,12 @@ object SearchHistory {
     /**
      * Records [entity], or moves it back to the top if it's already there.
      * Matching is by id so re-tapping an existing entity updates its timestamp.
+     *
+     * No-op while incognito: history must not be written at all, not written
+     * then cleared.
      */
     fun record(entity: SearchHistoryEntity) {
+        if (runCatching { AppSettings.incognitoMode.value }.getOrDefault(false)) return
         val deduped = _recent.value.filterNot { it.id.equals(entity.id, ignoreCase = true) }
         save((listOf(entity) + deduped).take(MAX_ENTRIES))
     }

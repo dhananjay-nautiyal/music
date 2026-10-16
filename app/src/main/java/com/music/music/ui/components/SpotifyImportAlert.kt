@@ -71,6 +71,37 @@ fun SpotifyImportAlert(
     var unmatched by remember { mutableStateOf<List<SpotifyImportTrack>?>(null) }
 
     fun start() {
+        when (val parsed = com.music.music.data.sources.PlaylistLink.parse(link)) {
+            is com.music.music.data.sources.ParsedPlaylistLink.YouTubePlaylist -> {
+                status = context.getString(R.string.spotify_import_invalid)
+                    + " — YouTube link detected. Open it via Search instead."
+                failed = true
+                return
+            }
+            is com.music.music.data.sources.ParsedPlaylistLink.YouTubeVideo -> {
+                status = context.getString(R.string.spotify_import_invalid) +
+                    " — that's a YouTube video, not a Spotify playlist."
+                failed = true
+                return
+            }
+            is com.music.music.data.sources.ParsedPlaylistLink.JioSaavn -> {
+                status = context.getString(R.string.spotify_import_invalid) +
+                    " — JioSaavn links aren't importable yet."
+                failed = true
+                return
+            }
+            is com.music.music.data.sources.ParsedPlaylistLink.Unsupported -> {
+                // Fall through to the Spotify-specific message below.
+                if (parsed.reason == "empty link") {
+                    status = context.getString(R.string.spotify_import_invalid)
+                    failed = true
+                    return
+                }
+            }
+            is com.music.music.data.sources.ParsedPlaylistLink.Spotify -> {
+                // Valid Spotify link — continue below with its id.
+            }
+        }
         val id = SpotifyImporter.extractPlaylistId(link)
         if (id == null) {
             status = context.getString(R.string.spotify_import_invalid)

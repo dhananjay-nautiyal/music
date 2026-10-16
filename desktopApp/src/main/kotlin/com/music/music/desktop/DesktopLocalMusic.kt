@@ -24,18 +24,41 @@ object DesktopLocalMusic {
     }
 
     /**
-     * Where to look: the chosen folder, or the usual two when none has been chosen.
-     *
-     * Android's equivalent is a document tree the listener grants, with "all audio folders" as the
-     * unset state. There is no such permission on a desktop, so an unset folder means the two
-     * places music actually lands.
+     * Where to look: all chosen folders, or the usual two when none has been
+     * chosen. Multiple folders are stored as `File.pathSeparator`-joined paths
+     * under [KEY_LOCAL_MUSIC_FOLDERS]; the legacy single [KEY_LOCAL_MUSIC_FOLDER]
+     * is migrated on first read.
      */
     internal fun roots(): List<Path> {
-        val chosen = folder()
-        if (chosen != null) return listOf(chosen)
+        val chosen = folders()
+        if (chosen.isNotEmpty()) return chosen
         val home = Paths.get(System.getProperty("user.home"))
         return listOf(home.resolve("Music"), home.resolve("Downloads"))
     }
+
+    /** All picked folders, empty means scan Music + Downloads. */
+    fun folders(): List<Path> {
+        val stored = DesktopPersistence().string(KEY_LOCAL_MUSIC_FOLDERS)
+            .takeIf { it.isNotBlank() }
+            ?.split(java.io.File.pathSeparator)
+            ?.mapNotNull { runCatching { Paths.get(it) }.getOrNull() }
+            ?.filter { Files.isDirectory(it) }
+            .orEmpty()
+        if (stored.isNotEmpty()) return stored
+        // Legacy single-folder migration.
+        return listOfNotNull(folder())
+    }
+
+    fun setFolders(paths: List<Path>) {
+        val joined = paths.map { it.toAbsolutePath().toString() }
+            .filter { it.isNotBlank() }
+            .joinToString(java.io.File.pathSeparator)
+        DesktopPersistence().saveString(KEY_LOCAL_MUSIC_FOLDERS, joined)
+        // Keep legacy mirror for old builds: first entry or empty.
+        DesktopPersistence().saveString(KEY_LOCAL_MUSIC_FOLDER, paths.firstOrNull()?.toAbsolutePath()?.toString().orEmpty())
+    }
+
+    fun addFolder(path: Path) = setFolders((folders() + path).distinct())
 
     /** The folder the listener picked, or null for all of them. */
     fun folder(): Path? = DesktopPersistence().string(KEY_LOCAL_MUSIC_FOLDER)
@@ -44,13 +67,22 @@ object DesktopLocalMusic {
         ?.takeIf(Files::isDirectory)
 
     fun setFolder(path: Path?) {
-        DesktopPersistence().saveString(KEY_LOCAL_MUSIC_FOLDER, path?.toAbsolutePath()?.toString().orEmpty())
+        if (path == null) setFolders(emptyList())
+        else setFolders(listOf(path))
     }
 
     /** What the Local Music settings row says underneath its title. */
-    fun folderLabel(): String = folder()?.fileName?.toString() ?: "All audio folders"
+    fun folderLabel(): String {
+        val all = folders()
+        return when {
+            all.isEmpty() -> "All audio folders"
+            all.size == 1 -> all.first().fileName?.toString() ?: "All audio folders"
+            else -> "${all.size} folders"
+        }
+    }
 
     internal const val KEY_LOCAL_MUSIC_FOLDER = "local_music_folder"
+    internal const val KEY_LOCAL_MUSIC_FOLDERS = "local_music_folders"
 
     /**
      * Asks for a folder with the platform's own chooser.
@@ -79,12 +111,12 @@ object DesktopLocalMusic {
 
     /**
      * Android reads MediaStore's `IS_MUSIC`, `IS_ALARM`, `IS_NOTIFICATION` and `IS_RINGTONE` flags
-     * and a 30-second floor. A filesystem states none of that, so the same intent is read off the
-     * name, the folder and the size — a clip short enough to be a system sound is a small file,
-     * and probing every track's real duration would mean decoding the whole library on every scan.
+     * and a configurable short-clip floor. A filesystem states none of that, so the same intent is
+     * read off the name, the folder and the size — a clip short enough to be a system sound is a
+     * small file, and probing every track's real duration would mean decoding the whole library
+     * on every scan. WAV is a supported music extension here (matches Android S4).
      */
     internal fun isMusic(path: Path): Boolean {
-        if (path.extension.lowercase(Locale.ROOT) == "wav") return false
         if (runCatching { Files.size(path) }.getOrDefault(Long.MAX_VALUE) < MIN_MUSIC_BYTES) return false
         val haystack = path.toString().lowercase(Locale.ROOT)
         return NON_MUSIC_MARKERS.none { it in haystack }
