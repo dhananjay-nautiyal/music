@@ -1,4 +1,4 @@
-module github.com/dhani748/music/backend
+module github.com/dhananjay-nautiyal/music/backend
 
 go 1.27.0
 

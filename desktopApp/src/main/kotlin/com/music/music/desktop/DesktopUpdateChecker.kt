@@ -33,7 +33,7 @@ internal object DesktopUpdateChecker {
     )
 
     private const val LATEST_RELEASE_URL =
-        "https://api.github.com/repos/dhani748/music/releases/latest"
+        "https://api.github.com/repos/dhananjay-nautiyal/music/releases/latest"
 
     val currentVersion: String = System.getProperty("music.version") ?: "1.8-beta1"
 

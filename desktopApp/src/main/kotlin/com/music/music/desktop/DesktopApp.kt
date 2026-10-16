@@ -6238,7 +6238,7 @@ private fun DesktopSettingsFooter(onLicenses: () -> Unit) {
     Text(
         text = buildAnnotatedString {
             append("music $version  ")
-            withLink(LinkAnnotation.Url("https://github.com/dhani748/music", linkStyles)) {
+            withLink(LinkAnnotation.Url("https://github.com/dhananjay-nautiyal/music", linkStyles)) {
                 append("GitHub")
             }
             append("  ")

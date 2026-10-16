@@ -1640,7 +1640,7 @@ fun SettingsScreen(
                         textDecoration = TextDecoration.Underline,
                     ),
                 )
-                withLink(LinkAnnotation.Url("https://github.com/dhani748/music", linkStyles)) {
+                withLink(LinkAnnotation.Url("https://github.com/dhananjay-nautiyal/music", linkStyles)) {
                     append("GitHub")
                 }
                 append("  ")

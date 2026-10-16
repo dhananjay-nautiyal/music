@@ -18,13 +18,13 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/dhani748/music/backend/clock"
-	"github.com/dhani748/music/backend/codes"
-	"github.com/dhani748/music/backend/config"
-	"github.com/dhani748/music/backend/hub"
-	"github.com/dhani748/music/backend/party"
-	"github.com/dhani748/music/backend/presence"
-	"github.com/dhani748/music/backend/protocol"
+	"github.com/dhananjay-nautiyal/music/backend/clock"
+	"github.com/dhananjay-nautiyal/music/backend/codes"
+	"github.com/dhananjay-nautiyal/music/backend/config"
+	"github.com/dhananjay-nautiyal/music/backend/hub"
+	"github.com/dhananjay-nautiyal/music/backend/party"
+	"github.com/dhananjay-nautiyal/music/backend/presence"
+	"github.com/dhananjay-nautiyal/music/backend/protocol"
 )
 
 var (
@@ -722,7 +722,7 @@ var inviteTemplate = template.Must(template.New("invite").Parse(`<!DOCTYPE html>
             <a id="joinBtn" href="{{.IntentURI}}" class="btn">Join Party in Music</a>
             <p class="footer-note">
                 Didn’t open automatically? Tap the button above.<br>
-                Don't have Music yet? <a href="https://github.com/dhani748/music/releases" target="_blank" rel="noopener">Download it here</a>.
+                Don't have Music yet? <a href="https://github.com/dhananjay-nautiyal/music/releases" target="_blank" rel="noopener">Download it here</a>.
             </p>
             <script>
                 var intentUri = {{.IntentURI}};

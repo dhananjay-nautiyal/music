@@ -11,9 +11,9 @@
 
 <br/>
 
-[![Latest release](https://img.shields.io/github/v/release/dhani748/music?style=for-the-badge&labelColor=0d1117)](https://github.com/dhani748/music/releases)
-[![License](https://img.shields.io/github/license/dhani748/music?style=for-the-badge&labelColor=0d1117)](https://github.com/dhani748/music/blob/main/LICENSE)
-[![Downloads](https://img.shields.io/github/downloads/dhani748/music/total?style=for-the-badge&labelColor=0d1117)](https://github.com/dhani748/music/releases)
+[![Latest release](https://img.shields.io/github/v/release/dhananjay-nautiyal/music?style=for-the-badge&labelColor=0d1117)](https://github.com/dhananjay-nautiyal/music/releases)
+[![License](https://img.shields.io/github/license/dhananjay-nautiyal/music?style=for-the-badge&labelColor=0d1117)](https://github.com/dhananjay-nautiyal/music/blob/main/LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/dhananjay-nautiyal/music/total?style=for-the-badge&labelColor=0d1117)](https://github.com/dhananjay-nautiyal/music/releases)
 
 
 <br/>
@@ -89,10 +89,10 @@
 
 <h1><a id="download"></a>Download</h1>
 
-<a href="https://github.com/dhani748/music/releases" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/supported/android/cozy.svg" alt="Download for Android" height="55"/></a>
-<a href="https://github.com/dhani748/music/releases" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/supported/windows/cozy.svg" alt="Download for Windows" height="55"/></a>
+<a href="https://github.com/dhananjay-nautiyal/music/releases" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/supported/android/cozy.svg" alt="Download for Android" height="55"/></a>
+<a href="https://github.com/dhananjay-nautiyal/music/releases" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/supported/windows/cozy.svg" alt="Download for Windows" height="55"/></a>
 
-Grab the latest signed APK from the [Releases](https://github.com/dhani748/music/releases) page — pick the build for your device (`arm64-v8a` for most phones, universal fits all). Sideloading requires enabling "Install unknown apps" for whichever app you download it with.
+Grab the latest signed APK from the [Releases](https://github.com/dhananjay-nautiyal/music/releases) page — pick the build for your device (`arm64-v8a` for most phones, universal fits all). Sideloading requires enabling "Install unknown apps" for whichever app you download it with.
 
 For the Windows and Linux desktop app, see [DESKTOP.md](DESKTOP.md).
 
@@ -110,8 +110,8 @@ We welcome contributions to Music! Please review our [Contributing Guide](CONTRI
 
 ### Thanks to all contributors ❤
 
-<a href="https://github.com/dhani748/music/graphs/contributors">
-  <img src="https://raw.githubusercontent.com/dhani748/music/contributors/contributors.svg" />
+<a href="https://github.com/dhananjay-nautiyal/music/graphs/contributors">
+  <img src="https://raw.githubusercontent.com/dhananjay-nautiyal/music/contributors/contributors.svg" />
 </a>
 
 </div>
