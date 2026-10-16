@@ -555,6 +555,12 @@ object AppSettings {
     /** Hides short clips, recorder output and non-music formats from Local Music. */
     val filterNonMusicAudio = MutableStateFlow(true)
 
+    /**
+     * Incognito listening: no search history, listening stats, YouTube history
+     * pings or scrobbles are recorded while on. Playback itself is unchanged.
+     */
+    val incognitoMode = MutableStateFlow(false)
+
     val localMusicSort = MutableStateFlow(LocalMusicSort.TITLE_ASC)
     val downloadedMusicSort = MutableStateFlow(LocalMusicSort.TITLE_ASC)
     val localMusicViewType = MutableStateFlow(LibraryViewType.LIST)
@@ -572,34 +578,6 @@ object AppSettings {
 
     /** Empty means every MediaStore folder; otherwise this is a persisted SAF tree URI. */
     val localMusicFolderUri = MutableStateFlow("")
-
-    /**
-     * All picked SAF tree URIs for Local Music. Empty means every MediaStore
-     * folder — the "scan all folders where music exists" mode. When non-empty
-     * only rows under one of these folders are kept.
-     *
-     * [localMusicFolderUri] is kept for backward compatibility and migrated
-     * into this set on first read.
-     */
-    val localMusicFolderUris = MutableStateFlow<Set<String>>(emptySet())
-
-    /** Hide tracks shorter than [shortTrackMinSecs] from Local Music. */
-    val filterShortTracks = MutableStateFlow(true)
-
-    /**
-     * Incognito listening: no search history, listening stats, YouTube history
-     * pings or scrobbles are recorded while on. Playback itself is unchanged.
-     */
-    val incognitoMode = MutableStateFlow(false)
-
-    /** Short-track threshold in seconds. One of 15 / 30 / 60. */
-    val shortTrackMinSecs = MutableStateFlow(DEFAULT_SHORT_TRACK_MIN_SECS)
-
-    /** Last successful Local Music scan, epoch millis. 0 means never. */
-    val localMusicLastScanMs = MutableStateFlow(0L)
-
-    /** Normalized absolute folder paths excluded from Local Music. */
-    val localMusicExcludedPaths = MutableStateFlow<Set<String>>(emptySet())
 
     // ── WebDAV ────────────────────────────────────────────────────────────
 
@@ -938,12 +916,7 @@ object AppSettings {
         spotifySpdcToken.value = prefs.getString(KEY_SPOTIFY_SPDC_TOKEN, "").orEmpty()
         replayGenres.value = prefs.getBoolean(KEY_REPLAY_GENRES, true)
         filterNonMusicAudio.value = prefs.getBoolean(KEY_FILTER_NON_MUSIC_AUDIO, true)
-        filterShortTracks.value = prefs.getBoolean(KEY_FILTER_SHORT_TRACKS, true)
         incognitoMode.value = prefs.getBoolean(KEY_INCOGNITO_MODE, false)
-        shortTrackMinSecs.value = prefs.getInt(KEY_SHORT_TRACK_MIN_SECS, DEFAULT_SHORT_TRACK_MIN_SECS)
-            .coerceIn(MIN_SHORT_TRACK_MIN_SECS, MAX_SHORT_TRACK_MIN_SECS)
-        localMusicLastScanMs.value = prefs.getLong(KEY_LOCAL_MUSIC_LAST_SCAN_MS, 0L)
-        localMusicExcludedPaths.value = prefs.getStringSet(KEY_LOCAL_MUSIC_EXCLUDED, emptySet()).orEmpty()
         localMusicSort.value = readLocalMusicSort(KEY_LOCAL_MUSIC_SORT)
         downloadedMusicSort.value = readLocalMusicSort(KEY_DOWNLOADED_MUSIC_SORT)
         localMusicViewType.value = readLibraryViewType(KEY_LOCAL_MUSIC_VIEW_TYPE)
@@ -953,10 +926,7 @@ object AppSettings {
             ?.let { saved -> LibrarySort.entries.firstOrNull { it.name == saved } }
             ?: LibrarySort.DEFAULT
         detailSongSorts.value = readDetailSongSorts()
-        migrateLocalMusicFolder()
         localMusicFolderUri.value = prefs.getString(KEY_LOCAL_MUSIC_FOLDER_URI, "").orEmpty()
-        localMusicFolderUris.value = prefs.getStringSet(KEY_LOCAL_MUSIC_FOLDER_URIS, emptySet()).orEmpty()
-            .filter { it.isNotBlank() }.toSet()
         webdavUrl.value = prefs.getString(KEY_WEBDAV_URL, "").orEmpty()
         webdavUsername.value = prefs.getString(KEY_WEBDAV_USERNAME, "").orEmpty()
         webdavPassword.value = authStore.webdavPassword.orEmpty()
@@ -1705,6 +1675,11 @@ object AppSettings {
         prefs.edit().putBoolean(KEY_FILTER_NON_MUSIC_AUDIO, value).apply()
     }
 
+    fun setIncognitoMode(value: Boolean) {
+        incognitoMode.value = value
+        prefs.edit().putBoolean(KEY_INCOGNITO_MODE, value).apply()
+    }
+
     fun setLocalMusicSort(value: LocalMusicSort) {
         localMusicSort.value = value
         prefs.edit().putString(KEY_LOCAL_MUSIC_SORT, value.name).apply()
@@ -1746,79 +1721,6 @@ object AppSettings {
     fun setLocalMusicFolderUri(value: String) {
         localMusicFolderUri.value = value
         prefs.edit().putString(KEY_LOCAL_MUSIC_FOLDER_URI, value).apply()
-        // Keep the multi-folder set in sync for callers that only know the
-        // legacy single-folder API: one folder -> set of one, empty -> all.
-        val updated = if (value.isBlank()) emptySet() else setOf(value)
-        localMusicFolderUris.value = updated
-        prefs.edit().putStringSet(KEY_LOCAL_MUSIC_FOLDER_URIS, updated).apply()
-    }
-
-    /** Replace the whole picked-folder set. Empty means scan all folders. */
-    fun setLocalMusicFolderUris(values: Set<String>) {
-        val cleaned = values.filter { it.isNotBlank() }.toSet()
-        localMusicFolderUris.value = cleaned
-        prefs.edit().putStringSet(KEY_LOCAL_MUSIC_FOLDER_URIS, cleaned).apply()
-        // Legacy mirror: single entry stays readable by old code, multi/empty
-        // collapses to the first entry / empty.
-        val legacy = cleaned.firstOrNull().orEmpty()
-        localMusicFolderUri.value = legacy
-        prefs.edit().putString(KEY_LOCAL_MUSIC_FOLDER_URI, legacy).apply()
-    }
-
-    fun addLocalMusicFolderUri(value: String) {
-        if (value.isBlank()) return
-        setLocalMusicFolderUris(localMusicFolderUris.value + value)
-    }
-
-    fun removeLocalMusicFolderUri(value: String) {
-        setLocalMusicFolderUris(localMusicFolderUris.value - value)
-    }
-
-    fun clearLocalMusicFolders() = setLocalMusicFolderUris(emptySet())
-
-    fun setFilterShortTracks(value: Boolean) {
-        filterShortTracks.value = value
-        prefs.edit().putBoolean(KEY_FILTER_SHORT_TRACKS, value).apply()
-    }
-
-    fun setIncognitoMode(value: Boolean) {
-        incognitoMode.value = value
-        prefs.edit().putBoolean(KEY_INCOGNITO_MODE, value).apply()
-    }
-
-    fun setShortTrackMinSecs(value: Int) {
-        val clamped = value.coerceIn(MIN_SHORT_TRACK_MIN_SECS, MAX_SHORT_TRACK_MIN_SECS)
-        shortTrackMinSecs.value = clamped
-        prefs.edit().putInt(KEY_SHORT_TRACK_MIN_SECS, clamped).apply()
-    }
-
-    fun setLocalMusicLastScanMs(value: Long) {
-        localMusicLastScanMs.value = value
-        prefs.edit().putLong(KEY_LOCAL_MUSIC_LAST_SCAN_MS, value).apply()
-    }
-
-    fun setLocalMusicExcludedPaths(values: Set<String>) {
-        localMusicExcludedPaths.value = values
-        prefs.edit().putStringSet(KEY_LOCAL_MUSIC_EXCLUDED, values).apply()
-    }
-
-    fun toggleLocalMusicExcludedPath(path: String) {
-        val normalized = path.trim().trimEnd('/')
-        if (normalized.isBlank()) return
-        val current = localMusicExcludedPaths.value
-        setLocalMusicExcludedPaths(if (normalized in current) current - normalized else current + normalized)
-    }
-
-    /**
-     * One-time migration: a single picked folder becomes a one-element set.
-     * Runs inside [readAll] before the set is read.
-     */
-    private fun migrateLocalMusicFolder() {
-        if (prefs.contains(KEY_LOCAL_MUSIC_FOLDER_URIS)) return
-        val legacy = prefs.getString(KEY_LOCAL_MUSIC_FOLDER_URI, "").orEmpty()
-        if (legacy.isNotBlank()) {
-            prefs.edit().putStringSet(KEY_LOCAL_MUSIC_FOLDER_URIS, setOf(legacy)).apply()
-        }
     }
 
     fun setWebDavUrl(value: String) {
@@ -2046,9 +1948,6 @@ object AppSettings {
         "downloaded_tracks_metadata",
         "downloaded_collections",
         KEY_LOCAL_MUSIC_FOLDER_URI,
-        KEY_LOCAL_MUSIC_FOLDER_URIS,
-        KEY_LOCAL_MUSIC_LAST_SCAN_MS,
-        KEY_LOCAL_MUSIC_EXCLUDED,
         KEY_LAST_VERSION_CODE,
     )
 
@@ -2064,13 +1963,6 @@ object AppSettings {
     const val DEFAULT_UPGRADE_LENGTH_SLACK_SECONDS = 3
     const val MIN_UPGRADE_LENGTH_SLACK_SECONDS = 0
     const val MAX_UPGRADE_LENGTH_SLACK_SECONDS = 10
-
-    const val DEFAULT_SHORT_TRACK_MIN_SECS = 30
-    const val MIN_SHORT_TRACK_MIN_SECS = 5
-    const val MAX_SHORT_TRACK_MIN_SECS = 120
-
-    /** Offered short-track thresholds in the Settings UI. */
-    val SHORT_TRACK_OPTIONS_SECS = listOf(15, 30, 60)
 
     private const val DEFAULT_PERFORMANCE_REFRESH_RATE = 120
 
@@ -2141,6 +2033,7 @@ object AppSettings {
     private const val KEY_PAXSENIX_API_KEY = "paxsenix_api_key"
     private const val KEY_REPLAY_GENRES = "replay_genres"
     private const val KEY_FILTER_NON_MUSIC_AUDIO = "filter_non_music_audio"
+    private const val KEY_INCOGNITO_MODE = "incognito_mode"
     private const val KEY_SHOW_CACHE_FOLDER = "show_cache_folder"
     private const val KEY_LOCAL_MUSIC_SORT = "local_music_sort"
     private const val KEY_DOWNLOADED_MUSIC_SORT = "downloaded_music_sort"
@@ -2150,12 +2043,6 @@ object AppSettings {
     private const val KEY_DOWNLOADED_MUSIC_VIEW_TYPE = "downloaded_music_view_type"
     private const val KEY_HOME_RECENTS_VIEW_TYPE = "home_recents_view_type"
     private const val KEY_LOCAL_MUSIC_FOLDER_URI = "local_music_folder_uri"
-    private const val KEY_INCOGNITO_MODE = "incognito_mode"
-    private const val KEY_LOCAL_MUSIC_FOLDER_URIS = "local_music_folder_uris"
-    private const val KEY_FILTER_SHORT_TRACKS = "filter_short_tracks"
-    private const val KEY_SHORT_TRACK_MIN_SECS = "short_track_min_secs"
-    private const val KEY_LOCAL_MUSIC_LAST_SCAN_MS = "local_music_last_scan_ms"
-    private const val KEY_LOCAL_MUSIC_EXCLUDED = "local_music_excluded_paths"
     private const val KEY_WEBDAV_URL = "webdav_url"
     private const val KEY_WEBDAV_USERNAME = "webdav_username"
     private const val KEY_SMB_HOST = "smb_host"

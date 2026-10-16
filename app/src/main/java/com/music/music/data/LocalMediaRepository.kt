@@ -25,15 +25,12 @@ object LocalMediaRepository {
     private const val TAG = "Music"
     private const val MIN_LOCAL_MUSIC_DURATION_MS = 30_000L
 
-    /** Thresholds offered for the "hide short clips" option (seconds). */
-    val SHORT_TRACK_OPTIONS_SECS = listOf(15, 30, 60)
-
     // `mp4` only ever reaches this list as an audio row — MediaStore files a
     // video .mp4 under Video, not Audio — so it is the audio-only MP4s Dolby
     // and Apple music downloads come as (AC-4, E-AC-3, ALAC). `dsf`/`dff` are
     // DSD, which DsdExtractor plays.
     private val localMusicExtensions = setOf(
-        "mp3", "m4a", "mp4", "flac", "ogg", "opus", "aac", "webm", "dsf", "dff", "wav",
+        "mp3", "m4a", "mp4", "flac", "ogg", "opus", "aac", "webm", "dsf", "dff",
     )
 
     private val nonMusicPathSegments = listOf(
@@ -221,19 +218,7 @@ object LocalMediaRepository {
         )
 
         val filterNonMusic = AppSettings.filterNonMusicAudio.value
-        val filterShort = AppSettings.filterShortTracks.value
-        val shortMinSecs = AppSettings.shortTrackMinSecs.value.coerceIn(5, 120)
-        val shortThresholdMs = shortMinSecs * 1_000L
-        // Combined folder set: new multi-pick + legacy single value.
-        val folderUris: Set<String> = buildSet {
-            addAll(AppSettings.localMusicFolderUris.value)
-            val legacy = AppSettings.localMusicFolderUri.value
-            if (legacy.isNotBlank()) add(legacy)
-        }
-        val excludedPaths: Set<String> = AppSettings.localMusicExcludedPaths.value
-            .map { it.replace('\\', '/').trimEnd('/').lowercase(Locale.ROOT) }
-            .filter { it.isNotBlank() }.toSet()
-        val selection = if (filterNonMusic || filterShort) {
+        val selection = if (filterNonMusic) {
             buildString {
                 append("${MediaStore.Audio.Media.IS_MUSIC} != 0")
                 // A duration of 0 or NULL is the scanner failing to read one,
@@ -241,27 +226,23 @@ object LocalMediaRepository {
                 // come) reads as 0, high-rate DSD as NULL — so it is let
                 // through to the extension and path checks rather than
                 // dropped as too short.
-                if (filterShort) {
-                    append(
-                        " AND (${MediaStore.Audio.Media.DURATION} >= ?" +
-                            " OR ${MediaStore.Audio.Media.DURATION} <= 0" +
-                            " OR ${MediaStore.Audio.Media.DURATION} IS NULL)",
-                    )
-                }
-                if (filterNonMusic) {
-                    append(" AND ${MediaStore.Audio.Media.IS_ALARM} = 0")
-                    append(" AND ${MediaStore.Audio.Media.IS_NOTIFICATION} = 0")
-                    append(" AND ${MediaStore.Audio.Media.IS_RINGTONE} = 0")
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        append(" AND ${MediaStore.Audio.Media.IS_PODCAST} = 0")
-                    }
+                append(
+                    " AND (${MediaStore.Audio.Media.DURATION} >= ?" +
+                        " OR ${MediaStore.Audio.Media.DURATION} <= 0" +
+                        " OR ${MediaStore.Audio.Media.DURATION} IS NULL)",
+                )
+                append(" AND ${MediaStore.Audio.Media.IS_ALARM} = 0")
+                append(" AND ${MediaStore.Audio.Media.IS_NOTIFICATION} = 0")
+                append(" AND ${MediaStore.Audio.Media.IS_RINGTONE} = 0")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    append(" AND ${MediaStore.Audio.Media.IS_PODCAST} = 0")
                 }
             }
         } else {
             "${MediaStore.Audio.Media.IS_MUSIC} != 0"
         }
-        val selectionArgs = if (filterShort) {
-            arrayOf(shortThresholdMs.toString())
+        val selectionArgs = if (filterNonMusic) {
+            arrayOf(MIN_LOCAL_MUSIC_DURATION_MS.toString())
         } else {
             null
         }
@@ -298,14 +279,8 @@ object LocalMediaRepository {
                     val durationMs = cursor.getLong(durationCol)
                     val path = cursor.getString(dataCol)
 
-                    if (!isEligibleLocalMusic(
-                            durationMs, displayName, path,
-                            filterShort = filterShort, shortMinSecs = shortMinSecs,
-                            filterNonMusic = filterNonMusic,
-                        )
-                    ) continue
-                    if (!isInSelectedFolders(path, folderUris)) continue
-                    if (isExcludedPath(path, excludedPaths)) continue
+                    if (filterNonMusic && !isEligibleLocalMusic(durationMs, displayName, path)) continue
+                    if (!isInSelectedFolder(path, AppSettings.localMusicFolderUri.value)) continue
 
                     val contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id).toString()
                     val title = rawTitle.cleanTag()?.removeAudioExtension()
@@ -334,104 +309,17 @@ object LocalMediaRepository {
             }
         }.onFailure { Log.w(TAG, "Failed scanning device local music: ${it.message}") }
 
-        runCatching {
-            AppSettings.setLocalMusicLastScanMs(System.currentTimeMillis())
-        }
-
         songs
     }
 
     /** Human-readable path for the folder setting without exposing provider internals. */
     fun selectedFolderLabel(treeUri: String): String? = selectedFolder(treeUri)?.label
 
-    /** Labels for every picked folder, in no particular order. Blank URIs skipped. */
-    fun selectedFolderLabels(treeUris: Set<String>): List<String> =
-        treeUris.filter { it.isNotBlank() }.mapNotNull { selectedFolderLabel(it) }
-
     internal fun isInSelectedFolder(path: String?, treeUri: String): Boolean {
         if (treeUri.isBlank()) return true
         val folder = selectedFolder(treeUri) ?: return false
         val candidate = path?.normalizedPath() ?: return false
         return candidate == folder.absolutePath || candidate.startsWith("${folder.absolutePath}/")
-    }
-
-    /**
-     * Multi-folder version: empty set means scan all folders where music
-     * exists. Otherwise the path must sit under at least one picked folder.
-     */
-    internal fun isInSelectedFolders(path: String?, treeUris: Set<String>): Boolean {
-        val cleaned = treeUris.filter { it.isNotBlank() }
-        if (cleaned.isEmpty()) return true
-        return cleaned.any { isInSelectedFolder(path, it) }
-    }
-
-    internal fun isExcludedPath(path: String?, excludedNormalized: Set<String>): Boolean {
-        if (excludedNormalized.isEmpty()) return false
-        val candidate = path?.normalizedPath() ?: return false
-        return excludedNormalized.any { ex ->
-            val e = ex.replace('\\', '/').trimEnd('/').lowercase(Locale.ROOT)
-            e.isNotBlank() && (candidate == e || candidate.startsWith("$e/"))
-        }
-    }
-
-    /** Parent folder display name for grouping, e.g. "Music" or "Download". */
-    fun folderNameOf(path: String?): String {
-        val clean = path?.replace('\\', '/')?.trimEnd('/')?.takeIf { it.isNotBlank() }
-            ?: return "Unknown folder"
-        val parent = clean.substringBeforeLast('/', "")
-        return parent.substringAfterLast('/').takeIf { it.isNotBlank() } ?: "Root"
-    }
-
-    /** Full parent folder path for exclusion toggles. */
-    fun folderPathOf(path: String?): String? {
-        val clean = path?.replace('\\', '/')?.trimEnd('/')?.takeIf { it.isNotBlank() } ?: return null
-        return clean.substringBeforeLast('/', "").takeIf { it.isNotBlank() }
-    }
-
-    /** Group songs by parent folder with counts, sorted by folder name. */
-    fun musicFoldersOf(songs: List<Song>): List<MusicFolder> =
-        songs.groupBy { folderNameOf(it.localPath) }
-            .map { (name, rows) ->
-                MusicFolder(
-                    name = name,
-                    path = folderPathOf(rows.firstOrNull()?.localPath),
-                    songCount = rows.size,
-                )
-            }
-            .sortedBy { it.name.lowercase(Locale.ROOT) }
-
-    data class MusicFolder(
-        val name: String,
-        val path: String?,
-        val songCount: Int,
-    )
-
-    /**
-     * Folders that look like they hold only short/system clips: every sampled
-     * row is short or sits under a known non-music segment. Used to suggest
-     * exclusions, never auto-applied.
-     */
-    fun suggestExcludedFolders(
-        rows: List<Triple<Long, String, String?>>,
-        shortMinSecs: Int = 30,
-    ): List<String> {
-        val thresholdMs = shortMinSecs * 1_000L
-        return rows.groupBy { folderPathOf(it.third) ?: folderNameOf(it.third) }
-            .filterValues { group ->
-                group.isNotEmpty() && group.all { (dur, name, path) ->
-                    (dur in 1 until thresholdMs) || !isMusicPath(path, name)
-                }
-            }
-            .keys.filterIsInstance<String>()
-            .sorted()
-    }
-
-    private fun isMusicPath(path: String?, displayName: String): Boolean {
-        val fileName = path?.substringAfterLast('/')?.takeIf { it.isNotBlank() } ?: displayName
-        val extension = fileName.substringAfterLast('.', "").lowercase(Locale.ROOT)
-        if (extension !in localMusicExtensions) return false
-        val normalizedPath = path?.replace('\\', '/')?.lowercase(Locale.ROOT) ?: return true
-        return nonMusicPathSegments.none(normalizedPath::contains)
     }
 
     private data class SelectedFolder(val absolutePath: String, val label: String)
@@ -462,25 +350,9 @@ object LocalMediaRepository {
      * MediaStore's `IS_MUSIC` flag is advisory and often includes notification
      * sounds, voice notes and recorder output. Keep this second gate independent
      * of scanner metadata so the same bad rows stay out across Android vendors.
-     *
-     * @param filterShort when true, clips shorter than [shortMinSecs] are
-     * rejected (duration 0/NULL still kept — the scanner failing, not a clip).
-     * @param filterNonMusic when true, extension + system-path checks apply.
      */
-    internal fun isEligibleLocalMusic(
-        durationMs: Long,
-        displayName: String,
-        path: String?,
-        filterShort: Boolean,
-        shortMinSecs: Int,
-        filterNonMusic: Boolean,
-    ): Boolean {
-        val thresholdMs = shortMinSecs.coerceIn(5, 120) * 1_000L
-        if (filterShort && durationMs in 1 until thresholdMs) return false
-        if (!filterNonMusic) {
-            // Short-clip gate only; extension/path checks skipped.
-            return true
-        }
+    internal fun isEligibleLocalMusic(durationMs: Long, displayName: String, path: String?): Boolean {
+        if (durationMs in 1 until MIN_LOCAL_MUSIC_DURATION_MS) return false
 
         val fileName = path?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
             ?: displayName
@@ -493,10 +365,6 @@ object LocalMediaRepository {
             ?: return true
         return nonMusicPathSegments.none(normalizedPath::contains)
     }
-
-    /** Legacy 3-arg check: 30s threshold + non-music filtering on. */
-    internal fun isEligibleLocalMusic(durationMs: Long, displayName: String, path: String?): Boolean =
-        isEligibleLocalMusic(durationMs, displayName, path, filterShort = true, shortMinSecs = 30, filterNonMusic = true)
 
     private fun String.removeAudioExtension(): String {
         val extension = substringAfterLast('.', "").lowercase(Locale.ROOT)
