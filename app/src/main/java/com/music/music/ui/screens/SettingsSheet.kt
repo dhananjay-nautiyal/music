@@ -1656,16 +1656,8 @@ fun SettingsScreen(
                     append("GitHub")
                 }
                 append("  ")
-                withLink(LinkAnnotation.Url("https://github.com/kushagrasinghx", linkStyles)) {
+                withLink(LinkAnnotation.Url("https://github.com/dhananjay-nautiyal", linkStyles)) {
                     append("Developer")
-                }
-                append("  ")
-                withLink(LinkAnnotation.Url("https://discord.gg/pDdKfrdHY6", linkStyles)) {
-                    append("Discord")
-                }
-                append("  ")
-                withLink(LinkAnnotation.Url("https://music.kushagrasingh.in/", linkStyles)) {
-                    append("Website")
                 }
                 append("\n~YouTube Music & Listen Together Backend")
             },
