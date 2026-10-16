@@ -11,7 +11,8 @@ class AppleMusicParserTest {
     @Test
     fun parsesSearchTracks() {
         val tracks = AppleMusicService.parseTracks(SEARCH_JSON, 25)
-        assertEquals(2, tracks.size)
+        // The nameless second hit is dropped, not parsed.
+        assertEquals(1, tracks.size)
         val first = tracks[0]
         assertEquals("1440833847", first.id)
         assertEquals("Blinding Lights", first.title)
