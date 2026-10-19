@@ -73,8 +73,8 @@ class LyricsCacheTest {
         assertEquals(1, restored.lines.size)
         val line = restored.lines[0]
         assertEquals("hello world", line.text)
-        assertEquals(1_000, line.timeMs)
-        assertEquals(2_000, line.sungUntilMs)
+        assertEquals(1_000L, line.timeMs)
+        assertEquals(2_000L, line.sungUntilMs)
         // Word timing is the part a lossy cache would drop without anyone
         // noticing until the lyrics stopped highlighting per word.
         assertEquals(2, line.words.size)

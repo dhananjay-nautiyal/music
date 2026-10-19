@@ -61,7 +61,7 @@ class ScrobbleQueueTest {
         assertEquals("Track", listen.track)
         assertEquals("Artist", listen.artist)
         assertEquals("Album", listen.album)
-        assertEquals(1_700_000_000_000, listen.startedAtMs)
+        assertEquals(1_700_000_000_000L, listen.startedAtMs)
         // Duration arrives as seconds and is stored as ms, because that is what
         // the queue's ListenBrainz half needs from the same field.
         assertEquals(245_000L, listen.durationMs)
@@ -85,8 +85,8 @@ class ScrobbleQueueTest {
         )
 
         assertEquals(ScrobbleQueue.Service.LISTEN_BRAINZ, listen.service)
-        assertEquals(1_700_000_000_000, listen.startedAtMs)
-        assertEquals(1_700_000_200_000, listen.endedAtMs)
+        assertEquals(1_700_000_000_000L, listen.startedAtMs)
+        assertEquals(1_700_000_200_000L, listen.endedAtMs)
         assertEquals(200_000L, listen.durationMs)
     }
 

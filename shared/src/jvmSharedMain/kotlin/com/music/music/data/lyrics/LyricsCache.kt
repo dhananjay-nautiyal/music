@@ -139,7 +139,7 @@ object LyricsCache {
      */
     suspend fun entryCount(): Int = withContext(Dispatchers.IO) {
         runCatching { cacheDir?.let { File(it, DIRECTORY) }?.listFiles()?.count { it.isFile } }
-            .getOrDefault(0)
+            .getOrNull() ?: 0
     }
 
     // ---- the disk half -------------------------------------------------------
@@ -273,11 +273,11 @@ object LyricsCache {
             fun of(line: LyricLine) = CachedLine(
                 timeMs = line.timeMs,
                 text = line.text,
-                words = line.words.map(CachedWord::of),
+                words = line.words.map { CachedWord.of(it) },
                 sungUntilMs = line.sungUntilMs,
-                background = line.background?.let(::of),
+                background = line.background?.let { of(it) },
                 alignment = line.alignment.name,
-                timingSource = line.timingSource?.let(::of),
+                timingSource = line.timingSource?.let { of(it) },
             )
         }
     }
