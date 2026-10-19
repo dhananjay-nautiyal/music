@@ -46,7 +46,7 @@
 - **Gapless playback with true crossfade**, adjustable 0–12s.
 - **Automix [Beta]** — DJ-style transitions with beat-matching and tempo-stretching.
 - **Offline downloads** — save tracks with embedded metadata.
-- **Local music library** integration.
+- **Local music library** integration — embedded artwork or folder covers, and local playlists included in backup/restore.
 - **Background playback** via a proper foreground media session.
 - **Apple-like lyrics animation** — credit to [binimum](https://github.com/binimum/am-lyrics).
 
@@ -55,7 +55,7 @@
 - **Spotify integration** — connect your account to play your playlists and Liked Songs.
 - **Apple Music integration** — search the catalog and import your playlists; previews only, since FairPlay blocks full playback in third-party players.
 - **Discord Rich Presence** — in-app login, live track/artist/album and progress.
-- **Scrobbling** to Last.fm and ListenBrainz.
+- **Scrobbling** to Last.fm and ListenBrainz, with a pending queue that retries listens which failed to send.
 - **Pluggable sources** — add, edit, test and health-check module sources.
 
     </td>
@@ -65,7 +65,7 @@
 - **Brand-blue theme** — navy-tinted dark mode with blue accents, plus an **AMOLED black** option for OLED screens.
 - **Liquid theme** — translucent glass cards across Settings (or the solid Normal look).
 - **Animated album canvas** — motion artwork on the now-playing screen.
-- **Word-synced lyrics** — word/syllable-level highlighting from multiple sources.
+- **Word-synced lyrics** — word/syllable-level highlighting from multiple sources, cached for offline use.
 - **Lyrics providers** — credit to [lrc.red](https://lrc.red), [BiniLyrics](https://github.com/binimum), [BetterLyrics](https://github.com/better-lyrics/better-lyrics), [PaxSenix](https://lyrics.paxsenix.org), [LyricsPlus](https://github.com/ibratabian17/YouLyPlus), [SimpMusic](https://github.com/maxrave-dev/SimpMusic), [Unison](https://unison.boidu.dev), [Megalobiz](https://www.megalobiz.com), [KuGou](https://www.kugou.com), [LRCLIB](https://lrclib.net), [Musixmatch](https://www.musixmatch.com) and [Genius](https://genius.com).
 - **Dynamic, artwork-driven theming** — Material palette extracted from album art.
 - **Frosted-glass UI** — Telegram-style translucent bars via Haze, Material 3 theming.
