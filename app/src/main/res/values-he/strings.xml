@@ -93,6 +93,12 @@
     <string name="account_integrations">חשבון &amp; אינטגרציות</string>
     <string name="account_scrobbling">חשבון &amp; סקרובלינג</string>
     <string name="rich_presence">נוכחות עשירה</string>
+    <string name="scrobble_pending_title">Pending scrobbles</string>
+    <string name="scrobble_pending_none">Nothing waiting — every play has been delivered</string>
+    <string name="scrobble_pending_some">%1$d waiting to be sent</string>
+    <string name="scrobble_pending_retry">Send now</string>
+    <string name="scrobble_pending_sent">Sent %1$d</string>
+    <string name="scrobble_pending_still_waiting">Couldn\'t reach the service — still waiting</string>
     <string name="scrobbling">סקרובלינג</string>
     <string name="now_playing">מתנגן כעת</string>
     <string name="selected">נבחר</string>
@@ -217,6 +223,9 @@
     <string name="clear_song_cache">ניקוי מטמון שירים</string>
     <string name="clear_song_cache_subtitle">משחרר שטח שתפוס על ידי אודיו שהורד</string>
     <string name="clear_image_cache">ניקוי מטמון תמונות</string>
+    <string name="clear_lyrics_cache">Clear offline lyrics</string>
+    <string name="clear_lyrics_cache_subtitle">Lyrics saved from providers for offline playback</string>
+    <string name="lyrics_cache_cleared">Offline lyrics cleared</string>
     <string name="clear_image_cache_subtitle">משחרר שטח שתפוס על ידי עטיפות אלבומים</string>
     <string name="play_next_on_swipe">נגן הבא בהחלקה</string>
     <string name="dont_repeat_songs">מניעת חזרה על שירים באותה הפעלה</string>

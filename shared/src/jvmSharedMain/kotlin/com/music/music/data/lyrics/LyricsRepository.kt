@@ -103,6 +103,56 @@ object LyricsRepository {
         onSourceResult: ((LyricsSource, Result?) -> Unit)? = null,
         /** Lets callers turn a cancelled race loser back into "not fetched". */
         onSourceCancelled: ((LyricsSource) -> Unit)? = null,
+    ): Result? {
+        // Before anything is asked, including the identity lookup: a track
+        // whose words are already in hand costs no network at all, which is the
+        // whole point of the cache for a downloaded song played on a plane.
+        //
+        // Gated on the source still being one the user allows. Switching a
+        // provider off has to mean its words stop appearing, not merely that it
+        // stops being asked — a cached answer is still that provider's content.
+        LyricsCache.get(videoId, title, artist, durationMs, album)
+            ?.takeIf { it.source in sources && !it.source.hidden }
+            ?.let { cached ->
+                // Reported as a completed attempt so the panel's per-source
+                // state reads as "found", not as providers still thinking.
+                onSourceStarted?.invoke(cached.source)
+                onSourceResult?.invoke(cached.source, cached)
+                return cached
+            }
+        val found = fetchFromProviders(
+            videoId = videoId,
+            title = title,
+            artist = artist,
+            durationMs = durationMs,
+            album = album,
+            sources = sources,
+            order = order,
+            prioritizeSyllableSync = prioritizeSyllableSync,
+            isrc = isrc,
+            onSourceStarted = onSourceStarted,
+            onSourceResult = onSourceResult,
+            onSourceCancelled = onSourceCancelled,
+        )
+        if (found != null) {
+            LyricsCache.put(videoId, title, artist, durationMs, album, found)
+        }
+        return found
+    }
+
+    private suspend fun fetchFromProviders(
+        videoId: String,
+        title: String,
+        artist: String,
+        durationMs: Long,
+        album: String?,
+        sources: Set<LyricsSource>,
+        order: List<LyricsSource>,
+        prioritizeSyllableSync: Boolean,
+        isrc: String?,
+        onSourceStarted: ((LyricsSource) -> Unit)?,
+        onSourceResult: ((LyricsSource, Result?) -> Unit)?,
+        onSourceCancelled: ((LyricsSource) -> Unit)?,
     ): Result? = coroutineScope {
         val sequence = (order + LyricsSource.offered)
             .distinct()

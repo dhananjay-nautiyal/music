@@ -23,10 +23,15 @@ import java.time.format.DateTimeFormatter
  *
  * ## What is in it
  *
- * Every preference except credentials (see [AppSettings.exportPrefs]), and every
- * month of listening. Not the audio cache, the downloads or the artwork: those
- * are megabytes that re-fetch themselves, and a backup that is mostly cache is
- * one nobody keeps.
+ * Every preference except credentials (see [AppSettings.exportPrefs]), every
+ * month of listening, and every playlist made in the app's own store. Not the
+ * audio cache, the downloads or the artwork: those are megabytes that re-fetch
+ * themselves, and a backup that is mostly cache is one nobody keeps.
+ *
+ * Playlists earn their place despite being content rather than configuration.
+ * They are the one thing here that cannot be re-fetched: a playlist assembled
+ * by hand out of search results exists nowhere else, so a factory reset takes it
+ * with no way back — the same argument the listening months are here for.
  *
  * ## Typed values rather than a JSON object
  *
@@ -70,6 +75,7 @@ object Backup {
                     PrefValue.of(value)?.let { key to it }
                 }.toMap(),
                 listening = buckets,
+                playlists = com.music.music.data.spotify.LocalPlaylistStore.exportFile(),
             )
             val text = json.encodeToString(BackupFile.serializer(), file)
             context.contentResolver.openOutputStream(target, "wt")
@@ -101,6 +107,14 @@ object Backup {
 
             ListeningStats.importAll(file.listening)
             AppSettings.importPrefs(file.settings.mapValues { it.value.decoded() })
+            // After the prefs, not before: LocalPlaylistStore keeps its own
+            // file, so nothing above touches it — but the order says which one
+            // wins if that ever stops being true.
+            //
+            // Only when the file actually carries playlists. A backup from
+            // before schema 2 says nothing about them, and replacing the store
+            // with its silence would delete them.
+            file.playlists?.let { com.music.music.data.spotify.LocalPlaylistStore.importAll(it) }
             // Shares AppSettings' preference file, so it has already been
             // overwritten by the line above — it just doesn't know yet.
             SearchHistory.reload()
@@ -127,8 +141,12 @@ object Backup {
      * Bump when the shape below stops being readable by an older build. A file
      * from a *newer* schema is refused rather than partially read; one from an
      * older schema is read as-is, since every field has a default.
+     *
+     * 2 added [BackupFile.playlists]. An older build reading one would drop
+     * every playlist without saying so, which is why this is a bump and not a
+     * silently-compatible addition.
      */
-    private const val SCHEMA_VERSION = 1
+    private const val SCHEMA_VERSION = 2
 
     @Serializable
     data class BackupFile(
@@ -139,6 +157,17 @@ object Backup {
         val exportedAt: String = "",
         val settings: Map<String, PrefValue> = emptyMap(),
         val listening: List<StoredBucket> = emptyList(),
+        /**
+         * Playlists from the app's own store. Nullable so a file written before
+         * schema 2 — which had no playlists in it — reads as "this backup says
+         * nothing about playlists" rather than as "this backup has none".
+         *
+         * The difference is not academic: an import replaces the playlist set,
+         * so the second reading would silently delete every playlist on the
+         * device the moment somebody restored an old backup to move their
+         * settings across.
+         */
+        val playlists: com.music.music.data.spotify.PlaylistFile? = null,
     )
 
     /** One preference, with the type it has to be restored as. */

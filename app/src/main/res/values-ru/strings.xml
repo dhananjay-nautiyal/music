@@ -101,6 +101,12 @@
     <string name="account_integrations">Аккаунт и интеграции</string>
     <string name="account_scrobbling">Аккаунт и скробблинг</string>
     <string name="rich_presence">Rich Presence</string>
+    <string name="scrobble_pending_title">Pending scrobbles</string>
+    <string name="scrobble_pending_none">Nothing waiting — every play has been delivered</string>
+    <string name="scrobble_pending_some">%1$d waiting to be sent</string>
+    <string name="scrobble_pending_retry">Send now</string>
+    <string name="scrobble_pending_sent">Sent %1$d</string>
+    <string name="scrobble_pending_still_waiting">Couldn\'t reach the service — still waiting</string>
     <string name="scrobbling">Скробблинг</string>
     <string name="now_playing">Сейчас играет</string>
     <string name="selected">Выбрано</string>
@@ -226,6 +232,9 @@
     <string name="clear_song_cache">Очистить кэш песен</string>
     <string name="clear_song_cache_subtitle">Освобождает место, занятое загруженным аудио</string>
     <string name="clear_image_cache">Очистить кэш изображений</string>
+    <string name="clear_lyrics_cache">Clear offline lyrics</string>
+    <string name="clear_lyrics_cache_subtitle">Lyrics saved from providers for offline playback</string>
+    <string name="lyrics_cache_cleared">Offline lyrics cleared</string>
     <string name="clear_image_cache_subtitle">Освобождает место, занятое обложками альбомов</string>
     <string name="play_next_on_swipe">Играть следующим при свайпе</string>
     <string name="dont_repeat_songs">Не повторять песни в текущей сессии</string>

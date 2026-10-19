@@ -91,6 +91,12 @@
     <string name="account_integrations">खाता और एकीकरण</string>
     <string name="account_scrobbling">खाता और स्क्रॉबलिंग</string>
     <string name="rich_presence">रिच प्रेज़ेंस</string>
+    <string name="scrobble_pending_title">Pending scrobbles</string>
+    <string name="scrobble_pending_none">Nothing waiting — every play has been delivered</string>
+    <string name="scrobble_pending_some">%1$d waiting to be sent</string>
+    <string name="scrobble_pending_retry">Send now</string>
+    <string name="scrobble_pending_sent">Sent %1$d</string>
+    <string name="scrobble_pending_still_waiting">Couldn\'t reach the service — still waiting</string>
     <string name="scrobbling">स्क्रॉबलिंग</string>
     <string name="now_playing">अभी चल रहा है</string>
     <string name="selected">चयनित</string>
@@ -216,6 +222,9 @@
     <string name="clear_song_cache">गाना कैश साफ़ करें</string>
     <string name="clear_song_cache_subtitle">डाउनलोड किए गए ऑडियो द्वारा इस्तेमाल की गई जगह खाली करता है</string>
     <string name="clear_image_cache">इमेज कैश साफ़ करें</string>
+    <string name="clear_lyrics_cache">Clear offline lyrics</string>
+    <string name="clear_lyrics_cache_subtitle">Lyrics saved from providers for offline playback</string>
+    <string name="lyrics_cache_cleared">Offline lyrics cleared</string>
     <string name="clear_image_cache_subtitle">एल्बम आर्ट द्वारा इस्तेमाल की गई जगह खाली करता है</string>
     <string name="play_next_on_swipe">स्वाइप करने पर आगे चलाएं</string>
     <string name="dont_repeat_songs">मौजूदा सेशन में गाने न दोहराएं</string>

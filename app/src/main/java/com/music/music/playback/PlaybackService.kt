@@ -126,6 +126,8 @@ import com.music.music.data.model.Song
 import com.music.music.data.scrobbling.LastFM
 import com.music.music.data.scrobbling.ListenBrainzManager
 import com.music.music.data.scrobbling.ScrobbleManager
+import com.music.music.data.scrobbling.ScrobbleQueue
+import com.music.music.data.scrobbling.ScrobbleRetry
 import com.music.music.data.settings.AppSettings
 import com.music.music.data.settings.EqualizerMode
 import com.music.music.data.settings.OutputPcmMode
@@ -6448,8 +6450,24 @@ class PlaybackService : MediaLibraryService() {
         val lbToken = AppSettings.listenBrainzToken.value
         if (!lbEnabled || lbToken.isBlank()) return
         val endMs = System.currentTimeMillis()
+        val primaryArtistOnly = AppSettings.listenBrainzPrimaryArtistOnly.value
         scope.launch {
-            ListenBrainzManager.submitFinished(lbToken, song, startMs, endMs, durationMs, AppSettings.listenBrainzPrimaryArtistOnly.value)
+            val delivered = ListenBrainzManager.submitFinished(lbToken, song, startMs, endMs, durationMs, primaryArtistOnly)
+            if (delivered) {
+                // Same reasoning as the Last.fm path: a delivered listen means
+                // there is a network, so anything queued behind it can go too.
+                ScrobbleRetry.flush()
+            } else {
+                ScrobbleQueue.enqueue(
+                    ScrobbleQueue.listenBrainz(
+                        song = song,
+                        startedAtMs = startMs,
+                        endedAtMs = endMs,
+                        durationMs = durationMs,
+                        primaryArtistOnly = primaryArtistOnly,
+                    ),
+                )
+            }
         }
     }
 
