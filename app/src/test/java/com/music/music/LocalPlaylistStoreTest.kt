@@ -86,7 +86,8 @@ class LocalPlaylistStoreTest {
         assertEquals("Old playlist", decoded[0].title)
         assertEquals("Old Song", decoded[0].songs[0].title)
         assertEquals("Old Album", decoded[0].songs[0].albumName)
-        // org.json's optString answers the literal "null" for a JSON null.
+        // The legacy writer emitted JSON null for absent fields; a key holding
+        // null is not a title anyone typed.
         assertNull(decoded[0].songs[0].thumbnailUrl)
         assertNull(decoded[0].songs[0].artistId)
     }

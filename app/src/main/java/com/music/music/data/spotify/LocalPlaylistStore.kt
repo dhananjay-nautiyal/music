@@ -7,7 +7,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.json.JSONArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 data class LocalPlaylist(
     val id: String,
@@ -139,41 +144,44 @@ object LocalPlaylistStore {
             .map { file -> file.playlists.map(::toPlaylist) }
             .getOrElse { decodeLegacy(raw) }
 
+    /**
+     * The original shape: a bare JSON array, written with `org.json`.
+     *
+     * Read with kotlinx rather than `org.json` so this stays a plain parsing
+     * question with no Android dependency — it is the one path that has to keep
+     * working on data written years ago, and it is worth being able to test it
+     * without a device.
+     */
     private fun decodeLegacy(raw: String): List<LocalPlaylist> = runCatching {
-        val array = JSONArray(raw)
-        buildList {
-            for (i in 0 until array.length()) {
-                val obj = array.getJSONObject(i)
-                val songsArray = obj.getJSONArray("songs")
-                val songs = buildList {
-                    for (j in 0 until songsArray.length()) {
-                        val s = songsArray.getJSONObject(j)
-                        add(
-                            Song(
-                                videoId = s.optString("videoId", ""),
-                                title = s.optString("title", ""),
-                                artist = s.optString("artist", ""),
-                                thumbnailUrl = s.optString("thumbnailUrl", null).cleanJsonNull(),
-                                durationText = s.optString("durationText", null).cleanJsonNull(),
-                                artistId = s.optString("artistId", null).cleanJsonNull(),
-                                albumId = s.optString("albumId", null).cleanJsonNull(),
-                                albumName = s.optString("albumName", null).cleanJsonNull(),
-                                isVideo = s.optBoolean("isVideo", false),
-                            ),
-                        )
-                    }
-                }
-                add(LocalPlaylist(obj.getString("id"), obj.getString("title"), songs))
+        val array = json.parseToJsonElement(raw).jsonArray
+        array.map { element ->
+            val obj = element.jsonObject
+            val songs = obj["songs"]?.jsonArray.orEmpty().map { songElement ->
+                val s = songElement.jsonObject
+                Song(
+                    videoId = s.stringOrEmpty("videoId"),
+                    title = s.stringOrEmpty("title"),
+                    artist = s.stringOrEmpty("artist"),
+                    thumbnailUrl = s.stringOrNull("thumbnailUrl"),
+                    durationText = s.stringOrNull("durationText"),
+                    artistId = s.stringOrNull("artistId"),
+                    albumId = s.stringOrNull("albumId"),
+                    albumName = s.stringOrNull("albumName"),
+                    isVideo = s["isVideo"]?.jsonPrimitive?.booleanOrNull ?: false,
+                )
             }
+            LocalPlaylist(
+                id = obj.stringOrEmpty("id"),
+                title = obj.stringOrEmpty("title"),
+                songs = songs,
+            )
         }
     }.getOrElse { emptyList() }
 
-    /**
-     * `optString` answers the four-character string "null" for a key holding a
-     * JSON null, which is not a title anyone typed.
-     */
-    private fun String?.cleanJsonNull(): String? =
-        takeIf { !it.isNullOrBlank() && it != "null" }
+    private fun JsonObject.stringOrNull(key: String): String? =
+        this[key]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() && it != "null" }
+
+    private fun JsonObject.stringOrEmpty(key: String): String = stringOrNull(key).orEmpty()
 
     private fun toPlaylist(stored: StoredPlaylist) = LocalPlaylist(
         id = stored.id,
