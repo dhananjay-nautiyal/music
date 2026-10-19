@@ -53,6 +53,7 @@
 #### Connectivity & Accounts
 - **Sign in with your Google account** for personalized content.
 - **Spotify integration** — connect your account to play your playlists and Liked Songs.
+- **Apple Music integration** — search the catalog and import your playlists; previews only, since FairPlay blocks full playback in third-party players.
 - **Discord Rich Presence** — in-app login, live track/artist/album and progress.
 - **Scrobbling** to Last.fm and ListenBrainz.
 - **Pluggable sources** — add, edit, test and health-check module sources.
@@ -68,9 +69,11 @@
 - **Lyrics providers** — credit to [lrc.red](https://lrc.red), [BiniLyrics](https://github.com/binimum), [BetterLyrics](https://github.com/better-lyrics/better-lyrics), [PaxSenix](https://lyrics.paxsenix.org), [LyricsPlus](https://github.com/ibratabian17/YouLyPlus), [SimpMusic](https://github.com/maxrave-dev/SimpMusic), [Unison](https://unison.boidu.dev), [Megalobiz](https://www.megalobiz.com), [KuGou](https://www.kugou.com), [LRCLIB](https://lrclib.net), [Musixmatch](https://www.musixmatch.com) and [Genius](https://genius.com).
 - **Dynamic, artwork-driven theming** — Material palette extracted from album art.
 - **Frosted-glass UI** — Telegram-style translucent bars via Haze, Material 3 theming.
+- **Liquid-glass icon** — frosted squircle launcher icon with a glass double-beamed note.
 
 #### Controls & Tweaks
 - **In-app updates** — an Update / Later popup on launch; downloads the APK built for your device.
+- **Incognito listening** — one toggle stops recording search history, listening stats, YouTube history and scrobbles.
 - **Per-network audio quality** — separate quality ceilings for Wi-Fi and mobile data.
 - **Playback speed control** (0.5×–2.0×) and **skip silence**.
 - **Sleep timer** — fixed presets or "stop after this track".
