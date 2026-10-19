@@ -270,15 +270,25 @@ object LyricsCache {
         )
 
         companion object {
-            fun of(line: LyricLine) = CachedLine(
-                timeMs = line.timeMs,
-                text = line.text,
-                words = line.words.map { CachedWord.of(it) },
-                sungUntilMs = line.sungUntilMs,
-                background = line.background?.let { of(it) },
-                alignment = line.alignment.name,
-                timingSource = line.timingSource?.let { of(it) },
-            )
+            /**
+             * Explicit types throughout: [CachedLine] holds two of itself, and
+             * without them the compiler cannot resolve `of` against the type it
+             * is still inferring.
+             */
+            fun of(line: LyricLine): CachedLine {
+                val background: CachedLine? = line.background?.let { CachedLine.of(it) }
+                val timing: CachedLine? = line.timingSource?.let { CachedLine.of(it) }
+                val words: List<CachedWord> = line.words.map { CachedWord.of(it) }
+                return CachedLine(
+                    timeMs = line.timeMs,
+                    text = line.text,
+                    words = words,
+                    sungUntilMs = line.sungUntilMs,
+                    background = background,
+                    alignment = line.alignment.name,
+                    timingSource = timing,
+                )
+            }
         }
     }
 
