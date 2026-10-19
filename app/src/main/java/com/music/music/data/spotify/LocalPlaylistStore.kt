@@ -5,8 +5,9 @@ import android.content.SharedPreferences
 import com.music.music.data.model.Song
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.json.JSONArray
-import org.json.JSONObject
 
 data class LocalPlaylist(
     val id: String,
@@ -16,9 +17,98 @@ data class LocalPlaylist(
     val browseId: String get() = "local:playlist:$id"
 }
 
+/**
+ * A playlist in the app's own store, in the shape it is written down.
+ *
+ * Separate from [LocalPlaylist] because a [Song] carries a lot the store has no
+ * business writing: a queue entry id, the radio station it came from, the page
+ * it was opened on. Those describe one session, not a playlist, and writing
+ * them would pin a playlist to the screen it was last played from.
+ *
+ * [StoredSong.localUri] and [localPath] are the exception that matters: a local
+ * file has no video id to resolve, so without them a playlist of device tracks
+ * came back after a restart pointing at nothing. The legacy format did not
+ * carry them — see [LocalPlaylistStore.load].
+ */
+@Serializable
+data class StoredPlaylist(
+    val id: String,
+    val title: String,
+    val songs: List<StoredSong> = emptyList(),
+)
+
+@Serializable
+data class StoredSong(
+    val videoId: String = "",
+    val title: String = "",
+    val artist: String = "",
+    val thumbnailUrl: String? = null,
+    val durationText: String? = null,
+    val artistId: String? = null,
+    val albumId: String? = null,
+    val albumName: String? = null,
+    val isVideo: Boolean = false,
+    val setVideoId: String? = null,
+    val localUri: String? = null,
+    val localPath: String? = null,
+    val sourceQuality: String? = null,
+) {
+    fun toSong(): Song = Song(
+        videoId = videoId,
+        title = title,
+        artist = artist,
+        thumbnailUrl = thumbnailUrl,
+        durationText = durationText,
+        artistId = artistId,
+        albumId = albumId,
+        albumName = albumName,
+        isVideo = isVideo,
+        setVideoId = setVideoId,
+        localUri = localUri,
+        localPath = localPath,
+        sourceQuality = sourceQuality,
+    )
+
+    companion object {
+        fun of(song: Song): StoredSong = StoredSong(
+            videoId = song.videoId,
+            title = song.title,
+            artist = song.artist,
+            thumbnailUrl = song.thumbnailUrl,
+            durationText = song.durationText,
+            artistId = song.artistId,
+            albumId = song.albumId,
+            albumName = song.albumName,
+            isVideo = song.isVideo,
+            setVideoId = song.setVideoId,
+            localUri = song.localUri,
+            localPath = song.localPath,
+            sourceQuality = song.sourceQuality,
+        )
+    }
+}
+
+/** The whole store, as one document. Versioned so a newer file can be refused whole. */
+@Serializable
+data class PlaylistFile(
+    val version: Int = LocalPlaylistStore.SCHEMA_VERSION,
+    val playlists: List<StoredPlaylist> = emptyList(),
+)
+
 object LocalPlaylistStore {
     private const val PREF_NAME = "music_local_playlists"
     private const val KEY_PLAYLISTS = "playlists_json"
+
+    /** Bump when the shape below stops being readable by an older build. */
+    const val SCHEMA_VERSION = 2
+
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        // Nulls are what most of these fields are; writing them out would triple
+        // the size of a backup to say nothing.
+        explicitNulls = false
+    }
 
     private lateinit var prefs: SharedPreferences
 
@@ -33,34 +123,86 @@ object LocalPlaylistStore {
     private fun load() {
         if (!this::prefs.isInitialized) return
         val raw = prefs.getString(KEY_PLAYLISTS, null) ?: return
-        runCatching {
-            val list = mutableListOf<LocalPlaylist>()
-            val jsonArray = JSONArray(raw)
-            for (i in 0 until jsonArray.length()) {
-                val obj = jsonArray.getJSONObject(i)
-                val id = obj.getString("id")
-                val title = obj.getString("title")
+        _playlists.value = decode(raw)
+    }
+
+    /**
+     * Reads either shape the store has ever been written in.
+     *
+     * The current one is a [PlaylistFile]. The original was a bare JSON array
+     * written with `org.json`, which carried no local URI and no set-video id —
+     * a playlist read back from it is as complete as it was when it was
+     * written, and the next [persist] upgrades it.
+     */
+    internal fun decode(raw: String): List<LocalPlaylist> =
+        runCatching { json.decodeFromString(PlaylistFile.serializer(), raw) }
+            .map { file -> file.playlists.map(::toPlaylist) }
+            .getOrElse { decodeLegacy(raw) }
+
+    private fun decodeLegacy(raw: String): List<LocalPlaylist> = runCatching {
+        val array = JSONArray(raw)
+        buildList {
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
                 val songsArray = obj.getJSONArray("songs")
-                val songs = mutableListOf<Song>()
-                for (j in 0 until songsArray.length()) {
-                    val sObj = songsArray.getJSONObject(j)
-                    val song = Song(
-                        videoId = sObj.optString("videoId", ""),
-                        title = sObj.optString("title", ""),
-                        artist = sObj.optString("artist", ""),
-                        thumbnailUrl = sObj.optString("thumbnailUrl", null).takeIf { !it.isNullOrBlank() && it != "null" },
-                        durationText = sObj.optString("durationText", null).takeIf { !it.isNullOrBlank() && it != "null" },
-                        artistId = sObj.optString("artistId", null).takeIf { !it.isNullOrBlank() && it != "null" },
-                        albumId = sObj.optString("albumId", null).takeIf { !it.isNullOrBlank() && it != "null" },
-                        albumName = sObj.optString("albumName", null).takeIf { !it.isNullOrBlank() && it != "null" },
-                        isVideo = sObj.optBoolean("isVideo", false),
-                    )
-                    songs.add(song)
+                val songs = buildList {
+                    for (j in 0 until songsArray.length()) {
+                        val s = songsArray.getJSONObject(j)
+                        add(
+                            Song(
+                                videoId = s.optString("videoId", ""),
+                                title = s.optString("title", ""),
+                                artist = s.optString("artist", ""),
+                                thumbnailUrl = s.optString("thumbnailUrl", null).cleanJsonNull(),
+                                durationText = s.optString("durationText", null).cleanJsonNull(),
+                                artistId = s.optString("artistId", null).cleanJsonNull(),
+                                albumId = s.optString("albumId", null).cleanJsonNull(),
+                                albumName = s.optString("albumName", null).cleanJsonNull(),
+                                isVideo = s.optBoolean("isVideo", false),
+                            ),
+                        )
+                    }
                 }
-                list.add(LocalPlaylist(id, title, songs))
+                add(LocalPlaylist(obj.getString("id"), obj.getString("title"), songs))
             }
-            _playlists.value = list
         }
+    }.getOrElse { emptyList() }
+
+    /**
+     * `optString` answers the four-character string "null" for a key holding a
+     * JSON null, which is not a title anyone typed.
+     */
+    private fun String?.cleanJsonNull(): String? =
+        takeIf { !it.isNullOrBlank() && it != "null" }
+
+    private fun toPlaylist(stored: StoredPlaylist) = LocalPlaylist(
+        id = stored.id,
+        title = stored.title,
+        songs = stored.songs.map { it.toSong() },
+    )
+
+    /** The whole store as the document [importAll] and [Backup] both speak. */
+    fun exportFile(): PlaylistFile = PlaylistFile(
+        playlists = _playlists.value.map { playlist ->
+            StoredPlaylist(
+                id = playlist.id,
+                title = playlist.title,
+                songs = playlist.songs.map(StoredSong::of),
+            )
+        },
+    )
+
+    /**
+     * Replaces the whole store with [file]'s contents.
+     *
+     * A replace, not a merge: an import is a move from one device to another,
+     * and merging would leave the two libraries interleaved with no way to tell
+     * which playlist came from where.
+     */
+    fun importAll(file: PlaylistFile) {
+        val incoming = file.playlists.map(::toPlaylist)
+        _playlists.value = incoming
+        persist(incoming)
     }
 
     fun savePlaylist(title: String, songs: List<Song>): LocalPlaylist {
@@ -97,29 +239,16 @@ object LocalPlaylistStore {
     private fun persist(list: List<LocalPlaylist>) {
         if (!this::prefs.isInitialized) return
         runCatching {
-            val jsonArray = JSONArray()
-            for (playlist in list) {
-                val pObj = JSONObject()
-                pObj.put("id", playlist.id)
-                pObj.put("title", playlist.title)
-                val songsArray = JSONArray()
-                for (song in playlist.songs) {
-                    val sObj = JSONObject()
-                    sObj.put("videoId", song.videoId)
-                    sObj.put("title", song.title)
-                    sObj.put("artist", song.artist)
-                    sObj.put("thumbnailUrl", song.thumbnailUrl)
-                    sObj.put("durationText", song.durationText)
-                    sObj.put("artistId", song.artistId)
-                    sObj.put("albumId", song.albumId)
-                    sObj.put("albumName", song.albumName)
-                    sObj.put("isVideo", song.isVideo)
-                    songsArray.put(sObj)
-                }
-                pObj.put("songs", songsArray)
-                jsonArray.put(pObj)
-            }
-            prefs.edit().putString(KEY_PLAYLISTS, jsonArray.toString()).apply()
+            val file = PlaylistFile(
+                playlists = list.map { playlist ->
+                    StoredPlaylist(
+                        id = playlist.id,
+                        title = playlist.title,
+                        songs = playlist.songs.map(StoredSong::of),
+                    )
+                },
+            )
+            prefs.edit().putString(KEY_PLAYLISTS, json.encodeToString(PlaylistFile.serializer(), file)).apply()
         }
     }
 }

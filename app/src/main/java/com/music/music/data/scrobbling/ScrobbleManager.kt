@@ -116,19 +116,39 @@ class ScrobbleManager(
 
     private fun scrobbleSong(song: Song, durationSeconds: Int) {
         val scrobbleArtist = song.artist.forScrobble()
+        val startedAt = songStartedAt
         scope.launch {
             LastFM
                 .scrobble(
                     artist = scrobbleArtist,
                     track = song.title,
                     duration = durationSeconds,
-                    timestamp = songStartedAt,
+                    timestamp = startedAt,
                     album = song.albumName,
                 ).onSuccess {
                     Log.d(TAG, "Scrobbled: ${song.title} by ${song.artist}")
+                    // The network is demonstrably up, which is the one moment a
+                    // backlog is most likely to drain — see ScrobbleRetry.
+                    ScrobbleRetry.flush()
                 }.onFailure { throwable ->
                     if (throwable is CancellationException) throw throwable
-                    Log.e(TAG, "Failed to scrobble: ${song.title}", throwable)
+                    val code = (throwable as? LastFM.LastFmException)?.code
+                    if (code == null || code !in ScrobbleQueue.PERMANENT_LAST_FM_ERRORS) {
+                        // Not delivered, but it happened: remember it. A refusal
+                        // (bad session, bad key) is not a network problem and is
+                        // not worth keeping — the retry path would only drop it.
+                        ScrobbleQueue.enqueue(
+                            ScrobbleQueue.lastFm(
+                                song = song,
+                                startedAtMs = startedAt,
+                                durationSeconds = durationSeconds,
+                                primaryArtistOnly = usePrimaryArtistOnly,
+                            ),
+                        )
+                        Log.w(TAG, "Scrobble queued for retry: ${song.title} (${throwable.message})")
+                    } else {
+                        Log.e(TAG, "Scrobble refused, not retrying: ${song.title}", throwable)
+                    }
                 }
         }
     }

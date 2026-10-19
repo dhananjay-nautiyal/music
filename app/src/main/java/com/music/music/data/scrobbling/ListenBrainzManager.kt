@@ -68,19 +68,48 @@ object ListenBrainzManager {
         primaryArtistOnly: Boolean = false,
     ): Boolean {
         if (token.isBlank() || song == null) return false
+        val durationMs = durationMsOverride ?: parseDurationMs(song.durationText)
+        val artist = if (primaryArtistOnly) song.artist.primaryArtist() else song.artist
+        return submitFinishedRaw(
+            token = token,
+            artist = artist,
+            track = song.title,
+            album = song.albumName,
+            startedAtMs = startMs,
+            endedAtMs = endMs,
+            durationMs = durationMs.takeIf { it > 0 },
+        )
+    }
+
+    /**
+     * The same submission, from fields rather than a [Song].
+     *
+     * Exists for the retry queue, which outlives the song object: a play queued
+     * offline is delivered after a restart, when there is nothing left to read a
+     * title off but the record itself. [submitFinished] delegates here so the
+     * two cannot drift apart in what they send.
+     */
+    suspend fun submitFinishedRaw(
+        token: String,
+        artist: String,
+        track: String,
+        album: String?,
+        startedAtMs: Long,
+        endedAtMs: Long,
+        durationMs: Long?,
+    ): Boolean {
+        if (token.isBlank()) return false
         return withContext(Dispatchers.IO) {
             try {
-                val durationMs = durationMsOverride ?: parseDurationMs(song.durationText)
-                val durationPart = if (durationMs > 0) "\"duration_ms\":$durationMs," else ""
-                val releaseName = song.albumName.orEmpty()
+                val durationPart = durationMs?.takeIf { it > 0 }?.let { "\"duration_ms\":$it," } ?: ""
+                val releaseName = album.orEmpty()
                 val releasePart = if (releaseName.isBlank()) "" else "\"release_name\":\"${escapeJson(releaseName)}\","
-                var listenedAtStart = startMs / 1000L
+                var listenedAtStart = startedAtMs / 1000L
                 val MIN_LISTEN_TS = 1033430400L
                 if (listenedAtStart < MIN_LISTEN_TS) {
                     listenedAtStart = System.currentTimeMillis() / 1000L
                 }
-                val artist = if (primaryArtistOnly) song.artist.primaryArtist() else song.artist
-                val trackMetadata = """{"listened_at":$listenedAtStart,"track_metadata":{"artist_name":"${escapeJson(artist)}","track_name":"${escapeJson(song.title)}",$releasePart"additional_info":{${durationPart}"start_ms":$startMs,"end_ms":$endMs,"submission_client":"Music"}}}"""
+                val trackMetadata = """{"listened_at":$listenedAtStart,"track_metadata":{"artist_name":"${escapeJson(artist)}","track_name":"${escapeJson(track)}",$releasePart"additional_info":{${durationPart}"start_ms":$startedAtMs,"end_ms":$endedAtMs,"submission_client":"Music"}}}"""
                 val bodyJson = "{\"listen_type\":\"single\",\"payload\":[$trackMetadata]}"
                 Log.d(TAG, "submitFinished: $bodyJson")
                 val body = bodyJson.toRequestBody("application/json".toMediaType())
@@ -94,7 +123,7 @@ object ListenBrainzManager {
 
                 Http.client.newCall(request).execute().use { resp ->
                     if (resp.isSuccessful) {
-                        Log.d(TAG, "finished listen submitted for ${song.title}")
+                        Log.d(TAG, "finished listen submitted for $track")
                         true
                     } else {
                         val bodyText = try { resp.body?.string() ?: "" } catch (_: Exception) { "" }

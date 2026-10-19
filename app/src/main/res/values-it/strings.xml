@@ -113,6 +113,12 @@
     <string name="account_integrations">Account e integrazioni</string>
     <string name="account_scrobbling">Account e scrobbling</string>
     <string name="rich_presence">Presenza avanzata</string>
+    <string name="scrobble_pending_title">Pending scrobbles</string>
+    <string name="scrobble_pending_none">Nothing waiting — every play has been delivered</string>
+    <string name="scrobble_pending_some">%1$d waiting to be sent</string>
+    <string name="scrobble_pending_retry">Send now</string>
+    <string name="scrobble_pending_sent">Sent %1$d</string>
+    <string name="scrobble_pending_still_waiting">Couldn\'t reach the service — still waiting</string>
     <string name="scrobbling">Scrobbling</string>
     <string name="now_playing">In riproduzione</string>
     <string name="selected">Selezionato</string>
@@ -259,6 +265,9 @@
     <string name="clear_song_cache">Svuota cache brani</string>
     <string name="clear_song_cache_subtitle">Libera lo spazio usato dall\'audio scaricato</string>
     <string name="clear_image_cache">Svuota cache immagini</string>
+    <string name="clear_lyrics_cache">Clear offline lyrics</string>
+    <string name="clear_lyrics_cache_subtitle">Lyrics saved from providers for offline playback</string>
+    <string name="lyrics_cache_cleared">Offline lyrics cleared</string>
     <string name="clear_image_cache_subtitle">Libera lo spazio usato dalle copertine</string>
     <string name="play_next_on_swipe">Riproduci dopo con swipe</string>
     <string name="dont_repeat_songs">Non ripetere i brani nella sessione corrente</string>

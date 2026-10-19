@@ -70,6 +70,10 @@ class MusicApplication : Application(), SingletonImageLoader.Factory {
         Innertube.appLanguage = { AppCompatDelegate.getApplicationLocales().get(0)?.toLanguageTag() }
         migrateScriptOnlyAppLocale()
         LyricsTranslation.cacheDir = cacheDir
+        // Lyrics themselves, not just their translations. Same directory, own
+        // subfolder — see LyricsCache for why a found answer is worth keeping
+        // and a miss is not.
+        com.music.music.data.lyrics.LyricsCache.cacheDir = cacheDir
         // PlaybackService shares this process, so seeding the cookie here means
         // stream resolution is authenticated from the first play onwards.
         authStore = AuthStore(this)
@@ -121,6 +125,10 @@ class MusicApplication : Application(), SingletonImageLoader.Factory {
         // the next connect, which is the only way to be sure they are current.
         ListenTogether.init(this)
         SearchHistory.init(this)
+        // Plays that were counted while there was no network to report them
+        // on. Opened before PlaybackService can start, so its first flush sees
+        // whatever the last session left behind.
+        com.music.music.data.scrobbling.ScrobbleQueue.init(this)
         LastPlayed.init(this)
         com.music.music.playback.PartyPersonalQueueStash.init(this)
         // Which tracks the listener has reverted to YouTube's own upload. Read
@@ -158,6 +166,14 @@ class MusicApplication : Application(), SingletonImageLoader.Factory {
         }
         // Initialize LastFM with saved settings if available
         initLastfm()
+        // Anything a previous session could not deliver, now that credentials
+        // and the network stack are both up. Off the main thread and not
+        // awaited: startup does not wait on Last.fm.
+        thread(name = "scrobble-retry") {
+            kotlinx.coroutines.runBlocking {
+                runCatching { com.music.music.data.scrobbling.ScrobbleRetry.flush() }
+            }
+        }
         // The public "apps open right now" count; see Presence.
         com.music.music.data.presence.AndroidPresence.install(this)
         backgroundInit.join()

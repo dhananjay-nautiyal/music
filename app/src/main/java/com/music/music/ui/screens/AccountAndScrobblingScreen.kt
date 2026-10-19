@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cloud
+import androidx.compose.material.icons.rounded.CloudUpload
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LibraryMusic
@@ -23,17 +24,27 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.music.music.R
 import com.music.music.data.model.Account
+import com.music.music.data.scrobbling.ScrobbleQueue
+import com.music.music.data.scrobbling.ScrobbleRetry
 import com.music.music.data.settings.AppSettings
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
@@ -286,6 +297,56 @@ fun AccountAndScrobblingScreen(
                             )
                         },
                         onClick = { AppSettings.setLastfmNowPlaying(!lastfmNowPlayingEnabled) },
+                    )
+                }
+            }
+
+            // Plays counted while offline are held rather than dropped; this is
+            // where you can see that they are, and send them without waiting for
+            // the next successful scrobble to trigger a flush.
+            if ((lastfmEnabled && lastfmSessionKey.isNotBlank()) ||
+                (listenBrainzEnabled && listenBrainzToken.isNotBlank())
+            ) {
+                val context = LocalContext.current
+                val scope = rememberCoroutineScope()
+                var pending by remember { mutableIntStateOf(ScrobbleQueue.size()) }
+                var sending by remember { mutableStateOf(false) }
+                var result by remember { mutableStateOf<String?>(null) }
+                val sendNow: () -> Unit = {
+                    if (pending > 0 && !sending) {
+                        sending = true
+                        result = null
+                        scope.launch {
+                            val sent = runCatching { ScrobbleRetry.flush() }.getOrDefault(0)
+                            pending = ScrobbleQueue.size()
+                            result = if (sent > 0) {
+                                context.getString(R.string.scrobble_pending_sent, sent)
+                            } else {
+                                context.getString(R.string.scrobble_pending_still_waiting)
+                            }
+                            sending = false
+                        }
+                    }
+                }
+                SettingsGroup(header = stringResource(R.string.scrobble_pending_title)) {
+                    SettingsRow(
+                        icon = Icons.Rounded.CloudUpload,
+                        title = stringResource(R.string.scrobble_pending_title),
+                        subtitle = result ?: if (pending == 0) {
+                            stringResource(R.string.scrobble_pending_none)
+                        } else {
+                            stringResource(R.string.scrobble_pending_some, pending)
+                        },
+                        trailing = if (pending > 0) {
+                            {
+                                TextButton(enabled = !sending, onClick = sendNow) {
+                                    Text(stringResource(R.string.scrobble_pending_retry))
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                        onClick = sendNow,
                     )
                 }
             }

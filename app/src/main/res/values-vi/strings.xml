@@ -92,6 +92,12 @@
     <string name="account_integrations">Tài khoản &amp; tích hợp</string>
     <string name="account_scrobbling">Tài khoản &amp; scrobbling</string>
     <string name="rich_presence">Trạng thái hoạt động (Rich presence)</string>
+    <string name="scrobble_pending_title">Pending scrobbles</string>
+    <string name="scrobble_pending_none">Nothing waiting — every play has been delivered</string>
+    <string name="scrobble_pending_some">%1$d waiting to be sent</string>
+    <string name="scrobble_pending_retry">Send now</string>
+    <string name="scrobble_pending_sent">Sent %1$d</string>
+    <string name="scrobble_pending_still_waiting">Couldn\'t reach the service — still waiting</string>
     <string name="scrobbling">Scrobbling</string>
     <string name="now_playing">Đang phát</string>
     <string name="selected">Đã chọn</string>
@@ -247,6 +253,9 @@
     <string name="clear_song_cache">Xóa bộ nhớ đệm bài hát</string>
     <string name="clear_song_cache_subtitle">Giải phóng dung lượng do âm thanh đã tải sử dụng</string>
     <string name="clear_image_cache">Xóa bộ nhớ đệm hình ảnh</string>
+    <string name="clear_lyrics_cache">Clear offline lyrics</string>
+    <string name="clear_lyrics_cache_subtitle">Lyrics saved from providers for offline playback</string>
+    <string name="lyrics_cache_cleared">Offline lyrics cleared</string>
     <string name="clear_image_cache_subtitle">Giải phóng dung lượng do ảnh bìa album sử dụng</string>
     <string name="play_next_on_swipe">Phát tiếp khi vuốt</string>
     <string name="dont_repeat_songs">Không lặp lại bài hát trong phiên hiện tại</string>

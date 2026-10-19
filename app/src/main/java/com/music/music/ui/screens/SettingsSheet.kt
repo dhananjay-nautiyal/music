@@ -1263,6 +1263,20 @@ fun SettingsScreen(
                     },
                 )
             }
+            val clearLyricsCacheTitle = stringResource(R.string.clear_lyrics_cache)
+            row(clearLyricsCacheTitle, "lyrics", "cache", "offline", "free space") {
+                SettingsRow(
+                    icon = Icons.Rounded.DeleteSweep,
+                    title = clearLyricsCacheTitle,
+                    subtitle = stringResource(R.string.clear_lyrics_cache_subtitle),
+                    onClick = {
+                        backupScope.launch {
+                            com.music.music.data.lyrics.LyricsCache.clear()
+                            Toast.makeText(context, context.getString(R.string.lyrics_cache_cleared), Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                )
+            }
         }
 
         SearchableSettingsGroup(search, header = stringResource(R.string.your_data)) {

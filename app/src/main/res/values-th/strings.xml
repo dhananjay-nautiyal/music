@@ -89,6 +89,12 @@
     <string name="account_integrations">บัญชีและการเชื่อมต่อ</string>
     <string name="account_scrobbling">บัญชีและการสโครบเบิล</string>
     <string name="rich_presence">Rich Presence</string>
+    <string name="scrobble_pending_title">Pending scrobbles</string>
+    <string name="scrobble_pending_none">Nothing waiting — every play has been delivered</string>
+    <string name="scrobble_pending_some">%1$d waiting to be sent</string>
+    <string name="scrobble_pending_retry">Send now</string>
+    <string name="scrobble_pending_sent">Sent %1$d</string>
+    <string name="scrobble_pending_still_waiting">Couldn\'t reach the service — still waiting</string>
     <string name="scrobbling">การสโครบเบิล</string>
     <string name="now_playing">กำลังเล่น</string>
     <string name="selected">เลือกแล้ว</string>
@@ -235,6 +241,9 @@
     <string name="clear_song_cache">ล้างแคชเพลง</string>
     <string name="clear_song_cache_subtitle">คืนพื้นที่ที่ใช้โดยเสียงที่ดาวน์โหลดไว้</string>
     <string name="clear_image_cache">ล้างแคชรูปภาพ</string>
+    <string name="clear_lyrics_cache">Clear offline lyrics</string>
+    <string name="clear_lyrics_cache_subtitle">Lyrics saved from providers for offline playback</string>
+    <string name="lyrics_cache_cleared">Offline lyrics cleared</string>
     <string name="clear_image_cache_subtitle">คืนพื้นที่ที่ใช้โดยปกอัลบั้ม</string>
     <string name="play_next_on_swipe">ปัดเพื่อเล่นต่อไป</string>
     <string name="dont_repeat_songs">ไม่เล่นเพลงซ้ำในเซสชันปัจจุบัน</string>

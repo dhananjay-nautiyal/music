@@ -191,6 +191,11 @@ object LocalMediaRepository {
      * Queries MediaStore for all audio files available on the device.
      */
     suspend fun getLocalMusic(context: Context): List<Song> = withContext(Dispatchers.IO) {
+        // A rescan is the moment to forget which albums had no art, so a folder
+        // cover added since last time is picked up. Covers already extracted are
+        // kept on disk and reused — re-extracting every album on every scan
+        // would cost more than the staleness it would fix.
+        LocalArtwork.invalidate()
         if (!hasStoragePermission(context)) return@withContext emptyList()
 
         val songs = mutableListOf<Song>()
@@ -267,8 +272,6 @@ object LocalMediaRepository {
                 val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
                 val dateModifiedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
 
-                val albumArtBaseUri = Uri.parse("content://media/external/audio/albumart")
-
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idCol)
                     val displayName = cursor.getString(displayNameCol).orEmpty()
@@ -288,7 +291,16 @@ object LocalMediaRepository {
                         ?: "Track $id"
                     val artist = rawArtist.takeUnless { it.isNullOrBlank() || it == "<unknown>" } ?: "Unknown Artist"
                     val albumName = rawAlbum.takeUnless { it.isNullOrBlank() || it == "<unknown>" }
-                    val artworkUrl = if (albumId > 0) ContentUris.withAppendedId(albumArtBaseUri, albumId).toString() else null
+                    // MediaStore's indexed cover first, when it actually has
+                    // one; otherwise the file's own embedded picture or a
+                    // folder cover, extracted once per album. See LocalArtwork
+                    // for why an album id alone is not enough to skip this.
+                    val artworkUrl = LocalArtwork.mediaStoreArtwork(context, albumId)
+                        ?: LocalArtwork.artworkFor(
+                            context = context,
+                            path = path,
+                            albumKey = "${albumName.orEmpty()}\u0000${artist}",
+                        )
                     val durationText = durationMs.takeIf { it > 0 }?.let(::formatDuration)
 
                     songs.add(
