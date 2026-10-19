@@ -3,11 +3,14 @@
 <br/>
 <br/>
 
-<img src="Logo.png" alt="Music app icon" width="200" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="Logo.png">
+  <img src="Logo-light.png" alt="Music logo" width="200" />
+</picture>
 
 # Music
 
-### Aesthetic YouTube Music Client
+### Aesthetic music player for YouTube Music, local files and more
 
 <br/>
 
@@ -18,7 +21,7 @@
 
 <br/>
 
-[**Download**](#download) · [**Features**](#features) · [**Contributing**](#contributing) · [**Disclaimer**](#disclaimer)
+[**What's new**](#whats-new) · [**Download**](#download) · [**Features**](#features) · [**Contributing**](#contributing) · [**Disclaimer**](#disclaimer)
 
 <br/>
 
@@ -27,6 +30,17 @@
 
 > [!IMPORTANT]
 > Music is not affiliated with, endorsed by, or connected to YouTube or Google in any way. Use it at your own discretion.
+
+---
+
+## What's new
+
+| Release | Highlights |
+| --- | --- |
+| **1.1.1** | A new liquid-glass mark and a refreshed banner. The README logo now follows your GitHub theme, and the desktop packages finally ship the app's real artwork instead of a stray icon. |
+| **1.1.0** | Offline lyrics cache · scrobble retry queue · local playlists carried through backup and restore · local artwork (embedded pictures or folder covers). |
+
+[**All releases →**](https://github.com/dhananjay-nautiyal/music/releases)
 
 ---
 
@@ -95,9 +109,14 @@
 <a href="https://github.com/dhananjay-nautiyal/music/releases" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/supported/android/cozy.svg" alt="Download for Android" height="55"/></a>
 <a href="https://github.com/dhananjay-nautiyal/music/releases" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/JMcrafter26/badges@main/src/assets/supported/windows/cozy.svg" alt="Download for Windows" height="55"/></a>
 
+Runs on **Android 8.0+**, **Windows 10/11**, **Linux**, and **macOS on Apple Silicon**.
+
 Grab the latest signed APK from the [Releases](https://github.com/dhananjay-nautiyal/music/releases) page — pick the build for your device (`arm64-v8a` for most phones, universal fits all). Sideloading requires enabling "Install unknown apps" for whichever app you download it with.
 
-For the Windows and Linux desktop app, see [DESKTOP.md](DESKTOP.md).
+Desktop builds for Windows, Linux and macOS ship in the same release. [DESKTOP.md](DESKTOP.md) explains which file to pick and how to run it.
+
+> [!NOTE]
+> Intel macOS builds are not currently produced. The beat-detection model fails to load under ONNX Runtime on that runner, which fails the test stage before packaging; Apple Silicon builds are unaffected.
 
 </div>
 

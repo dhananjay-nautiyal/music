@@ -34,7 +34,7 @@ Nothing else has to be installed first — no JDK, no codec pack.
 | Platform | Download | Notes |
 |---|---|---|
 | macOS | `Music-<version>-macos-arm64.dmg` | For Apple Silicon Macs (M1/M2/M3/M4/later). Drag to Applications. |
-| macOS | `Music-<version>-macos-x64.dmg` | For Intel Macs. Drag to Applications. |
+| macOS | `Music-<version>-macos-x64.dmg` | For Intel Macs, when the Intel build succeeds. It is currently failing at the test stage, so most releases do not include it. |
 | macOS | `Music-<version>-macos-*.pkg` | Standard macOS installer package for automated or managed installations. |
 | Linux | `Music-<version>-linux-x86_64.AppImage` | `chmod +x` it and run. No install, works on any distribution. |
 | Linux | `Music-<version>-linux-amd64.deb` | `sudo apt install ./Music-*.deb` on Debian, Ubuntu and derivatives. |
