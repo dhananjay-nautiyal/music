@@ -62,7 +62,7 @@ class LyricsCacheTest {
     )
 
     @Test
-    fun `a stored answer comes back whole`() = runBlocking {
+    fun `a stored answer comes back whole`(): Unit = runBlocking {
         freshCache()
         LyricsCache.put("vid1", "Title", "Artist", 200_000, "Album", wordSynced)
 
@@ -84,7 +84,7 @@ class LyricsCacheTest {
     }
 
     @Test
-    fun `a miss is not stored`() = runBlocking {
+    fun `a miss is not stored`(): Unit = runBlocking {
         freshCache()
         LyricsCache.put("vid2", "T", "A", 100_000, null, LyricsRepository.Result(LyricsSource.LRCLIB, emptyList()))
 
@@ -92,7 +92,7 @@ class LyricsCacheTest {
     }
 
     @Test
-    fun `a different track does not get the answer`() = runBlocking {
+    fun `a different track does not get the answer`(): Unit = runBlocking {
         freshCache()
         LyricsCache.put("vid3", "Title", "Artist", 200_000, null, wordSynced)
 
@@ -102,7 +102,7 @@ class LyricsCacheTest {
     }
 
     @Test
-    fun `duration is compared in whole seconds`() = runBlocking {
+    fun `duration is compared in whole seconds`(): Unit = runBlocking {
         freshCache()
         // Providers and files disagree on a track's length by a few hundred ms;
         // a key that disagreed with itself would miss every single time.
@@ -112,7 +112,7 @@ class LyricsCacheTest {
     }
 
     @Test
-    fun `a stored answer survives a restart`() = runBlocking {
+    fun `a stored answer survives a restart`(): Unit = runBlocking {
         freshCache()
         LyricsCache.put("vid6", "T", "A", 200_000, null, wordSynced)
 
@@ -127,7 +127,7 @@ class LyricsCacheTest {
     }
 
     @Test
-    fun `a background line and its own timing survive`() = runBlocking {
+    fun `a background line and its own timing survive`(): Unit = runBlocking {
         freshCache()
         val withBackground = LyricsRepository.Result(
             source = LyricsSource.LYRICS_PLUS,
