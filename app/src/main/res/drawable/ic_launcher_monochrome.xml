@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon layer. Android reads the alpha channel and tints it, so the
+     colour here is irrelevant; only the note's silhouette matters. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/ic_launcher_note_mono"
+    android:gravity="fill" />
