@@ -37,6 +37,7 @@
 
 | Release | Highlights |
 | --- | --- |
+| **1.1.2** | The Android launcher icon now uses the same mark as the README: a navy tile with the glass note filling the mask, instead of a padded bitmap inside a black ring. Themed (monochrome) icons are supported too. |
 | **1.1.1** | A new liquid-glass mark and a refreshed banner. The README logo now follows your GitHub theme, and the desktop packages finally ship the app's real artwork instead of a stray icon. |
 | **1.1.0** | Offline lyrics cache · scrobble retry queue · local playlists carried through backup and restore · local artwork (embedded pictures or folder covers). |
 

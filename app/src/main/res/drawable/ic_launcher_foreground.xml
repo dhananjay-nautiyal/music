@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Liquid-glass launcher artwork (AI-generated 1024px, pre-padded to the
-     72dp safe zone on a black canvas so the mask never clips the note). -->
+<!-- The note alone, transparent, centred inside the 72dp safe zone. The
+     launcher supplies the tile shape, so this layer must not carry a
+     background of its own. -->
 <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/liquid_glass_icon_fg"
+    android:src="@drawable/ic_launcher_note"
     android:gravity="fill" />
