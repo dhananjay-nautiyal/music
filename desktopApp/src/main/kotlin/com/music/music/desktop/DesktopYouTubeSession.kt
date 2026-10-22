@@ -2,6 +2,7 @@ package com.music.music.desktop
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
@@ -26,7 +27,13 @@ internal object DesktopYouTubeSession {
 
     private val visitorData = AtomicReference<String?>(null)
     private val visitorPattern = Regex("""Cg[A-Za-z0-9_%-]{40,}""")
-    private val client = HttpClient(CIO)
+    private val client = HttpClient(CIO) {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15_000
+            connectTimeoutMillis = 10_000
+            socketTimeoutMillis = 15_000
+        }
+    }
 
     /**
      * Whether the visitor id in hand came from the signed-in shell rather than being minted
