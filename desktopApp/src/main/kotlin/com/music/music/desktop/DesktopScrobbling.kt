@@ -4,6 +4,7 @@ import com.music.music.data.model.Song
 import com.music.music.data.model.durationMillis
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -45,6 +46,11 @@ object DesktopScrobbling {
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 10_000
+            socketTimeoutMillis = 30_000
+        }
     }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var activeSongId: String? = null

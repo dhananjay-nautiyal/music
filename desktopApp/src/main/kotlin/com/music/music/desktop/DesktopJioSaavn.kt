@@ -5,6 +5,7 @@ import com.music.music.data.model.SearchResult
 import com.music.music.data.model.Song
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -72,6 +73,11 @@ internal object DesktopJioSaavn {
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) { json(json) }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15_000
+            connectTimeoutMillis = 10_000
+            socketTimeoutMillis = 15_000
+        }
     }
 
     suspend fun search(query: String, limit: Int = 25): Result<List<SearchResult>> = runCatching {
