@@ -11,6 +11,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -228,7 +231,18 @@ internal object QuickJsExecutor {
 
     // ── Call ─────────────────────────────────────────────────────────────
 
-    suspend fun callExport(moduleId: String, functionName: String, args: List<String>): Result<String> {
+    /**
+     * Calls an export of [moduleId]'s module, with [args] handed over as data.
+     *
+     * Each element is a [JsonElement] — a string, a number, an object — and
+     * [callOn] serialises the list with a real JSON encoder before any of it
+     * reaches the interpreter. The arguments are *not* JavaScript source: they
+     * used to be pre-quoted strings spliced into the call expression, which
+     * meant a `"` in a query or a module setting closed the literal and
+     * rewrote the script (a title like `Don't "Stop" Me Now` failed the call
+     * outright, and a crafted value could inject statements — issue #14).
+     */
+    suspend fun callExport(moduleId: String, functionName: String, args: List<JsonElement>): Result<String> {
         val pool = synchronized(engineLock) { pools[moduleId] }
             ?: return Result.failure(IllegalStateException("Module $moduleId is not loaded"))
 
@@ -255,7 +269,7 @@ internal object QuickJsExecutor {
         qjs: QuickJs,
         moduleId: String,
         functionName: String,
-        args: List<String>,
+        args: List<JsonElement>,
     ): Result<String> =
         run {
             runCatching {
@@ -264,7 +278,19 @@ internal object QuickJsExecutor {
                     throw IllegalStateException("$functionName is not a function on module $moduleId")
                 }
 
-                val argsStr = args.joinToString(",")
+                // The arguments reach the interpreter as encoded data, never as
+                // source (issue #14): a JSON array from a real encoder, parked in
+                // a global the call reads back with apply(). What this replaced
+                // spliced the values straight into the call expression —
+                // `__fn($argsStr)` with each argument pre-quoted by hand — so a
+                // `"` in a query or a module setting ended the string literal and
+                // rewrote the script: an ordinary title like
+                // `Don't "Stop" Me Now` failed the call outright, and a crafted
+                // value could run its own statements in the module's context.
+                // JSON encoding is what makes that structurally impossible: quotes,
+                // backslashes and newlines come out escaped, and a newline no
+                // longer breaks the layout of the source below either.
+                val argsJson = Json.encodeToString(ListSerializer(JsonElement.serializer()), args)
 
                 // evaluate() converts a Promise via toString() instead of awaiting it.
                 // Workaround: store the resolved JSON in a global var inside the async
@@ -272,6 +298,7 @@ internal object QuickJsExecutor {
                 qjs.evaluate<String>(
                     """
                     var __spine_resolved_json = undefined;
+                    var __spine_args = $argsJson;
                     (async function() {
                         var __fn = __spine_mod['$functionName'];
                         if (!__fn) {
@@ -279,7 +306,7 @@ internal object QuickJsExecutor {
                             return;
                         }
                         try {
-                            var r = await __fn($argsStr);
+                            var r = await __fn.apply(null, __spine_args);
                             __spine_resolved_json = typeof r === 'string' ? r : JSON.stringify(r);
                         } catch(e) {
                             __spine_resolved_json = JSON.stringify({ error: e && e.message ? e.message : String(e) });

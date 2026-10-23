@@ -12,6 +12,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import okhttp3.Request
 
 /**
@@ -28,6 +30,35 @@ internal fun redactModuleUrl(url: String): String =
         val uri = java.net.URI(url)
         "${uri.scheme}://***${uri.rawPath.orEmpty()}"
     }.getOrDefault("***")
+
+/**
+ * The `context` argument every module export takes, as data.
+ *
+ * A module reads a setting as `context.settings.<key>.value` — the extra
+ * `value` wrapper is there because a module's own settings schema
+ * describes each key as an object with a type, a label and a current
+ * value, and the host hands back the same shape it was given. This was
+ * previously built as `{settings:{value:{…}}}`, one level short and with
+ * the wrapper on the wrong side, so *no* module could read *any* setting
+ * out of it: every lookup landed on undefined and fell through to the
+ * module's own default. Silent, and worth exactly one misplaced brace.
+ *
+ * Built as a [JsonObject] rather than concatenated into a string: the
+ * hand-built one spliced setting values into the script unescaped, so a
+ * value holding a `"` closed the literal and broke the call, and a crafted
+ * one could inject statements (issue #14). As a `JsonElement` the encoder
+ * does the escaping, and [QuickJsExecutor.callExport] serialises the whole
+ * argument list the same way.
+ */
+internal fun contextArg(settings: Map<String, String>): JsonObject = JsonObject(
+    mapOf(
+        "settings" to JsonObject(
+            settings.entries.associate { (key, value) ->
+                key to JsonObject(mapOf("value" to JsonPrimitive(value)))
+            },
+        ),
+    ),
+)
 
 /**
  * Fetches a module index, downloads and loads module JS, and calls the
@@ -247,7 +278,7 @@ class ModuleManager {
         // can change the answer. The settings belong in the key as much as the
         // query does: the same search under a different quality tier is a
         // different question.
-        key = keyOf(loaded.module.id, query, limit.toString(), contextArg(settings)),
+        key = keyOf(loaded.module.id, query, limit.toString(), contextArg(settings).toString()),
         describe = { "▶ searchTracks() module=${loaded.module.id} query=\"$query\" limit=$limit" },
     ) {
         searchTracksNow(loaded, query, limit, settings)
@@ -259,13 +290,13 @@ class ModuleManager {
         limit: Int,
         settings: Map<String, String>,
     ): Result<ModuleSearchResponse> = withContext(Dispatchers.IO) {
-        val contextArg = contextArg(settings)
+        val context = contextArg(settings)
         TrackLog.d(TAG, "▶ searchTracks() module=${loaded.module.id} query=\"$query\" limit=$limit")
         runCatching {
             val result = QuickJsExecutor.callExport(
                 moduleId = loaded.module.id,
                 functionName = "searchTracks",
-                args = listOf("\"$query\"", limit.toString(), contextArg),
+                args = listOf(JsonPrimitive(query), JsonPrimitive(limit), context),
             ).getOrThrow()
             json.decodeFromString<ModuleSearchResponse>(result).also {
                 TrackLog.d(TAG, "  ✓ Parsed ${it.tracks.size} tracks (total=${it.total})")
@@ -293,7 +324,7 @@ class ModuleManager {
         quality: String = "",
         settings: Map<String, String> = emptyMap(),
     ): Result<ModuleStreamResponse> = streams.get(
-        key = keyOf(loaded.module.id, trackId, quality, contextArg(settings)),
+        key = keyOf(loaded.module.id, trackId, quality, contextArg(settings).toString()),
         describe = { "▶ getStreamUrl() module=${loaded.module.id} trackId=$trackId quality=$quality" },
     ) {
         getStreamUrlNow(loaded, trackId, quality, settings)
@@ -305,13 +336,13 @@ class ModuleManager {
         quality: String,
         settings: Map<String, String>,
     ): Result<ModuleStreamResponse> = withContext(Dispatchers.IO) {
-        val contextArg = contextArg(settings)
+        val context = contextArg(settings)
         TrackLog.d(TAG, "▶ getStreamUrl() module=${loaded.module.id} trackId=$trackId quality=$quality")
         runCatching {
             val result = QuickJsExecutor.callExport(
                 moduleId = loaded.module.id,
                 functionName = "getTrackStreamUrl",
-                args = listOf("\"$trackId\"", "\"$quality\"", contextArg),
+                args = listOf(JsonPrimitive(trackId), JsonPrimitive(quality), context),
             ).getOrThrow()
             json.decodeFromString<ModuleStreamResponse>(result).also {
                 TrackLog.d(TAG, "  ✓ streamUrl=${it.streamUrl?.take(100) ?: "<none>"} quality=${it.track?.audioQuality}")
@@ -338,27 +369,6 @@ class ModuleManager {
     private fun <T> Result<T>.onCancellation(): Result<T> = also {
         (exceptionOrNull() as? CancellationException)?.let { throw it }
     }
-
-    // ── Context ───────────────────────────────────────────────────────────
-
-    /**
-     * The `context` argument every export takes.
-     *
-     * A module reads a setting as `context.settings.<key>.value` — the extra
-     * `value` wrapper is there because a module's own settings schema
-     * describes each key as an object with a type, a label and a current
-     * value, and the host hands back the same shape it was given. This was
-     * previously built as `{settings:{value:{…}}}`, one level short and with
-     * the wrapper on the wrong side, so *no* module could read *any* setting
-     * out of it: every lookup landed on undefined and fell through to the
-     * module's own default. Silent, and worth exactly one misplaced brace.
-     */
-    private fun contextArg(settings: Map<String, String>): String =
-        settings.entries.joinToString(
-            separator = ",",
-            prefix = "{settings:{",
-            postfix = "}}",
-        ) { (key, value) -> "\"$key\":{\"value\":\"$value\"}" }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────
 

@@ -408,6 +408,12 @@ dependencies {
     // the OkHttp version already on the runtime classpath.
     testImplementation("com.squareup.okhttp3:mockwebserver:5.3.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    // The JVM artifact of the QuickJS VM the module host runs, for unit tests
+    // that drive it (see ModuleCallArgsTest). The Android artifact above ships
+    // only Android ABIs under `jni/<abi>/`, which cannot load on the test JVM;
+    // this one carries `jni/linux_x64/libquickjs.so` (and mac/windows) for
+    // NativeLibraryLoader to unpack on the host. Same version, same API.
+    testImplementation("io.github.dokar3:quickjs-kt-jvm:1.0.14")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }
