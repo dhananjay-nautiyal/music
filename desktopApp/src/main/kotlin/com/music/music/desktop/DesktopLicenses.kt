@@ -26,6 +26,13 @@ internal object DesktopLicenses {
                     "https://www.gnu.org/licenses/gpl-3.0.html",
                     "Your music, your way.",
                 ),
+                DesktopLicense(
+                    "BitChord (upstream)",
+                    "GPL-3.0",
+                    "https://github.com/kushagrasinghx/BitChord",
+                    "Music is a fork of BitChord v1.8; most of the catalogue " +
+                        "and playback logic is inherited from it.",
+                ),
             ),
         ),
         DesktopLicenseGroup(

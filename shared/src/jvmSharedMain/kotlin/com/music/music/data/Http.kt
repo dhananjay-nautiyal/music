@@ -48,7 +48,7 @@ object Http {
     // googlevideo.com is YouTube's own audio bytes (and StreamResolver's
     // probes, distinguishable by their small actual read against a 2MB
     // Range ask), a canvas provider's CDN is motion artwork, youtube.com /
-    // youtubei is API/extraction traffic. Grep logcat for "BCDataUsage"
+    // youtubei is API/extraction traffic. Grep logcat for "MusicDataUsage"
     // during a play session; each line is one response with its actual
     // transferred bytes and the running total for its host.
     //
@@ -59,7 +59,7 @@ object Http {
     // paying that on every install for a question already answered is the
     // wrong trade.
     private const val USAGE_LOGGING_ENABLED = false
-    private const val USAGE_TAG = "BCDataUsage"
+    private const val USAGE_TAG = "MusicDataUsage"
     private val usageTotals = ConcurrentHashMap<String, AtomicLong>()
 
     private class CountingSource(source: Source, private val onClose: (Long) -> Unit) :

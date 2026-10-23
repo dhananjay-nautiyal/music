@@ -37,6 +37,13 @@ object MusicPlatforms {
     const val APP_NAME = "Music"
     const val APPLICATION_ID = "com.music.music"
     const val DEV_APPLICATION_ID = "com.dev.music"
+
+    /**
+     * Attribution the GPL-3.0 licence requires of this fork, kept for the
+     * open-source licences / About screen rather than folded into [describe]:
+     * what the app reports about itself should be Music's own name and
+     * version, not the upstream project's.
+     */
     const val UPSTREAM = "kushagrasinghx/BitChord (GPL-3.0)"
     const val UPSTREAM_VERSION = "v1.8"
 
@@ -51,7 +58,7 @@ object MusicPlatforms {
     )
 
     fun describe(): String = buildString {
-        appendLine("$APP_NAME ($APPLICATION_ID), logic from $UPSTREAM $UPSTREAM_VERSION")
+        appendLine("$APP_NAME ($APPLICATION_ID)")
         liveKinds.forEach { appendLine("- ${it.label}: ${it.detail}") }
         appendLine("- Spotify: import-only (playlists + Liked Songs)")
         appendLine("- Local: MediaStore on-device library")
