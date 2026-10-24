@@ -3,6 +3,7 @@ package com.music.music.data.sources.module
 import android.util.Log
 import com.music.music.data.TrackLog
 import com.dokar.quickjs.QuickJs
+import com.dokar.quickjs.QuickJsException
 import com.dokar.quickjs.binding.AsyncFunctionBinding
 import com.dokar.quickjs.binding.FunctionBinding
 import com.dokar.quickjs.binding.define
@@ -86,6 +87,38 @@ internal object QuickJsExecutor {
     private const val ENGINES_PER_MODULE = 3
 
     /**
+     * How long one call into module JavaScript may run, enforced by the
+     * interpreter itself (issue #15).
+     *
+     * Not a coroutine deadline: the call is a blocking native call, and
+     * cancelling the coroutine does nothing while the interpreter sits inside
+     * `while (true)` — the engine, and the Dispatchers.Default thread under
+     * it, stay busy forever. The library's own interrupt handler aborts the
+     * evaluate at this deadline with "interrupted", and that is what actually
+     * brings the thread back; a call that trips it fails, and its engine is
+     * dropped rather than returned (see [replace]). Sized well above the
+     * ~7.7s worst measured module call so a slow module on a bad network
+     * still works — agreed on the issue at 30s. It is set before the module's
+     * own script is evaluated, so a module whose top level loops forever
+     * fails its load instead of wedging an engine at load.
+     *
+     * Mutable only so tests can trip the deadline without waiting 30s.
+     */
+    internal var callTimeoutMillis = 30_000L
+
+    /**
+     * Per-interpreter JS heap ceiling — the "memory ceiling" the issue found
+     * missing beside the timeout.
+     *
+     * QuickJS aborts the running script when its allocations pass this, so a
+     * module building an ever-growing array fails its call with "out of
+     * memory" instead of taking the whole app process down with it. 64MB is
+     * far above anything a search/stream module holds — a ten-thousand-track
+     * response is a few MB — and far below what a runaway loop can reach.
+     */
+    private const val MEMORY_LIMIT_BYTES = 64L * 1024 * 1024
+
+    /**
      * One module's interpreters, and the source to make more from.
      *
      * [free] is the ones nobody is inside right now. It is unbounded and only
@@ -157,6 +190,10 @@ internal object QuickJsExecutor {
     private suspend fun newEngine(jsCode: String, fetchBase: String): QuickJs {
         val qjs = QuickJs.create(Dispatchers.Default)
         qjs.maxStackSize = 512 * 1024L
+        // Both limits go on before anything is evaluated into this engine, so
+        // they cover the module's own load script, not just its exports (issue #15).
+        qjs.evaluationTimeoutMillis = callTimeoutMillis
+        qjs.memoryLimit = MEMORY_LIMIT_BYTES
         try {
             bindConsole(qjs)
             bindAsyncFetch(qjs, fetchBase)
@@ -254,14 +291,36 @@ internal object QuickJsExecutor {
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 return@withContext Result.failure(e)
             }
-            try {
+            val result = try {
                 callOn(qjs, moduleId, functionName, args)
-            } finally {
-                // Back into circulation on every path, including a throw: an
-                // engine that is never returned is a slot the pool can never
-                // hand out again, and three of those would deadlock the module.
-                pool.free.trySend(qjs)
+            } catch (e: Throwable) {
+                // callOn run-catches everything, so this is only belt and
+                // braces — but an engine must never be simply lost.
+                Result.failure(e)
             }
+            // The interpreter's own abort — the deadline tripping, or the
+            // heap ceiling being hit — arrives in two shapes: as a
+            // QuickJsException from an evaluate outside the call's try/catch,
+            // or, far more often, caught by that try/catch itself and written
+            // back as the module error {"error":"interrupted"}. Either way it
+            // is host-level, not a fault the module reported (issue #15).
+            val abort = result.exceptionOrNull()?.takeIf { isEngineDeadly(it) }?.message
+                ?: result.getOrNull()?.let { abortReason(it) }
+            if (abort != null) {
+                // The one path an engine does not come back: its state is
+                // unknown, so it is swapped out rather than returned.
+                replace(moduleId, pool, qjs)
+                return@withContext Result.failure(
+                    IllegalStateException(
+                        "$moduleId.$functionName was aborted ($abort) after ${callTimeoutMillis}ms"
+                    )
+                )
+            }
+            // Back into circulation on every other path, including a throw:
+            // an engine that is never returned is a slot the pool can never
+            // hand out again, and three of those would deadlock the module.
+            pool.free.trySend(qjs)
+            result
         }
     }
 
@@ -322,6 +381,70 @@ internal object QuickJsExecutor {
                 TrackLog.e(TAG, "  ✗ callExport FAILED for $moduleId.$functionName: ${it.message}", it)
             }
         }
+
+    /**
+     * Whether [e] says the interpreter had to abort the call, as opposed to
+     * the module throwing an error of its own.
+     *
+     * Two native failures leave an engine's state unknown: the deadline
+     * tripping ("interrupted") and the heap ceiling being reached ("out of
+     * memory"). QuickJS raises both from native code with no distinct Kotlin
+     * type to catch, so they are matched on the messages it produces — this
+     * covers the aborts thrown from an evaluate outside the call's own
+     * try/catch; [abortReason] covers the ones that get caught inside it.
+     */
+    private fun isEngineDeadly(e: Throwable): Boolean =
+        generateSequence(e) { it.cause?.takeIf { cause -> cause !== it } }
+            .take(4)
+            .filterIsInstance<QuickJsException>()
+            .any { ex -> ex.message == "interrupted" || ex.message == "out of memory" }
+
+    /**
+     * The interpreter-abort message a "module error" payload is hiding, or
+     * null if the payload is a real module error — or not that shape at all.
+     *
+     * The call expression wraps the module's function in try/catch, so an
+     * abort landing while JS is running — the deadline firing inside a
+     * `while (true)` — is a catchable JS exception, and the wrapper writes
+     * it back as `{"error":"interrupted"}`. QuickJS's abort message is
+     * exactly one of these two strings, so an exact match keeps a module's
+     * own error from being mistaken for one.
+     */
+    private fun abortReason(payload: String): String? =
+        runCatching {
+            Json.decodeFromString<Map<String, String>>(payload)["error"]
+        }.getOrNull()
+            ?.takeIf { it == "interrupted" || it == "out of memory" }
+
+    /**
+     * Swaps an engine whose call was aborted out of its pool (issue #15).
+     *
+     * The dead one is closed and a fresh one takes its place, because a pool
+     * that keeps aborted engines is this same issue with a different cause:
+     * three aborted calls would shrink the pool to nothing and wedge the
+     * module just as three hung calls used to. If the rebuild fails — the
+     * module's script stopped evaluating — the claim on the slot goes back
+     * instead, so a module that is now broken fails loudly on its next call
+     * rather than quietly serving fewer of them.
+     */
+    private suspend fun replace(moduleId: String, pool: Pool, dead: QuickJs) {
+        TrackLog.w(TAG, "Replacing $moduleId's engine after an aborted call")
+        pool.lock.withLock { pool.made.remove(dead) }
+        runCatching { dead.close() }
+        val fresh = runCatching { newEngine(pool.jsCode, pool.fetchBase) }.getOrNull()
+        if (fresh != null && synchronized(engineLock) { pools[moduleId] === pool }) {
+            pool.lock.withLock { pool.made += fresh }
+            // Hands a waiter in acquire() its engine; the channel only ever
+            // holds engines this pool made, so the send cannot fail or block.
+            pool.free.trySend(fresh)
+        } else {
+            // The module was evicted while the replacement was being built,
+            // or no longer loads at all — either way this pool keeps one
+            // fewer claim than its engines.
+            runCatching { fresh?.close() }
+            pool.lock.withLock { pool.started-- }
+        }
+    }
 
     // ── Unload ───────────────────────────────────────────────────────────
 
