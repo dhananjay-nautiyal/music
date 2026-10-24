@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/dhananjay-nautiyal/music/tree/main/docs
+    about: Building, packaging and translating Music — see the docs before filing a build question.

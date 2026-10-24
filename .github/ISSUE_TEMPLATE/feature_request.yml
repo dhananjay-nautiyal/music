@@ -1,0 +1,52 @@
+name: Feature request
+description: Suggest an improvement or something new for Music.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tell us what you want and why. If it already exists but is hard to find, say so — that
+        is useful too.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which part of Music?
+      options:
+        - Android app
+        - Desktop app
+        - Native analyzer (beat detection)
+        - Backend / Go server
+        - Documentation / website
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do that Music cannot do today? Why does it matter?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like?
+      description: The feature itself, as concretely as you can describe it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+      description: Other ways you have worked around the gap, or other designs you considered.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, prior art in other apps, links, anything that helps.
