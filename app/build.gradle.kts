@@ -407,6 +407,13 @@ dependencies {
     // a hand-rolled fake of the client would be a test of the fake. Pinned to
     // the OkHttp version already on the runtime classpath.
     testImplementation("com.squareup.okhttp3:mockwebserver:5.3.2")
+    // The mockable android.jar's org.json is a stub: its methods return
+    // null instead of throwing (isReturnDefaultValues above), so
+    // JSONObject.toString() blows up as soon as a test touches code that
+    // builds one — which the fetch binding does to answer every request.
+    // The real jar shadows the stub on the test classpath; nothing in
+    // main's behaviour changes, this only decides what unit tests run against.
+    testImplementation("org.json:json:20240303")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     // The JVM artifact of the QuickJS VM the module host runs, for unit tests
     // that drive it (see ModuleCallArgsTest). The Android artifact above ships
