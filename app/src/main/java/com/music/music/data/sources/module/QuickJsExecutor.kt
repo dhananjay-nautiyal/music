@@ -19,6 +19,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
+import okio.Buffer
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 import java.util.Locale
@@ -107,6 +109,12 @@ internal object QuickJsExecutor {
     internal var callTimeoutMillis = 30_000L
 
     /**
+     * The per-response fetch cap, mutable only so tests can trip it without
+     * serving 16MB. See [ModuleFetchPolicy.MAX_RESPONSE_BYTES] (issue #16).
+     */
+    internal var maxResponseBytes: Long = ModuleFetchPolicy.MAX_RESPONSE_BYTES
+
+    /**
      * Per-interpreter JS heap ceiling — the "memory ceiling" the issue found
      * missing beside the timeout.
      *
@@ -142,6 +150,11 @@ internal object QuickJsExecutor {
         OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
+            // Redirects are followed by hand in fetchUrlSync, because every
+            // hop has to pass the fetch policy first: okhttp's own following
+            // would walk a "safe" 302 straight into the link-local address
+            // the policy exists to stop (issue #16).
+            .followRedirects(false)
             .build()
     }
 
@@ -623,45 +636,115 @@ internal object QuickJsExecutor {
         }
     }
 
+    /** The redirect answers worth following by hand — and worth re-checking. */
+    private val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
+
+    /**
+     * One module fetch, under the fetch policy (issue #16).
+     *
+     * Every hop — the first request and each redirect it answers with — is
+     * checked by [ModuleFetchPolicy] before a byte is sent, and the call
+     * connects only to the addresses that check returned: okhttp's own
+     * lookup at connect time would be a *second* resolve, and between the
+     * two a hostile DNS answer could change. Redirects are followed here
+     * for that reason — automatic following skips the policy entirely.
+     */
     private fun fetchUrlSync(
         url: String,
         method: String,
         headersJson: String,
         body: String?,
     ): Pair<Int, String> {
-        val builder = Request.Builder().url(url)
+        var currentUrl = url
+        var currentMethod = method
+        var currentBody = body
+        repeat(ModuleFetchPolicy.MAX_REDIRECTS + 1) {
+            val validated = ModuleFetchPolicy.requireAllowed(currentUrl)
+            val client = syncHttpClient.newBuilder()
+                .dns { validated.toList() }
+                .build()
 
-        var hasUserAgent = false
-        try {
-            val headersObj = JSONObject(headersJson)
-            for (key in headersObj.keys()) {
-                val value = headersObj.optString(key, "")
-                builder.header(key, value)
-                if (key.equals("user-agent", ignoreCase = true)) hasUserAgent = true
+            val builder = Request.Builder().url(currentUrl)
+
+            var hasUserAgent = false
+            try {
+                val headersObj = JSONObject(headersJson)
+                for (key in headersObj.keys()) {
+                    val value = headersObj.optString(key, "")
+                    builder.header(key, value)
+                    if (key.equals("user-agent", ignoreCase = true)) hasUserAgent = true
+                }
+            } catch (_: Exception) {
             }
-        } catch (_: Exception) {
-        }
 
-        if (!hasUserAgent) {
-            builder.header(
-                "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-                    "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-            )
-        }
+            if (!hasUserAgent) {
+                builder.header(
+                    "User-Agent",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+                        "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+                )
+            }
 
-        when (method.uppercase(Locale.ROOT)) {
-            "POST" -> builder.post((body ?: "").toRequestBody("application/json; charset=utf-8".toMediaType()))
-            "PUT" -> builder.put((body ?: "").toRequestBody("application/json; charset=utf-8".toMediaType()))
-            "DELETE" -> builder.delete()
-            "HEAD" -> builder.head()
-            else -> builder.get()
-        }
+            when (currentMethod.uppercase(Locale.ROOT)) {
+                "POST" -> builder.post((currentBody ?: "").toRequestBody("application/json; charset=utf-8".toMediaType()))
+                "PUT" -> builder.put((currentBody ?: "").toRequestBody("application/json; charset=utf-8".toMediaType()))
+                "DELETE" -> builder.delete()
+                "HEAD" -> builder.head()
+                else -> builder.get()
+            }
 
-        syncHttpClient.newCall(builder.build()).execute().use { response ->
-            val responseBody = response.body?.string() ?: ""
-            return response.code to responseBody
+            client.newCall(builder.build()).execute().use { response ->
+                val location = response.header("Location")
+                if (response.code in REDIRECT_CODES && location != null) {
+                    // Followed by hand so the next hop runs through this same
+                    // check — and by hand means bounded: an addon in a
+                    // redirect loop gets an error, not an endless client.
+                    currentUrl = ModuleFetchPolicy.resolveRedirect(currentUrl, location)
+                    // The redirecting answer is closed by `use` above; a 303
+                    // means "GET it from there", and 301/302 lose the body
+                    // the way browsers and okhttp drop it too.
+                    if (response.code == 303 ||
+                        (response.code in 301..302 && currentMethod.uppercase(Locale.ROOT) !in setOf("GET", "HEAD"))
+                    ) {
+                        currentMethod = "GET"
+                        currentBody = null
+                    }
+                    return@repeat
+                }
+                return response.code to readCapped(response)
+            }
         }
+        throw IllegalStateException("$url redirected more than ${ModuleFetchPolicy.MAX_REDIRECTS} times")
+    }
+
+    /**
+     * Reads a response body, refusing to keep anything past the cap
+     * (issue #16).
+     *
+     * A declared Content-Length over the cap is refused before a byte is
+     * read; a chunked or lying server is caught by counting what actually
+     * arrives. `body.string()` had no such limit — one response could take
+     * the heap with it.
+     */
+    private fun readCapped(response: Response): String {
+        val cap = maxResponseBytes
+        val body = response.body ?: return ""
+        val declared = body.contentLength()
+        if (declared > cap) {
+            throw FetchTooLarge("fetch response declares $declared bytes, over the $cap byte cap")
+        }
+        val buffer = Buffer()
+        val source = body.source()
+        var total = 0L
+        while (true) {
+            val read = source.read(buffer, 8192L)
+            if (read == -1L) break
+            total += read
+            if (total > cap) {
+                throw FetchTooLarge("fetch response passed the $cap byte cap")
+            }
+        }
+        return buffer.readUtf8()
     }
 
     // ── Polyfills ────────────────────────────────────────────────────────
