@@ -7,7 +7,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 val appVersion: String = providers.gradleProperty("music.version").orNull
     ?.removePrefix("v")
     ?.takeIf { it.isNotBlank() }
-    ?: "1.8-beta1"
+    // Kept at or below the newest published release so an unstamped build can still be
+    // prompted to update; must match DesktopUpdateChecker.FALLBACK_VERSION. See #13.
+    ?: "1.1.2"
 
 /** Which platform this build is *for*, which is the host unless told otherwise. */
 val hostIsWindows = System.getProperty("os.name").contains("Windows", ignoreCase = true)
