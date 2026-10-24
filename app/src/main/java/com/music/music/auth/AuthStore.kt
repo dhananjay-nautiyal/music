@@ -115,6 +115,36 @@ class AuthStore(context: Context) {
         set(value) = prefs.edit().putString(KEY_SMB_PASSWORD, value).apply()
 
     /**
+     * The user's override of the build's Last.fm API key.
+     *
+     * A credential like the passwords above, moved here from the plain
+     * settings file in #19: that file sits on disk in the clear, readable
+     * from a rooted device or an adb backup. Null means "use the build's".
+     */
+    var lastfmApiKey: String?
+        get() = prefs.getString(KEY_LASTFM_API_KEY, null)
+        set(value) = prefs.edit().putString(KEY_LASTFM_API_KEY, value).apply()
+
+    /** The shared secret for [lastfmApiKey]; the pair is stored and moved together. */
+    var lastfmSecret: String?
+        get() = prefs.getString(KEY_LASTFM_SECRET, null)
+        set(value) = prefs.edit().putString(KEY_LASTFM_SECRET, value).apply()
+
+    /**
+     * Durable form of [lastfmApiKey]'s setter — commit, not apply — for the
+     * one-time move out of the plain settings file (#19). That move's end
+     * state is "no plaintext anywhere", so the encrypted copy has to be on
+     * disk before the plain one is deleted; a crash in between leaves the
+     * value where it was and the next launch retries. True once it landed.
+     */
+    fun commitLastfmApiKey(value: String): Boolean =
+        prefs.edit().putString(KEY_LASTFM_API_KEY, value).commit()
+
+    /** Durable form of [lastfmSecret]'s setter; see [commitLastfmApiKey]. */
+    fun commitLastfmSecret(value: String): Boolean =
+        prefs.edit().putString(KEY_LASTFM_SECRET, value).commit()
+
+    /**
      * The channel the listener chose to act as, if they chose one.
      *
      * Stored beside the cookie rather than in the plain settings because it is
@@ -223,5 +253,7 @@ class AuthStore(context: Context) {
         private const val KEY_DISCORD_TOKEN = "discord_token"
         private const val KEY_WEBDAV_PASSWORD = "webdav_password"
         private const val KEY_SMB_PASSWORD = "smb_password"
+        private const val KEY_LASTFM_API_KEY = "lastfm_api_key"
+        private const val KEY_LASTFM_SECRET = "lastfm_secret"
     }
 }

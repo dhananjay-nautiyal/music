@@ -141,6 +141,19 @@ enum class SongSort {
 }
 
 /**
+ * A Last.fm credential's value: the copy left in the plain settings file if
+ * there is one, the encrypted store's next, the build-time constant last.
+ *
+ * The plain copy wins because while only that store was being written it was
+ * the newer value — the same rule EncryptedPrefs applies when it merges its
+ * own plain fallback file into the encrypted one.
+ */
+internal fun storedOrLegacy(stored: String?, legacy: String?, fallback: String): String {
+    val value = if (!legacy.isNullOrBlank()) legacy else stored.orEmpty()
+    return value.ifBlank { fallback }
+}
+
+/**
  * App settings, backed by SharedPreferences and exposed as flows.
  *
  * PlaybackService runs in the same process as the UI, so it observes these
@@ -151,7 +164,7 @@ object AppSettings {
 
     private lateinit var prefs: SharedPreferences
 
-    /** Only for the Discord, WebDAV and SMB secrets — everything else on here is plain prefs. */
+    /** Only for the Discord, WebDAV, SMB and Last.fm secrets — everything else on here is plain prefs. */
     private lateinit var authStore: AuthStore
 
     /**
@@ -901,8 +914,9 @@ object AppSettings {
         lastfmEnabled.value = prefs.getBoolean(KEY_LASTFM_ENABLED, false)
         lastfmUsername.value = prefs.getString(KEY_LASTFM_USERNAME, "").orEmpty()
         lastfmSessionKey.value = prefs.getString(KEY_LASTFM_SESSION_KEY, "").orEmpty()
-        lastfmApiKey.value = prefs.getString(KEY_LASTFM_API_KEY, "").orEmpty().ifBlank { BuildConfig.LASTFM_API_KEY }
-        lastfmSecret.value = prefs.getString(KEY_LASTFM_SECRET, "").orEmpty().ifBlank { BuildConfig.LASTFM_SECRET }
+        migrateLastfmCredentials()
+        lastfmApiKey.value = authStore.lastfmApiKey.orEmpty().ifBlank { BuildConfig.LASTFM_API_KEY }
+        lastfmSecret.value = authStore.lastfmSecret.orEmpty().ifBlank { BuildConfig.LASTFM_SECRET }
         lastfmEndpoint.value = prefs.getString(KEY_LASTFM_ENDPOINT, "").orEmpty()
         lastfmScrobbleEnabled.value = prefs.getBoolean(KEY_LASTFM_SCROBBLE_ENABLED, false)
         lastfmNowPlaying.value = prefs.getBoolean(KEY_LASTFM_NOW_PLAYING, false) && lastfmScrobbleEnabled.value
@@ -1468,6 +1482,29 @@ object AppSettings {
         prefs.edit().putLong(KEY_CACHE_LIMIT, clamped).apply()
     }
 
+    /**
+     * Moves the Last.fm API key/secret an earlier version left in the plain
+     * settings file into the encrypted store (#19).
+     *
+     * Each is committed — not applied — before its plaintext copy is dropped:
+     * the move's end state is "no plaintext anywhere", so the encrypted copy
+     * has to be on disk before the plain one goes. A crash in between leaves
+     * the value where it was and the next launch retries. A repeat read finds
+     * nothing left to move.
+     */
+    private fun migrateLastfmCredentials() {
+        val legacyKey = prefs.getString(KEY_LASTFM_API_KEY, null)?.takeUnless { it.isBlank() }
+        val legacySecret = prefs.getString(KEY_LASTFM_SECRET, null)?.takeUnless { it.isBlank() }
+        if (legacyKey != null) {
+            val value = storedOrLegacy(authStore.lastfmApiKey, legacyKey, BuildConfig.LASTFM_API_KEY)
+            if (authStore.commitLastfmApiKey(value)) prefs.edit().remove(KEY_LASTFM_API_KEY).apply()
+        }
+        if (legacySecret != null) {
+            val value = storedOrLegacy(authStore.lastfmSecret, legacySecret, BuildConfig.LASTFM_SECRET)
+            if (authStore.commitLastfmSecret(value)) prefs.edit().remove(KEY_LASTFM_SECRET).apply()
+        }
+    }
+
     private fun clampCacheLimit(value: Long): Long =
         if (value > MAX_CACHE_LIMIT_BYTES) UNLIMITED_CACHE_LIMIT_BYTES
         else value.coerceAtLeast(DEFAULT_CACHE_LIMIT_BYTES)
@@ -1494,12 +1531,16 @@ object AppSettings {
 
     fun setLastfmApiKey(value: String) {
         lastfmApiKey.value = value
-        prefs.edit().putString(KEY_LASTFM_API_KEY, value).apply()
+        authStore.lastfmApiKey = value.ifEmpty { null }
+        // Whatever an older version left in the plain file goes the same
+        // moment: from here the encrypted store is the only home (#19).
+        prefs.edit().remove(KEY_LASTFM_API_KEY).apply()
     }
 
     fun setLastfmSecret(value: String) {
         lastfmSecret.value = value
-        prefs.edit().putString(KEY_LASTFM_SECRET, value).apply()
+        authStore.lastfmSecret = value.ifEmpty { null }
+        prefs.edit().remove(KEY_LASTFM_SECRET).apply()
     }
 
     fun setLastfmEndpoint(value: String) {
