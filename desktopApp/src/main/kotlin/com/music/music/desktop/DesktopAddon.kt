@@ -3,11 +3,14 @@ package com.music.music.desktop
 import com.music.music.data.model.SearchFilter
 import com.music.music.data.model.SearchResult
 import com.music.music.data.model.Song
+import com.music.music.data.sources.module.ModuleFetchPolicy
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.URLBuilder
 import io.ktor.http.Url
@@ -249,6 +252,43 @@ internal class DesktopAddonNotFound : DesktopAddonException("Not found")
 /** A transient outage rather than a configuration error; the row says so. */
 internal class DesktopAddonUnavailable(message: String) : DesktopAddonException(message)
 
+private val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
+
+/**
+ * One GET, every hop of which passes [ModuleFetchPolicy] (issue #16).
+ *
+ * ktor follows redirects on its own, and would happily walk a "safe" 302
+ * into the link-local address the policy exists to stop — so following is
+ * done here instead: each hop checked like the first, and bounded, so an
+ * addon in a redirect loop gets an error rather than an endless client.
+ * (Every call this client makes is a GET, so there is no body to carry
+ * across a hop the way the Android side has to think about.)
+ *
+ * The refusal decision is made on resolved addresses here too — but the
+ * socket is then connected by ktor's own resolve a moment later, where the
+ * Android side pins the connection to the addresses the check returned.
+ * Narrower, and the part of desktop's guarantee worth knowing about: the
+ * check runs, then the request is made.
+ */
+private suspend fun HttpClient.getChecked(
+    url: String,
+    configure: HttpRequestBuilder.() -> Unit,
+): HttpResponse {
+    var current = url
+    repeat(ModuleFetchPolicy.MAX_REDIRECTS + 1) {
+        ModuleFetchPolicy.requireAllowed(current)
+        val response = get(current, configure)
+        val location = response.headers["Location"]
+        if (response.status.value in REDIRECT_CODES && location != null) {
+            runCatching { response.bodyAsText() } // drained, so the connection goes back to the pool
+            current = ModuleFetchPolicy.resolveRedirect(current, location)
+            return@repeat
+        }
+        return response
+    }
+    throw DesktopAddonException("$url redirected more than ${ModuleFetchPolicy.MAX_REDIRECTS} times")
+}
+
 // ── Client ───────────────────────────────────────────────────────────────
 
 /** One addon server, and every question this app knows how to ask it. */
@@ -378,7 +418,7 @@ internal class DesktopAddonClient(rawBaseUrl: String) {
         while (true) {
             (quietUntilMs - System.currentTimeMillis()).takeIf { it > 0 }?.let { delay(it) }
 
-            val response = http.get(url) {
+            val response = http.getChecked(url) {
                 header("Accept", "application/json")
                 header("User-Agent", USER_AGENT)
             }
@@ -449,6 +489,9 @@ internal class DesktopAddonClient(rawBaseUrl: String) {
         /** A ceiling on the whole call: the spec asks addons to answer in seconds, not minutes. */
         private val http = HttpClient(CIO) {
             install(HttpTimeout) { requestTimeoutMillis = CALL_TIMEOUT_MS }
+            // Redirects are followed by hand in getChecked, so every hop is
+            // checked by the fetch policy first (issue #16).
+            followRedirects = false
         }
 
         /** A base URL from whatever the user pasted. */
@@ -873,7 +916,7 @@ internal object DesktopSourceFormats {
     )
 
     private suspend fun fetch(url: String): Result<String> = runCatching {
-        val response = http.get(url) {
+        val response = http.getChecked(url) {
             header("Accept", "application/json")
             header("User-Agent", DesktopAddonClient.USER_AGENT)
         }
@@ -889,5 +932,8 @@ internal object DesktopSourceFormats {
 
     private val http = HttpClient(CIO) {
         install(HttpTimeout) { requestTimeoutMillis = DesktopAddonClient.CALL_TIMEOUT_MS }
+        // Redirects are followed by hand in getChecked, so every hop is
+        // checked by the fetch policy first (issue #16).
+        followRedirects = false
     }
 }
