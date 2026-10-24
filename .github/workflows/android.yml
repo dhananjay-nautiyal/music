@@ -1,8 +1,11 @@
 name: Android Release APK
 
 on:
-  push:
-    branches: [main]
+  # The release pipeline builds and publishes signed APKs itself (release.yml),
+  # so this no longer runs on every push to main: that only exercised the
+  # release keystore and left a signed production artifact sitting in the
+  # workflow run for anyone with read access to download. Kept as a manual
+  # button for a signed smoke build off any ref.
   workflow_dispatch:
 
 jobs:

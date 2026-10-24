@@ -47,12 +47,21 @@ patterns, where `<v>` is the version from section 1:
 | Linux | `Music-<v>-linux-x86_64.rpm` |
 | macOS | `Music-<v>-macos-arm64.dmg` (Apple Silicon; also `.pkg` and `.zip`) |
 | macOS | `Music-<v>-macos-x64.dmg` (Intel; also `.pkg` and `.zip`) |
+| Android | `Music-<v>.apk` (universal — the fallback the in-app update check picks when no ABI matches) |
+| Android | `Music-<v>_arm64-v8a.apk`, `Music-<v>_armeabi-v7a.apk`, `Music-<v>_x86_64.apk` (the check picks the device's ABI) |
 
 Rules:
 
 - Keep the platform tail exactly as above. The update check matches on the ending
   (`.AppImage`, then `-linux-amd64.deb` on Linux; `-windows-x64-setup.exe` on Windows), not on the
   version, so a rename here silently breaks it.
+- The **Android** names are read by the in-app updater, `AppUpdateChecker.archOfApk` in `app/`:
+  the `_<abi>` suffix selects the device's build, and a name with no suffix is the universal
+  fallback. It also still understands AGP's raw `app-prod-<abi>-release.apk` layout, so releases
+  published before the pipeline renamed assets keep updating — new releases use the table's
+  names. Unlike the desktop rows, these are matched on the suffix rather than the tail, so the
+  version form matters less; keeping it `<v>` like everything else is what makes the page read as
+  one set.
 - A new Linux variant (arm64, Flatpak, tar.gz) gets its own tail and is **added to
   `installerUrl()` in `DesktopUpdateChecker.kt`**. Pick by architecture; today the check assumes
   x86_64.
@@ -102,6 +111,9 @@ Before publishing, confirm each of these on the built files, not just in the sou
       reinstall or conflict.
 - [ ] With the previous release installed, the "Update available" dialog appears and Download
       opens the correct file for that platform.
+- [ ] Android: the three ABI APKs and the universal `Music-<v>.apk` are attached under the
+      section 3 names (`release.yml` renames them on the way out; a hand-built upload has to be
+      renamed by hand or the in-app updater picks the wrong build again).
 
 ## 6. Quick manual test of the check
 
