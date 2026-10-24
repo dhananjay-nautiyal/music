@@ -35,7 +35,19 @@ internal object DesktopUpdateChecker {
     private const val LATEST_RELEASE_URL =
         "https://api.github.com/repos/dhananjay-nautiyal/music/releases/latest"
 
-    val currentVersion: String = System.getProperty("music.version") ?: "1.8-beta1"
+    /**
+     * What a build reports when nothing passed `-Pmusic.version` — a local build, a fork, a
+     * distro recipe. It must stay at or below the newest published release: a desktop build
+     * stamped with a version no release has reached can never be prompted to update, because
+     * `isNewer` would call every real release older than itself. This used to be the upstream
+     * BitChord `1.8-beta1`, which sat above every Music release (1.1.x) and so muted the update
+     * prompt for every such build. The next published desktop version replaces it here, in
+     * `appVersion`'s fallback below, and in the app's own `versionName`.
+     */
+    const val FALLBACK_VERSION: String = "1.1.2"
+
+    /** The running build's version: the stamped one, or [FALLBACK_VERSION] when unstamped. */
+    val currentVersion: String = System.getProperty("music.version") ?: FALLBACK_VERSION
 
     private val json = Json { ignoreUnknownKeys = true }
 

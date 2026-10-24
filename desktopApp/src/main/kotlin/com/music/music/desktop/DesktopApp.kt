@@ -6231,7 +6231,7 @@ private fun DesktopSettingsScreen(
 /** The line at the foot of the settings sheet, as Android has it. */
 @Composable
 private fun DesktopSettingsFooter(onLicenses: () -> Unit) {
-    val version = remember { System.getProperty("music.version") ?: "1.8-beta1" }
+    val version = remember { System.getProperty("music.version") ?: DesktopUpdateChecker.FALLBACK_VERSION }
     val linkStyles = TextLinkStyles(
         style = SpanStyle(color = DesktopAccent, textDecoration = TextDecoration.Underline),
     )

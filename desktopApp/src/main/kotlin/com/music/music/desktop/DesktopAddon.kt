@@ -432,7 +432,7 @@ internal class DesktopAddonClient(rawBaseUrl: String) {
         private const val MAX_RETRIES = 2
         private const val BACKOFF_BASE_MS = 500L
         private const val BACKOFF_CAP_MS = 8_000L
-        internal val USER_AGENT = "Music/v${System.getProperty("music.version") ?: "1.8-beta1"}"
+        internal val USER_AGENT = "Music/v${System.getProperty("music.version") ?: DesktopUpdateChecker.FALLBACK_VERSION}"
         private const val PROBE_QUERY = "music"
 
         private val LOSSLESS_WORDS = listOf("lossless", "flac", "hifi", "hi-res", "hires", "max", "best")
