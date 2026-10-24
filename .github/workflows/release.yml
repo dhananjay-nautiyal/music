@@ -161,7 +161,16 @@ jobs:
 
   macos:
     name: macOS · dmg, pkg, zip (${{ matrix.arch }})
+    # The Intel leg is known to fail (README: the beat model does not load
+    # under ONNX Runtime on the x64 runner, so packaging never runs there). It
+    # stays in the matrix so that the day it starts working it simply does —
+    # but it must not hold the Apple Silicon build, or the release, hostage.
+    # `continue-on-error` lets a failure there through without failing the
+    # job for `needs`, and `fail-fast: false` stops it cancelling arm64
+    # mid-build.
+    continue-on-error: ${{ matrix.arch == 'x64' }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-14
@@ -298,10 +307,13 @@ jobs:
 
   release:
     name: Publish
-    # macOS is out of the gate until its x64 runner can load the ONNX beat
-    # model (DesktopBeatModelTest, platform-specific, unrelated to app code).
-    # Re-add it here once that is green; its artifacts then attach as usual.
-    needs: [linux, windows, android]
+    # macOS is back in the gate, so a release cannot ship without its .dmg,
+    # .pkg or .zip (the publish job used to start while the macOS runners were
+    # still packaging, which is why v1.1.2 had to be patched by hand). The
+    # Intel leg cannot block a release: it is `continue-on-error` in the
+    # macos job, so a failed x64 build does not fail this job's `needs` and
+    # does not cancel the arm64 leg that does produce assets.
+    needs: [linux, windows, macos, android]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -311,6 +323,51 @@ jobs:
           path: dist
 
       - run: ls -lh dist
+
+      - name: Work out the version
+        id: version
+        run: |
+          version="${{ inputs.version }}"
+          [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+          echo "Publishing $version"
+
+      # Publishing silently ships whatever happened to be in dist/, so a job
+      # that uploaded nothing — a wrong path, an empty glob — would cut a
+      # release with a platform missing and nobody would find out until a
+      # user went looking. Assert the assets every platform owes us. macOS
+      # x64 is deliberately absent: that leg is continue-on-error in the
+      # macos job, so it is allowed to contribute nothing.
+      - name: Every platform's asset is here
+        run: |
+          v="${{ steps.version.outputs.value }}"
+          missing=0
+          for f in \
+            "Music-$v-linux-x86_64.AppImage" \
+            "Music-$v-linux-amd64.deb" \
+            "Music-$v-linux-x86_64.rpm" \
+            "Music-$v-windows-x64.msi" \
+            "Music-$v-windows-x64-setup.exe" \
+            "Music-$v-windows-x64-portable.zip" \
+            "Music-$v-macos-arm64.dmg" \
+            "Music-$v-macos-arm64.pkg" \
+            "Music-$v-macos-arm64.zip" \
+            "Music-$v.apk" \
+            "Music-${v}_arm64-v8a.apk" \
+            "Music-${v}_armeabi-v7a.apk" \
+            "Music-${v}_x86_64.apk"
+          do
+            if [ ! -f "dist/$f" ]; then
+              echo "::error::missing release asset: $f"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "dist contains:"
+            ls -lh dist
+            exit 1
+          fi
+          echo "all expected assets present"
 
       - name: Draft the release
         if: github.ref_type == 'tag'
