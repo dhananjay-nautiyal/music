@@ -1,0 +1,83 @@
+name: Bug report
+description: Something is broken in the Android app, desktop app, native analyzer, or backend.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. The more of this you fill in, the faster it is to act on.
+        **Never paste secrets** — Last.fm credentials, `local.properties`, keystore paths.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did it happen?
+      description: Which part of Music? This decides who looks at it and which logs matter.
+      options:
+        - Android app
+        - Desktop app (Linux)
+        - Desktop app (Windows)
+        - Desktop app (macOS)
+        - Native analyzer (beat detection)
+        - Backend / Go server
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: >
+        The version from Settings (e.g. `1.1.2`). If it says `1.8-beta1` or a build you made
+        yourself, say so — that is tracked separately in #13.
+      placeholder: "1.1.2"
+    validations:
+      required: true
+
+  - type: input
+    id: device-os
+    attributes:
+      label: Device / OS
+      description: Phone model and Android version, or desktop OS and version.
+      placeholder: "Pixel 8 / Android 15, or Fedora 41"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The shortest path from a working state to the bug.
+      placeholder: |
+        1. Open Local Music
+        2. Tap a folder
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log excerpt
+      description: >
+        The relevant lines from logcat (Android) or the terminal/desktop log. Trim to the part
+        around the failure; redact anything personal.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+        - label: I have removed credentials and personal data from the logs.

@@ -1,0 +1,83 @@
+name: Build / config problem
+description: Trouble building, packaging, or configuring Music from source or a release.
+title: "[Build]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Build and packaging issues are easier to pin down with the exact variant and toolchain.
+        **Never paste** `local.properties`, `keystore.properties`, or keystore contents.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: What are you building?
+      options:
+        - Android app (from source)
+        - Desktop app (from source)
+        - Native analyzer (C++)
+        - Backend (Go)
+        - A published installer / package
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: variant
+    attributes:
+      label: Which variant?
+      description: >
+        Android has `dev`/`prod` flavors (they install side by side) and `debug`/`release`/
+        `benchmark` build types. Desktop packages per-OS (AppImage/deb/rpm, exe/msi, dmg/pkg).
+      options:
+        - devDebug
+        - devRelease
+        - prodDebug
+        - prodRelease
+        - benchmark
+        - Desktop - Linux (AppImage / deb / rpm)
+        - Desktop - Windows (exe / msi)
+        - Desktop - macOS (dmg / pkg)
+        - Not sure / other
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Host OS and version
+      placeholder: "Ubuntu 24.04, macOS 15, Windows 11"
+    validations:
+      required: true
+
+  - type: input
+    id: toolchain
+    attributes:
+      label: Toolchain versions
+      description: JDK, Gradle, Android SDK, Go, and C++ toolchain if relevant.
+      placeholder: "JDK 21, Gradle wrapper, Android SDK 36, Go 1.22"
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command(s) run
+      render: shell
+      placeholder: "./gradlew :app:assembleProdRelease"
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error / output
+      description: The failing part of the build output, trimmed and redacted.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I used the Gradle wrapper (`./gradlew`), not a globally installed Gradle.
+        - label: I have removed credentials and paths that contain personal information.
