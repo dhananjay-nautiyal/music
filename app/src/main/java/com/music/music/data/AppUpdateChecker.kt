@@ -134,13 +134,23 @@ object AppUpdateChecker {
         return names.firstOrNull()
     }
 
-    /** `Music-v1.0.2_arm64-v8a.apk` -> `arm64-v8a`; the universal build -> null. */
+    /**
+     * `Music-v1.0.2_arm64-v8a.apk` or AGP's raw split output
+     * `app-prod-arm64-v8a-release.apk` -> `arm64-v8a`; the universal build
+     * -> null.
+     */
     internal fun archOfApk(name: String): String? {
         if (!name.endsWith(".apk", ignoreCase = true)) return null
         val base = name.substring(0, name.length - 4)
         // Matched against known ABIs rather than split on "_" because an ABI
-        // itself can contain one ("x86_64" naive-splits to "64").
-        return KNOWN_ABIS.firstOrNull { base.endsWith("_$it") }
+        // itself can contain one ("x86_64" naive-splits to "64"). Both
+        // conventions count: releases renamed by the pipeline
+        // (`Music-<v>_<abi>.apk`) and AGP's own split output, which every
+        // release published before that pipeline existed still carries — the
+        // updater reads those live releases too, not just new ones.
+        return KNOWN_ABIS.firstOrNull {
+            base.endsWith("_$it") || base.endsWith("-$it") || base.contains("-$it-")
+        }
     }
 
     private val KNOWN_ABIS = listOf(
