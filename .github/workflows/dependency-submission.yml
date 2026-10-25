@@ -1,0 +1,49 @@
+name: Dependency Submission
+
+# Gradle's dependency graph is not inferred from the manifest files — it has to
+# be resolved and pushed through the Dependency submission API. Until something
+# does that, this repository's dependency graph is empty (it was: 0 manifests),
+# and dependency-review.yml has nothing to diff, so it reports "Dependency
+# review is not supported on this repository".
+#
+# Running on main gives every later pull request a real merge base to be
+# compared against. A snapshot submitted from a PR branch alone would leave the
+# base empty and make the entire dependency list look newly introduced.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Write, deliberately: submitting a snapshot *adds* to the repository's
+# dependency graph, which the submission API authorises through contents: write.
+# Read is not enough here — this is the fifth workflow in this repository that
+# genuinely writes, alongside close-issue, release, contributors-image and
+# update-contributors.
+permissions:
+  contents: write
+
+concurrency:
+  group: dependency-submission
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    name: Submit Gradle dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # No local.properties: resolving the classpath needs sources and the
+      # version catalog, not the Last.fm credentials — the same reason the lint
+      # job in check.yml runs without them.
+      - name: Submit the dependency graph
+        uses: gradle/actions/dependency-submission@v4
