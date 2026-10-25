@@ -6,6 +6,10 @@ on:
     paths: ['backend/**', '.github/workflows/deploy-backend.yml']
   workflow_dispatch:
 
+# Tests, then an SSH deploy over a secret key — no write to this repository.
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-backend
   cancel-in-progress: false
