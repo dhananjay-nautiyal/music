@@ -26,6 +26,9 @@ jobs:
       - name: Dependency review
         uses: actions/dependency-review-action@v5
         with:
+          # Block on any severity, low and up — the strictest setting, kept
+          # explicit rather than left to drift with the action's default.
+          fail-on-severity: low
           # Default, stated because it is the reason this job needs no write
           # permission: posting a summary comment requires `pull-requests: write`.
           comment-summary-in-pr: never
