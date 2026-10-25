@@ -1,0 +1,31 @@
+name: Dependency Review
+
+# A separate workflow rather than a job in check.yml because this only means
+# anything on a pull request: the action diffs the merge base's dependency
+# graph against the head ref's, and a push to main has no pair to compare.
+on: [pull_request]
+
+# The action only reads — it reports through the check and the job summary.
+# `comment-summary-in-pr` is what would need `pull-requests: write`, and it is
+# explicitly off below, so read is genuinely all this uses.
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v5
+        with:
+          # Default, stated because it is the reason this job needs no write
+          # permission: posting a summary comment requires `pull-requests: write`.
+          comment-summary-in-pr: never
