@@ -1,0 +1,28 @@
+# Gitleaks configuration.
+#
+# `useDefault = true` is load-bearing: a custom config file REPLACES gitleaks'
+# built-in rules rather than adding to them, so an allowlist written on its own
+# silently disables every rule and the scan reports "no leaks found" no matter
+# what is in the history. Verified the hard way — an allowlist-only version of
+# this file failed to catch a planted AWS/Stripe key.
+
+[extend]
+useDefault = true
+
+# Baseline for secrets that predate the Secret Scan workflow, so the check is
+# green on today's code and fails only on a secret introduced afterwards.
+# The same idea as app/lint-baseline.xml (#39).
+#
+# Matching the exact known values rather than whole files, so a NEW secret
+# dropped into any of these same files is still caught.
+[allowlist]
+  description = "Pre-existing client-side tokens"
+  regexes = [
+    # Tidal Canvas embed token, shipped in the app and the desktop client.
+    '''vNVdglQOjFJJGG2U''',
+    # YouTube Innertube keys — public client values baked into every web client.
+    '''AIzaSyDyT5W0Jh49F30Pqqtyfdf7pDLFKLJoAnw''',
+    '''O43z0dpjhgX20SCx4KAo''',
+    # Musixmatch fallback signing secret — carried over from the original code.
+    '''f09016176ba43a1cfd1031fbd6b3d26c''',
+  ]
