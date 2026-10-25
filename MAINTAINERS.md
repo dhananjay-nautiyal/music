@@ -16,4 +16,5 @@ This list is automatically generated from GitHub repository contributor data.
 
 <!-- BEGIN CONTRIBUTORS -->
 - [@dhananjay-nautiyal](https://github.com/dhananjay-nautiyal)
+- [@nahuel007ng](https://github.com/nahuel007ng)
 <!-- END CONTRIBUTORS -->
