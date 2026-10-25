@@ -8,6 +8,10 @@ on:
   # button for a signed smoke build off any ref.
   workflow_dispatch:
 
+# Build and upload only; nothing here pushes or releases.
+permissions:
+  contents: read
+
 jobs:
   build-prod-release:
     runs-on: ubuntu-latest

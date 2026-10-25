@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+# Nothing here writes to the repository — it builds and tests and uploads
+# reports — so the token is pinned to read rather than left to the
+# repository default.
+permissions:
+  contents: read
+
 concurrency:
   group: check-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
