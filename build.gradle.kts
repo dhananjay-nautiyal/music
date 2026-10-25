@@ -42,16 +42,3 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.3.20" apply false
     id("org.jetbrains.compose") version "1.10.3" apply false
 }
-
-// Reproducibility (dhananjay-nautiyal/music#21): pin every resolved version to a
-// committed lock file so a dependency cannot silently move between builds — a
-// bumped or substituted artifact fails the build instead of resolving quietly.
-//
-// lockAllConfigurations() rather than a hand-maintained list: new configurations
-// introduced by plugins are locked by default, so a fresh lock file cannot go stale.
-// Regenerate with `./gradlew --write-locks <tasks>` after an intentional bump.
-allprojects {
-    dependencyLocking {
-        lockAllConfigurations()
-    }
-}
