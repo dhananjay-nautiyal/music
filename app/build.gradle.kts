@@ -204,6 +204,16 @@ android {
             excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
+    /*
+     * Lint runs on every push (check.yml). The baseline records the debt the project
+     * already carries — 215 errors across 28 files, mostly the media3 `@OptIn` marker
+     * and the newer Compose checks — so CI is green on today's code and only a lint
+     * error introduced afterwards fails the build. Paid some of it down? Regenerate
+     * with `./gradlew :app:updateLintBaseline`. New code must not add to the list.
+     */
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
     buildFeatures {
         compose = true
         buildConfig = true
