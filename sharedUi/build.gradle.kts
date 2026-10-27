@@ -104,7 +104,9 @@ kotlin {
 
 android {
     namespace = "com.music.music.sharedui"
-    compileSdk = 36
+    // InnerTubeX's AAR metadata requires compileSdk 37 (the same treatment
+    // :app already has); AGP 8.13.2 warns and gradle.properties suppresses.
+    compileSdk = 37
     defaultConfig {
         minSdk = 26
     }
