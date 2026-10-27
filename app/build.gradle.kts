@@ -52,6 +52,17 @@ val listenTogetherServer: String = (
         ?: ""
     ).trim().trimEnd('/')
 
+/**
+ * The human version, from `VERSION` at the repo root — the one place it is written. Parsed and
+ * validated in `settings.gradle.kts`, and shared with `appVersion` in `desktopApp/build.gradle.kts`
+ * and the desktop update check's generated fallback, so the three cannot drift (#37).
+ *
+ * A release build overrides the *displayed* desktop version with `-Pmusic.version` (the tag); only
+ * the desktop module reads that property, and the fallback is generated from `VERSION` rather than
+ * from the stamp, so a release build cannot leave behind a fallback that outranks real releases.
+ */
+val humanVersion: String = rootProject.extra["repoVersion"] as String
+
 /*
  * Bump this by hand before cutting each sideloaded test build ("beta2",
  * "beta3", ...) and blank it out before cutting the real release. Marks the
@@ -83,8 +94,14 @@ android {
         // Haze falls back to a translucent scrim below that.
         minSdk = 26
         targetSdk = 36
+        // Two independent monotonic counters, and they are meant to stay unequal (#37). This one
+        // orders Android installs for Play/sideload; `desktopVersionCode` in
+        // desktopApp/build.gradle.kts is the BUILD component of the Windows installer's
+        // numeric ProductVersion. Do not "reconcile" them by making them equal: lowering
+        // `desktopVersionCode` to match this emits a Windows ProductVersion below the last
+        // published one, and Windows Installer refuses to upgrade over a higher version.
         versionCode = 13
-        versionName = "1.1.2"
+        versionName = humanVersion
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
