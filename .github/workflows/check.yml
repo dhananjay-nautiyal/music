@@ -264,6 +264,47 @@ jobs:
           path: build/reports/dependency-verification/
           if-no-files-found: ignore
 
+  detekt:
+    name: Detekt · code-size guardrails
+    runs-on: ubuntu-latest
+    # Runs as a plain CLI jar, not the Gradle plugin, on purpose: the plugin
+    # would add a buildscript dependency to every module and force a
+    # regeneration of the lock files and verification-metadata.xml that #21
+    # pinned. The jar checksum below is what keeps the toolchain reproducible.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download detekt-cli
+        run: |
+          curl -sSL -o detekt-cli.zip \
+            https://github.com/detekt/detekt/releases/download/v1.23.8/detekt-cli-1.23.8.zip
+          echo "ff9f9258879ff2ec4349114740221498afec46a85cf6302c9f80b06eb4429501  detekt-cli.zip" | sha256sum -c
+          unzip -q detekt-cli.zip
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Detekt
+        run: |
+          ./detekt-cli-1.23.8/bin/detekt-cli \
+            --input app/src/main/java,shared/src,sharedUi/src,desktopApp/src \
+            --config config/detekt.yml \
+            --baseline config/detekt-baseline.xml \
+            --report txt:detekt-report.txt
+
+      # Existing violations are baselined, so a failure here means NEW
+      # oversized/complex code; the report says exactly where.
+      - name: Upload detekt report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-report
+          path: detekt-report.txt
+          if-no-files-found: ignore
+
   backend:
     name: Backend · Go
     runs-on: ubuntu-latest

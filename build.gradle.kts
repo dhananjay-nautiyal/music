@@ -27,7 +27,9 @@ buildscript {
          *
          * Only debug dexing is affected — release-mode allocation keeps the
          * palette in place, which is why prod builds were fine and only dev
-         * crashed. Removable once AGP itself bundles something past 8.11.32.
+         * crashed. Removable once AGP itself bundles something past 8.11.32,
+         * or once NowPlayingScreen is split below the register-pressure
+         * threshold — tracked in dhananjay-nautiyal/music#23.
          */
         classpath("com.android.tools:r8:8.13.23")
     }
