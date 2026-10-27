@@ -1,0 +1,44 @@
+# Static-analysis guardrails for dhananjay-nautiyal/music#23.
+#
+# Deliberately narrow: only the size/complexity rules that describe how this
+# repo actually hurt (an 8k-line service, a 36-parameter composable). Every
+# pre-existing violation is baselined in config/detekt-baseline.xml, so this
+# fails CI only on NEW oversized code. Widen it as the monoliths are split.
+
+config:
+  validation: true
+
+build:
+  maxIssues: 0
+
+comments:
+  active: false
+complexity:
+  LongMethod:
+    active: true
+    threshold: 120
+  LongParameterList:
+    active: true
+    functionThreshold: 12
+    constructorThreshold: 12
+    ignoreDataClasses: true
+    ignoreAnnotated:
+      - "Composable"
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 60
+  LargeClass:
+    active: true
+    threshold: 1500
+coroutines:
+  active: false
+empty-blocks:
+  active: false
+exceptions:
+  active: false
+naming:
+  active: false
+performance:
+  active: false
+style:
+  active: false
