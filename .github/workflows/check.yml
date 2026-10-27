@@ -58,6 +58,17 @@ jobs:
             desktopApp/build/reports/tests/
             shared/build/reports/tests/
 
+      # Gradle's console names the artifacts that failed verification but never says
+      # why (checksum mismatch vs none recorded); only this HTML report does, and it
+      # only exists when a build failed.
+      - name: Upload dependency verification report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-linux-dependency-verification-report
+          path: build/reports/dependency-verification/
+          if-no-files-found: ignore
+
   desktop-windows:
     name: Desktop · Windows
     runs-on: windows-latest
@@ -105,6 +116,15 @@ jobs:
             desktopApp/build/reports/tests/
             shared/build/reports/tests/
 
+      # See the Linux leg: the console never says why an artifact failed verification.
+      - name: Upload dependency verification report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows-dependency-verification-report
+          path: build/reports/dependency-verification/
+          if-no-files-found: ignore
+
   desktop-macos:
     name: Desktop · macOS
     runs-on: macos-latest
@@ -146,6 +166,15 @@ jobs:
             desktopApp/build/reports/tests/
             shared/build/reports/tests/
 
+      # See the Linux leg: the console never says why an artifact failed verification.
+      - name: Upload dependency verification report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-macos-dependency-verification-report
+          path: build/reports/dependency-verification/
+          if-no-files-found: ignore
+
   android:
     name: Android
     runs-on: ubuntu-latest
@@ -186,6 +215,15 @@ jobs:
           name: android-test-reports
           path: app/build/reports/tests/
 
+      # See the Linux leg: the console never says why an artifact failed verification.
+      - name: Upload dependency verification report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-dependency-verification-report
+          path: build/reports/dependency-verification/
+          if-no-files-found: ignore
+
   lint:
     name: Lint · Android
     runs-on: ubuntu-latest
@@ -216,6 +254,15 @@ jobs:
           path: |
             app/build/reports/lint-results-prodRelease.*
             shared/build/reports/lint-results-debug.*
+
+      # See the Linux leg: the console never says why an artifact failed verification.
+      - name: Upload dependency verification report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-dependency-verification-report
+          path: build/reports/dependency-verification/
+          if-no-files-found: ignore
 
   backend:
     name: Backend · Go
