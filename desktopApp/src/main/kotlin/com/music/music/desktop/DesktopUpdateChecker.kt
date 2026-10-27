@@ -41,10 +41,13 @@ internal object DesktopUpdateChecker {
      * stamped with a version no release has reached can never be prompted to update, because
      * `isNewer` would call every real release older than itself. This used to be the upstream
      * BitChord `1.8-beta1`, which sat above every Music release (1.1.x) and so muted the update
-     * prompt for every such build. The next published desktop version replaces it here, in
-     * `appVersion`'s fallback below, and in the app's own `versionName`.
+     * prompt for every such build.
+     *
+     * It is generated from `VERSION` at the repo root (#37), the same file `appVersion` falls
+     * back to in `desktopApp/build.gradle.kts` and the same one the app's `versionName` is read
+     * from — so bumping that one file moves all three and nothing has to be remembered.
      */
-    const val FALLBACK_VERSION: String = "1.1.2"
+    const val FALLBACK_VERSION: String = MusicVersion.FALLBACK
 
     /** The running build's version: the stamped one, or [FALLBACK_VERSION] when unstamped. */
     val currentVersion: String = System.getProperty("music.version") ?: FALLBACK_VERSION

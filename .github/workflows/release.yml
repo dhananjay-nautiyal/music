@@ -35,6 +35,13 @@ jobs:
         run: |
           version="${{ inputs.version }}"
           [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+          # The build reads its version from VERSION at the repo root (#37); the tag or the
+          # dispatch input only names the assets, so a mismatch ships an app that installs as
+          # Music-<tag> while reporting VERSION, and then prompts itself to update forever.
+          if [ "$version" != "$(cat VERSION)" ]; then
+            echo "::error::building $version but VERSION holds $(cat VERSION) — bump VERSION, commit it, then tag"
+            exit 1
+          fi
           echo "value=$version" >> "$GITHUB_OUTPUT"
           echo "Building $version"
 
@@ -118,6 +125,13 @@ jobs:
         run: |
           version="${{ inputs.version }}"
           [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+          # The build reads its version from VERSION at the repo root (#37); the tag or the
+          # dispatch input only names the assets, so a mismatch ships an app that installs as
+          # Music-<tag> while reporting VERSION, and then prompts itself to update forever.
+          if [ "$version" != "$(cat VERSION)" ]; then
+            echo "::error::building $version but VERSION holds $(cat VERSION) — bump VERSION, commit it, then tag"
+            exit 1
+          fi
           echo "value=$version" >> "$GITHUB_OUTPUT"
           echo "Building $version"
 
@@ -194,6 +208,13 @@ jobs:
         run: |
           version="${{ inputs.version }}"
           [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+          # The build reads its version from VERSION at the repo root (#37); the tag or the
+          # dispatch input only names the assets, so a mismatch ships an app that installs as
+          # Music-<tag> while reporting VERSION, and then prompts itself to update forever.
+          if [ "$version" != "$(cat VERSION)" ]; then
+            echo "::error::building $version but VERSION holds $(cat VERSION) — bump VERSION, commit it, then tag"
+            exit 1
+          fi
           echo "value=$version" >> "$GITHUB_OUTPUT"
           echo "Building $version"
 
@@ -255,6 +276,13 @@ jobs:
         run: |
           version="${{ inputs.version }}"
           [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+          # The build reads its version from VERSION at the repo root (#37); the tag or the
+          # dispatch input only names the assets, so a mismatch ships an app that installs as
+          # Music-<tag> while reporting VERSION, and then prompts itself to update forever.
+          if [ "$version" != "$(cat VERSION)" ]; then
+            echo "::error::building $version but VERSION holds $(cat VERSION) — bump VERSION, commit it, then tag"
+            exit 1
+          fi
           echo "value=$version" >> "$GITHUB_OUTPUT"
           echo "Building $version"
 

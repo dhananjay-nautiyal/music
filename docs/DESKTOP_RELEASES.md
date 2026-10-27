@@ -8,8 +8,16 @@ breaks one of the rules below, the update check silently stops working for Linux
 ## 1. One version, stamped from one place
 
 - The version is a plain string such as `1.8` or `1.8-beta1`. No leading `v`.
-- `desktopApp/build.gradle.kts` reads it from `-Pmusic.version=...` and falls back to a default
-  (`appVersion`). CI passes the tag with the `v` removed (`v1.8` becomes `1.8`).
+- **`VERSION` at the repo root is the source of truth** for the human version of both apps (#37).
+  It is read in `settings.gradle.kts`, and everything else derives from it: the Android
+  `versionName`, `appVersion`'s fallback in `desktopApp/build.gradle.kts`, and
+  `DesktopUpdateChecker.FALLBACK_VERSION` — which `:desktopApp:generateVersionSource` generates
+  into the build directory from that same file. Bump one file, commit it, tag it. Nothing has to
+  be remembered in three places any more, which is what let them drift before.
+- `desktopApp/build.gradle.kts` prefers `-Pmusic.version=...` when it is passed and falls back to
+  `VERSION`. CI passes the tag with the `v` removed (`v1.8` becomes `1.8`). The fallback — and so
+  the generated constant — always comes from `VERSION`, never from the stamp, so a release build
+  cannot bake in a fallback that outranks real releases.
 - The app reads the same value at runtime from the `music.version` system property. It is baked
   into every package by `jvmArgs("-Dmusic.version=$appVersion")` in the `compose.desktop`
   block of `desktopApp/build.gradle.kts`, which covers exe, msi, deb, rpm and the AppImage (it
@@ -24,6 +32,12 @@ breaks one of the rules below, the update check silently stops working for Linux
 Installer formats reject `-beta1`, so `nativePackageVersion` in `desktopApp/build.gradle.kts`
 builds a separate numeric one: `major.minor.desktopVersionCode`, for example `1.8.26`.
 
+- **The two `versionCode`s are unrelated counters and are meant to stay unequal.** Android's
+  `versionCode` in `app/build.gradle.kts` orders APK installs (currently 13); `desktopVersionCode`
+  is the BUILD component of the Windows `ProductVersion` (currently 29). They grew apart on
+  purpose, and making them "agree" is not a fix: **lowering `desktopVersionCode` emits a Windows
+  `ProductVersion` below the last published one, and Windows Installer refuses to upgrade over a
+  higher version.** Raising the Android one to match is harmless but pointless.
 - Bump `desktopVersionCode` for **every** build you publish, betas included. Windows only
   upgrades in place when the numeric version goes up; the same number is treated as "already
   installed".
@@ -89,9 +103,13 @@ What this means for releasing:
 
 - GitHub's "latest" ignores **drafts and pre-releases**. A release only prompts users once it is
   published as a normal release. Mark betas as pre-release so they never prompt anyone.
-- The git tag must be `v<version>` (`v1.8`). The workflow also accepts only `v*.*.*`; for a
-  two-part version like `v1.8` use the manual `workflow_dispatch` with `version` filled in, or
-  tag `v1.8.0` and make sure the tag and the stamped version agree.
+- The git tag must be `v<version>`, and `<version>` must be exactly what `VERSION` holds.
+  `release.yml` compares them and fails the build otherwise: the apps take their version from
+  `VERSION`, the tag only names the assets, and a release that installs as `Music-1.9` while the
+  app reports `1.8` prompts its own users to update to the version they already run.
+- The tag trigger accepts only `v*.*.*`. For a two-part version like `1.8`, hold `VERSION` at
+  `1.8` and use the manual `workflow_dispatch` with `version=1.8`, or hold it at `1.8.0` and tag
+  `v1.8.0`. The two strings have to be *equal*, not merely equivalent.
 - Linux and Windows files must be on the **same release**, because there is only one "latest".
   Do not publish a Windows-only release and a separate Linux-only one: whichever is newer becomes
   "latest" and the other platform will see no asset for itself (it falls back to the release page).
@@ -100,6 +118,9 @@ What this means for releasing:
 
 Before publishing, confirm each of these on the built files, not just in the source:
 
+- [ ] `VERSION` at the repo root holds the new version, and the tag or the dispatch input is that
+      same string — `release.yml` refuses to build otherwise, and the Android `versionName` comes
+      from the file rather than from the tag.
 - [ ] Version stamped (`-Pmusic.version=<v>`). Launch each built file and check Settings shows the
       same version.
 - [ ] `desktopVersionCode` is higher than the last published build.

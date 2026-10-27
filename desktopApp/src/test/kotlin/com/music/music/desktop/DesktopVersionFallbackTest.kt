@@ -1,6 +1,8 @@
 package com.music.music.desktop
 
+import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 /**
@@ -48,5 +50,20 @@ class DesktopVersionFallbackTest {
             DesktopUpdateChecker.isNewer(latest = fallback, current = fallback),
             "fallback $fallback should equal itself, i.e. not outrank what it matches",
         )
+    }
+
+    /**
+     * [DesktopUpdateChecker.FALLBACK_VERSION] is generated from `VERSION` at the repo root, which
+     * is also where the Android `versionName` and `appVersion`'s fallback come from (#37). Read
+     * straight off disk here, so a build that kept a stale copy of the generated source — or a
+     * hand-edited constant that got past the generator — fails instead of shipping a third version
+     * string that disagrees with the other two.
+     */
+    @Test
+    fun theFallbackIsTheVersionTheRepositoryDeclares() {
+        val path = System.getProperty("music.versionFile")
+            ?: error("the test task did not pass music.versionFile; see desktopApp/build.gradle.kts")
+        val declared = File(path).readText().trim().removePrefix("v")
+        assertEquals(declared, DesktopUpdateChecker.FALLBACK_VERSION)
     }
 }
