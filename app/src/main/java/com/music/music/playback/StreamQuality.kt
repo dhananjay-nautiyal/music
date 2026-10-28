@@ -152,7 +152,12 @@ internal fun Format.flacStreamInfo(): FlacStreamInfo? {
  * `ENCODING_INVALID` and `NO_VALUE` mean the renderer hasn't said, which is
  * common for pass-through and for formats decoded straight to float, and
  * is reported as unknown rather than as a failure.
+ *
+ * The big-endian encodings are still `@UnstableApi`, so this consumes the
+ * opt-in rather than propagating it: the signature is a plain `Int`, and
+ * making every caller acknowledge it would be noise.
  */
+@androidx.annotation.OptIn(UnstableApi::class)
 internal fun bitDepthOf(pcmEncoding: Int): Int? = when (pcmEncoding) {
     C.ENCODING_PCM_8BIT -> 8
     C.ENCODING_PCM_16BIT, C.ENCODING_PCM_16BIT_BIG_ENDIAN -> 16
