@@ -100,7 +100,7 @@ android {
         // numeric ProductVersion. Do not "reconcile" them by making them equal: lowering
         // `desktopVersionCode` to match this emits a Windows ProductVersion below the last
         // published one, and Windows Installer refuses to upgrade over a higher version.
-        versionCode = 13
+        versionCode = 14
         versionName = humanVersion
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

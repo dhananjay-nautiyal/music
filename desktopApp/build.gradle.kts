@@ -36,7 +36,7 @@ val isArm64 = hostArch == "aarch64" || hostArch == "arm64"
 // This counter is independent of the Android `versionCode` in app/build.gradle.kts and must only
 // ever go up (#37). Setting them equal is not a fix: lowering this one emits a Windows
 // ProductVersion below the published one, and the installer then refuses to upgrade.
-val desktopVersionCode = 29
+val desktopVersionCode = 30
 val nativePackageVersion = appVersion.substringBefore('-').split('.').take(2).joinToString(".") + ".$desktopVersionCode"
 
 // FFmpeg decodes audio; see DesktopAudioDecoder.
