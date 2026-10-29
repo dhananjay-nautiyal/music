@@ -37,6 +37,7 @@
 
 | Release | Highlights |
 | --- | --- |
+| **1.1.3** | A hardening release, with no new features. Third-party modules no longer have their arguments spliced into executable JavaScript, get a 30-second deadline and a capped, filtered fetch, and can no longer wedge an engine pool; the Last.fm secret, scrobbler tokens and share passwords move into encrypted storage. Android releases now publish signed APKs on their own and the updater reads both asset naming schemes, so an in-app update is possible for the first time, and the desktop build stops reporting an upstream version that made its own update check never fire. |
 | **1.1.2** | The Android launcher icon now uses the same mark as the README: a navy tile with the glass note filling the mask, instead of a padded bitmap inside a black ring. Themed (monochrome) icons are supported too. |
 | **1.1.1** | A new liquid-glass mark and a refreshed banner. The README logo now follows your GitHub theme, and the desktop packages finally ship the app's real artwork instead of a stray icon. |
 | **1.1.0** | Offline lyrics cache · scrobble retry queue · local playlists carried through backup and restore · local artwork (embedded pictures or folder covers). |
