@@ -6,12 +6,15 @@ import android.content.SharedPreferences
 /**
  * Encrypted-at-rest storage for credentials.
  *
- * Two live here: the YouTube Music session cookie, and — if the user turns on
- * the Discord integration — that account's own bearer token. Neither is a
- * password: the Google one is typed into accounts.google.com inside a WebView,
- * and the Discord one is read out of a completed login session. But both grant
- * full access to their account, so they don't go in the plain prefs the
- * scrobbler tokens use.
+ * What lives here is whatever grants access to something: the YouTube Music
+ * session cookie, the Discord bearer token if the user turned that integration
+ * on, the WebDAV and SMB share passwords, and the scrobbler credentials — a
+ * Last.fm session key, the ListenBrainz token and the user's own Last.fm API
+ * key pair. None of them is a password anyone types into this app: the Google
+ * one is entered at accounts.google.com inside a WebView, and the Discord one
+ * is read out of a completed login session. But every one of them opens an
+ * account, so none of them goes in the plain settings file, which sits on disk
+ * in the clear and is readable from a rooted device or an adb backup (#19).
  *
  * A restored file whose keyset this device can't unwrap is recreated, and a
  * Keystore that can't be used at all degrades to plain prefs rather than
@@ -145,6 +148,31 @@ class AuthStore(context: Context) {
         prefs.edit().putString(KEY_LASTFM_SECRET, value).commit()
 
     /**
+     * The token that lets this app scrobble as the listener's Last.fm account.
+     *
+     * It is the value a completed Last.fm authorisation hands back, so it
+     * writes scrobbles to their library until it is revoked there — a
+     * credential rather than a preference, and moved out of the plain settings
+     * file for the same reason as the key pair above (#29).
+     */
+    var lastfmSessionKey: String?
+        get() = prefs.getString(KEY_LASTFM_SESSION_KEY, null)
+        set(value) = prefs.edit().putString(KEY_LASTFM_SESSION_KEY, value).apply()
+
+    /** The ListenBrainz user token, which accepts submissions from this app alone. */
+    var listenBrainzToken: String?
+        get() = prefs.getString(KEY_LISTENBRAINZ_TOKEN, null)
+        set(value) = prefs.edit().putString(KEY_LISTENBRAINZ_TOKEN, value).apply()
+
+    /** Durable form of [lastfmSessionKey]'s setter; see [commitLastfmApiKey]. */
+    fun commitLastfmSessionKey(value: String): Boolean =
+        prefs.edit().putString(KEY_LASTFM_SESSION_KEY, value).commit()
+
+    /** Durable form of [listenBrainzToken]'s setter; see [commitLastfmApiKey]. */
+    fun commitListenBrainzToken(value: String): Boolean =
+        prefs.edit().putString(KEY_LISTENBRAINZ_TOKEN, value).commit()
+
+    /**
      * The channel the listener chose to act as, if they chose one.
      *
      * Stored beside the cookie rather than in the plain settings because it is
@@ -255,5 +283,7 @@ class AuthStore(context: Context) {
         private const val KEY_SMB_PASSWORD = "smb_password"
         private const val KEY_LASTFM_API_KEY = "lastfm_api_key"
         private const val KEY_LASTFM_SECRET = "lastfm_secret"
+        private const val KEY_LASTFM_SESSION_KEY = "lastfm_session_key"
+        private const val KEY_LISTENBRAINZ_TOKEN = "listenbrainz_token"
     }
 }
