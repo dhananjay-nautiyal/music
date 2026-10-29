@@ -154,6 +154,26 @@ internal fun storedOrLegacy(stored: String?, legacy: String?, fallback: String):
 }
 
 /**
+ * What the one-time move out of the plain settings file carries for one
+ * credential: the value to commit to the encrypted store, or null when there is
+ * nothing here to move.
+ *
+ * The second half matters as much as the first. A blank entry in the plain file
+ * is what an older version wrote when the listener unlinked the service, and
+ * treating it as a value would replace the stored token with nothing — signing
+ * the app out of Last.fm or ListenBrainz on the next launch, with the settings
+ * row still saying they are connected.
+ *
+ * The precedence is [storedOrLegacy]'s, unchanged, so a plaintext copy still
+ * wins over the store it is being read into: while only that file was written it
+ * holds the newer value. `fallback` therefore never bites on this path — a
+ * non-blank plaintext copy answers it — and is passed only so that the two
+ * rules stay one function rather than two to review.
+ */
+internal fun credentialToMove(stored: String?, legacy: String?, fallback: String): String? =
+    legacy?.takeUnless { it.isBlank() }?.let { storedOrLegacy(stored, it, fallback) }
+
+/**
  * App settings, backed by SharedPreferences and exposed as flows.
  *
  * PlaybackService runs in the same process as the UI, so it observes these
@@ -913,7 +933,8 @@ object AppSettings {
         showCacheFolder.value = prefs.getBoolean(KEY_SHOW_CACHE_FOLDER, false)
         lastfmEnabled.value = prefs.getBoolean(KEY_LASTFM_ENABLED, false)
         lastfmUsername.value = prefs.getString(KEY_LASTFM_USERNAME, "").orEmpty()
-        lastfmSessionKey.value = prefs.getString(KEY_LASTFM_SESSION_KEY, "").orEmpty()
+        migrateScrobblerTokens()
+        lastfmSessionKey.value = authStore.lastfmSessionKey.orEmpty()
         migrateLastfmCredentials()
         lastfmApiKey.value = authStore.lastfmApiKey.orEmpty().ifBlank { BuildConfig.LASTFM_API_KEY }
         lastfmSecret.value = authStore.lastfmSecret.orEmpty().ifBlank { BuildConfig.LASTFM_SECRET }
@@ -925,7 +946,7 @@ object AppSettings {
         scrobbleDelayPercent.value = prefs.getFloat(KEY_SCROBBLE_DELAY_PERCENT, 0.5f)
         scrobbleDelaySeconds.value = prefs.getInt(KEY_SCROBBLE_DELAY_SECONDS, 180)
         listenBrainzEnabled.value = prefs.getBoolean(KEY_LISTENBRAINZ_ENABLED, false)
-        listenBrainzToken.value = prefs.getString(KEY_LISTENBRAINZ_TOKEN, "").orEmpty()
+        listenBrainzToken.value = authStore.listenBrainzToken.orEmpty()
         listenBrainzPrimaryArtistOnly.value = prefs.getBoolean(KEY_LISTENBRAINZ_PRIMARY_ARTIST_ONLY, false)
         spotifySpdcToken.value = prefs.getString(KEY_SPOTIFY_SPDC_TOKEN, "").orEmpty()
         replayGenres.value = prefs.getBoolean(KEY_REPLAY_GENRES, true)
@@ -1491,17 +1512,41 @@ object AppSettings {
      * has to be on disk before the plain one goes. A crash in between leaves
      * the value where it was and the next launch retries. A repeat read finds
      * nothing left to move.
+     *
+     * Unlike [migrateScrobblerTokens] below, this pair has a build-time
+     * fallback: the shipped key and secret are what an unset override means.
      */
     private fun migrateLastfmCredentials() {
-        val legacyKey = prefs.getString(KEY_LASTFM_API_KEY, null)?.takeUnless { it.isBlank() }
-        val legacySecret = prefs.getString(KEY_LASTFM_SECRET, null)?.takeUnless { it.isBlank() }
-        if (legacyKey != null) {
-            val value = storedOrLegacy(authStore.lastfmApiKey, legacyKey, BuildConfig.LASTFM_API_KEY)
-            if (authStore.commitLastfmApiKey(value)) prefs.edit().remove(KEY_LASTFM_API_KEY).apply()
+        val legacyKey = credentialToMove(authStore.lastfmApiKey, prefs.getString(KEY_LASTFM_API_KEY, null), BuildConfig.LASTFM_API_KEY)
+        if (legacyKey != null && authStore.commitLastfmApiKey(legacyKey)) {
+            prefs.edit().remove(KEY_LASTFM_API_KEY).apply()
         }
-        if (legacySecret != null) {
-            val value = storedOrLegacy(authStore.lastfmSecret, legacySecret, BuildConfig.LASTFM_SECRET)
-            if (authStore.commitLastfmSecret(value)) prefs.edit().remove(KEY_LASTFM_SECRET).apply()
+        val legacySecret = credentialToMove(authStore.lastfmSecret, prefs.getString(KEY_LASTFM_SECRET, null), BuildConfig.LASTFM_SECRET)
+        if (legacySecret != null && authStore.commitLastfmSecret(legacySecret)) {
+            prefs.edit().remove(KEY_LASTFM_SECRET).apply()
+        }
+    }
+
+    /**
+     * Moves the Last.fm session key and the ListenBrainz token an earlier
+     * version left in the plain settings file into the encrypted store (#29).
+     *
+     * The same one-time move as [migrateLastfmCredentials], and the same shape:
+     * commit, then drop the plaintext copy only once the commit says it landed.
+     * There is no build-time fallback here — neither value is shipped in the
+     * binary, so an empty store really does mean "not linked".
+     *
+     * Every reader goes through the [lastfmSessionKey] and [listenBrainzToken]
+     * flows, so nothing has to know which file it came from.
+     */
+    private fun migrateScrobblerTokens() {
+        val legacySessionKey = credentialToMove(authStore.lastfmSessionKey, prefs.getString(KEY_LASTFM_SESSION_KEY, null), "")
+        if (legacySessionKey != null && authStore.commitLastfmSessionKey(legacySessionKey)) {
+            prefs.edit().remove(KEY_LASTFM_SESSION_KEY).apply()
+        }
+        val legacyToken = credentialToMove(authStore.listenBrainzToken, prefs.getString(KEY_LISTENBRAINZ_TOKEN, null), "")
+        if (legacyToken != null && authStore.commitListenBrainzToken(legacyToken)) {
+            prefs.edit().remove(KEY_LISTENBRAINZ_TOKEN).apply()
         }
     }
 
@@ -1526,7 +1571,10 @@ object AppSettings {
 
     fun setLastfmSessionKey(value: String) {
         lastfmSessionKey.value = value
-        prefs.edit().putString(KEY_LASTFM_SESSION_KEY, value).apply()
+        authStore.lastfmSessionKey = value.ifEmpty { null }
+        // Whatever an older version left in the plain file goes the same
+        // moment: from here the encrypted store is the only home (#29).
+        prefs.edit().remove(KEY_LASTFM_SESSION_KEY).apply()
     }
 
     fun setLastfmApiKey(value: String) {
@@ -1621,7 +1669,8 @@ object AppSettings {
 
     fun setListenBrainzToken(value: String) {
         listenBrainzToken.value = value
-        prefs.edit().putString(KEY_LISTENBRAINZ_TOKEN, value).apply()
+        authStore.listenBrainzToken = value.ifEmpty { null }
+        prefs.edit().remove(KEY_LISTENBRAINZ_TOKEN).apply()
     }
 
     fun setListenBrainzPrimaryArtistOnly(value: Boolean) {
@@ -1963,6 +2012,11 @@ object AppSettings {
     /**
      * Preferences an export must not carry — credentials, not configuration.
      * See [exportPrefs].
+     *
+     * The Last.fm and ListenBrainz entries are listed even though they now live
+     * in the encrypted store (#29) and so are not in this file at all: whatever
+     * an earlier version left behind stays out of a backup that leaves the
+     * device, and `importPrefs` still refuses to write one back over.
      */
     private val SECRETS = setOf(
         KEY_LASTFM_SESSION_KEY,

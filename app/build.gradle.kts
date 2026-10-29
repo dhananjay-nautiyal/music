@@ -105,7 +105,18 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Last.fm credentials are supplied locally and never committed.
+        /*
+         * Last.fm credentials are supplied locally and never committed.
+         *
+         * Whatever lands in the APK is recoverable from it by anyone who installs the app, and
+         * encrypting it at rest cannot change that — #29 weighed a backend that would sign
+         * requests per session and settled on shipping it, because a proxy is infrastructure
+         * this project does not run for one header. What that decision leaves is rotation:
+         * replace the `LASTFM_SECRET` repository secret, which every workflow writes into
+         * `local.properties`, rebuild, and the old value stops working. A listener who supplies
+         * their own key pair is unaffected by that swap — theirs is in the encrypted store, not
+         * in this binary.
+         */
         buildConfigField("String", "LASTFM_API_KEY", "\"${lastfmApiKey.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
         buildConfigField("String", "LASTFM_SECRET", "\"${lastfmSecret.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
         buildConfigField(
