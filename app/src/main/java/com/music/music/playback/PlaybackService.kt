@@ -7677,64 +7677,6 @@ class PlaybackService : MediaLibraryService() {
         }
     }
 
-    private fun buildContentStyleBundle(browsableHint: Int, playableHint: Int): Bundle =
-        Bundle().apply {
-            putInt(EXTRA_CONTENT_STYLE_BROWSABLE_HINT, browsableHint)
-            putInt(EXTRA_CONTENT_STYLE_PLAYABLE_HINT, playableHint)
-            putInt(EXTRA_CONTENT_STYLE_BROWSABLE_HINT_AX, browsableHint)
-            putInt(EXTRA_CONTENT_STYLE_PLAYABLE_HINT_AX, playableHint)
-            putInt(EXTRA_CONTENT_STYLE_BROWSABLE_HINT_LEGACY, browsableHint)
-            putInt(EXTRA_CONTENT_STYLE_PLAYABLE_HINT_LEGACY, playableHint)
-            putInt("android.media.extras.CONTENT_STYLE_BROWSABLE_HINT", browsableHint)
-            putInt("android.media.extras.CONTENT_STYLE_PLAYABLE_HINT", playableHint)
-            putInt("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT", browsableHint)
-            putInt("android.media.browse.CONTENT_STYLE_PLAYABLE_HINT", playableHint)
-            putBoolean(EXTRA_CONTENT_STYLE_SUPPORTED, true)
-            putBoolean(EXTRA_CONTENT_STYLE_SUPPORTED_AX, true)
-        }
-
-    private fun <T> paginate(items: List<T>, page: Int, pageSize: Int): List<T> {
-        if (page < 0 || pageSize <= 0 || items.isEmpty()) return emptyList()
-        val safePageSize = pageSize.coerceAtMost(MAX_AUTO_PAGE_SIZE)
-        val fromLong = page.toLong() * safePageSize.toLong()
-        if (fromLong >= items.size.toLong()) return emptyList()
-        val from = fromLong.toInt()
-        val to = (fromLong + safePageSize).coerceAtMost(items.size.toLong()).toInt()
-        return items.subList(from, to)
-    }
-
-    private fun createGridPlaylistItem(
-        mediaId: String,
-        title: String,
-        subtitle: String? = null,
-        artworkUrl: String? = null,
-        folderType: Int = MediaMetadata.FOLDER_TYPE_PLAYLISTS,
-    ): MediaItem = MediaItem.Builder()
-        .setMediaId(mediaId)
-        .setMediaMetadata(
-            MediaMetadata.Builder()
-                .setTitle(title)
-                .setSubtitle(subtitle)
-                .setArtworkUri(artworkUrl?.artworkAt(NOTIFICATION_ART_PX)?.let(Uri::parse))
-                .setIsBrowsable(true)
-                .setIsPlayable(false)
-                .setFolderType(folderType)
-                .setExtras(buildContentStyleBundle(CONTENT_STYLE_GRID_ITEM_HINT_VALUE, CONTENT_STYLE_LIST_ITEM_HINT_VALUE))
-                .build(),
-        )
-        .build()
-
-    private fun shelfToGridPlaylistItem(playlist: ShelfItem): MediaItem {
-        val browseId = playlist.browseId ?: "VL${playlist.videoId}"
-        val mediaId = if (browseId.startsWith("VL")) "playlist:${browseId.removePrefix("VL")}" else "browse:$browseId"
-        return createGridPlaylistItem(
-            mediaId = mediaId,
-            title = playlist.title,
-            subtitle = playlist.subtitle,
-            artworkUrl = playlist.thumbnailUrl,
-        )
-    }
-
     private suspend fun searchAll(query: String): Pair<List<Song>, List<BrowseItem>> {
         val safeQuery = query.trim().take(MAX_AUTO_SEARCH_QUERY_CHARS)
         if (safeQuery.isEmpty()) return emptyList<Song>() to emptyList()
@@ -7768,66 +7710,6 @@ class PlaybackService : MediaLibraryService() {
         songs.forEach { songCache[it.videoId] = it }
     }
 
-    private fun browseItemToGridItem(item: BrowseItem): MediaItem = createGridPlaylistItem(
-        mediaId = "browse:${item.browseId}",
-        title = item.title,
-        subtitle = item.subtitle,
-        artworkUrl = item.thumbnailUrl,
-        folderType = if (item.browseId.startsWith("MPREb_")) MediaMetadata.FOLDER_TYPE_ALBUMS else MediaMetadata.FOLDER_TYPE_PLAYLISTS,
-    )
-
-    private fun createFolderItem(
-        mediaId: String,
-        title: String,
-        subtitle: String? = null,
-        folderType: Int = MediaMetadata.FOLDER_TYPE_MIXED,
-        isGrid: Boolean = false,
-    ): MediaItem {
-        val style = if (isGrid) CONTENT_STYLE_GRID_ITEM_HINT_VALUE else CONTENT_STYLE_LIST_ITEM_HINT_VALUE
-        val extras = buildContentStyleBundle(style, CONTENT_STYLE_LIST_ITEM_HINT_VALUE)
-        return MediaItem.Builder()
-            .setMediaId(mediaId)
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(title)
-                    .setSubtitle(subtitle)
-                    .setIsBrowsable(true)
-                    .setIsPlayable(false)
-                    .setFolderType(if (isGrid && folderType == MediaMetadata.FOLDER_TYPE_MIXED) MediaMetadata.FOLDER_TYPE_ALBUMS else folderType)
-                    .setExtras(extras)
-                    .build(),
-            )
-            .build()
-    }
-
-    private fun MediaItem.withGridStyle(): MediaItem {
-        val currentExtras = mediaMetadata.extras ?: Bundle()
-        val newExtras = Bundle(currentExtras).apply {
-            putInt(EXTRA_CONTENT_STYLE_BROWSABLE_HINT, CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt(EXTRA_CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt(EXTRA_CONTENT_STYLE_BROWSABLE_HINT_AX, CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt(EXTRA_CONTENT_STYLE_PLAYABLE_HINT_AX, CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt(EXTRA_CONTENT_STYLE_BROWSABLE_HINT_LEGACY, CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt(EXTRA_CONTENT_STYLE_PLAYABLE_HINT_LEGACY, CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt("android.media.extras.CONTENT_STYLE_BROWSABLE_HINT", CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt("android.media.extras.CONTENT_STYLE_PLAYABLE_HINT", CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt("android.media.browse.CONTENT_STYLE_BROWSABLE_HINT", CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putInt("android.media.browse.CONTENT_STYLE_PLAYABLE_HINT", CONTENT_STYLE_GRID_ITEM_HINT_VALUE)
-            putBoolean(EXTRA_CONTENT_STYLE_SUPPORTED, true)
-            putBoolean(EXTRA_CONTENT_STYLE_SUPPORTED_AX, true)
-        }
-        return buildUpon()
-            .setMediaMetadata(
-                mediaMetadata.buildUpon()
-                    .setIsBrowsable(true)
-                    .setIsPlayable(true)
-                    .setFolderType(MediaMetadata.FOLDER_TYPE_ALBUMS)
-                    .setExtras(newExtras)
-                    .build(),
-            )
-            .build()
-    }
-
     private fun ShelfItem.toMediaItemOrNull(): MediaItem? {
         val vid = videoId
         if (vid != null) {
@@ -7859,16 +7741,6 @@ class PlaybackService : MediaLibraryService() {
         return null
     }
 
-    private fun ShelfItem.toSongOrNull(): Song? {
-        val id = videoId ?: return null
-        return Song(
-            videoId = id,
-            title = title,
-            artist = InnertubeParser.artistFromSubtitle(subtitle),
-            thumbnailUrl = thumbnailUrl,
-        )
-    }
-
     private fun createLoginPromptItem(): MediaItem =
         MediaItem.Builder()
             .setMediaId("msg:login_required")
@@ -7878,20 +7750,6 @@ class PlaybackService : MediaLibraryService() {
                     .setSubtitle(getString(R.string.auto_login_subtitle))
                     .setIsBrowsable(false)
                     .setIsPlayable(false)
-                    .build(),
-            )
-            .build()
-
-    private fun createInfoItem(mediaId: String, title: String, subtitle: String? = null): MediaItem =
-        MediaItem.Builder()
-            .setMediaId(mediaId)
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(title)
-                    .setSubtitle(subtitle)
-                    .setIsBrowsable(false)
-                    .setIsPlayable(false)
-                    .setExtras(buildContentStyleBundle(CONTENT_STYLE_LIST_ITEM_HINT_VALUE, CONTENT_STYLE_LIST_ITEM_HINT_VALUE))
                     .build(),
             )
             .build()
@@ -7909,7 +7767,6 @@ class PlaybackService : MediaLibraryService() {
         const val FOREIGN_CACHE_KEEP_AHEAD = 3
         const val MEDIA_DOWNLOADS_ID = "downloads"
         const val MEDIA_LOCAL_MUSIC_ID = "local_music"
-        const val MAX_AUTO_PAGE_SIZE = 50
         const val MAX_AUTO_SEARCH_QUERY_CHARS = 200
         const val MAX_AUTO_SEARCH_CACHE_ENTRIES = 20
 
@@ -7921,17 +7778,6 @@ class PlaybackService : MediaLibraryService() {
             MEDIA_MORE_ID,
         )
 
-        // Android Auto Content Style Hints
-        const val EXTRA_CONTENT_STYLE_SUPPORTED = "android.media.browse.extra.CONTENT_STYLE_SUPPORTED"
-        const val EXTRA_CONTENT_STYLE_SUPPORTED_AX = "androidx.media.contentstyle.CONTENT_STYLE_SUPPORTED"
-        const val EXTRA_CONTENT_STYLE_BROWSABLE_HINT = "android.media.browse.extra.CONTENT_STYLE_BROWSABLE_HINT"
-        const val EXTRA_CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.extra.CONTENT_STYLE_PLAYABLE_HINT"
-        const val EXTRA_CONTENT_STYLE_BROWSABLE_HINT_AX = "androidx.media.contentstyle.CONTENT_STYLE_BROWSABLE_HINT"
-        const val EXTRA_CONTENT_STYLE_PLAYABLE_HINT_AX = "androidx.media.contentstyle.CONTENT_STYLE_PLAYABLE_HINT"
-        const val EXTRA_CONTENT_STYLE_BROWSABLE_HINT_LEGACY = "androidx.media.utils.CONTENT_STYLE_BROWSABLE_HINT"
-        const val EXTRA_CONTENT_STYLE_PLAYABLE_HINT_LEGACY = "androidx.media.utils.CONTENT_STYLE_PLAYABLE_HINT"
-        const val CONTENT_STYLE_LIST_ITEM_HINT_VALUE = 1
-        const val CONTENT_STYLE_GRID_ITEM_HINT_VALUE = 4
         /**
          * Shared by both players. Identical on purpose: they take turns being
          * the session, and a difference here would be an audible change of
