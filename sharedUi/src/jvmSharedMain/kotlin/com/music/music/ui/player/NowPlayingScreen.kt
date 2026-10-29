@@ -737,6 +737,242 @@ fun NowPlayingScreen(
     windowHeight: Dp,
     modifier: Modifier = Modifier,
 ) {
+    NowPlayingScreenContent(
+        NowPlayingUiState(
+            song = song,
+            playedBy = playedBy,
+            isPlaying = isPlaying,
+            isLoading = isLoading,
+            position = position,
+            durationMs = durationMs,
+            audioVersionSwitching = audioVersionSwitching,
+            qualityUpgraded = qualityUpgraded,
+            queue = queue,
+            queueIndex = queueIndex,
+            hasPrevious = hasPrevious,
+            hasNext = hasNext,
+            repeatMode = repeatMode,
+            shuffleEnabled = shuffleEnabled,
+            autoplayEnabled = autoplayEnabled,
+            signedIn = signedIn,
+            accountName = accountName,
+            likeStatus = likeStatus,
+            onToggleLike = onToggleLike,
+            onPlayPause = onPlayPause,
+            onNext = onNext,
+            onPrevious = onPrevious,
+            onBlockedControl = onBlockedControl,
+            onSeek = onSeek,
+            onSeekFraction = onSeekFraction,
+            onToggleShuffle = onToggleShuffle,
+            onCycleRepeat = onCycleRepeat,
+            onToggleAutoplay = onToggleAutoplay,
+            onJumpTo = onJumpTo,
+            onRemoveFromQueue = onRemoveFromQueue,
+            onMoveInQueue = onMoveInQueue,
+            onQueueDragActiveChange = onQueueDragActiveChange,
+            onClearQueue = onClearQueue,
+            onOpenMenu = onOpenMenu,
+            onOpenAlbum = onOpenAlbum,
+            onOpenArtist = onOpenArtist,
+            onOpenPlaybackSource = onOpenPlaybackSource,
+            onListenTogether = onListenTogether,
+            lyrics = lyrics,
+            lyricsSource = lyricsSource,
+            lyricsProviderStates = lyricsProviderStates,
+            onSelectLyricsProvider = onSelectLyricsProvider,
+            lyricsUnavailable = lyricsUnavailable,
+            lyricsOffsetOpen = lyricsOffsetOpen,
+            onDismissLyricsOffset = onDismissLyricsOffset,
+            windowWidth = windowWidth,
+            windowHeight = windowHeight,
+            modifier = modifier,
+        ),
+    )
+}
+
+private class NowPlayingUiState(
+    val song: Song,
+    val playedBy: String?,
+    val isPlaying: Boolean,
+    val isLoading: Boolean,
+    val position: PlaybackPosition,
+    val durationMs: Long,
+    val audioVersionSwitching: Boolean,
+    val qualityUpgraded: Boolean,
+    val queue: List<Song>,
+    val queueIndex: Int,
+    val hasPrevious: Boolean,
+    val hasNext: Boolean,
+    val repeatMode: Int,
+    val shuffleEnabled: Boolean,
+    val autoplayEnabled: Boolean,
+    val signedIn: Boolean,
+    val accountName: String?,
+    val likeStatus: LikeStatus,
+    val onToggleLike: () -> Unit,
+    val onPlayPause: () -> Unit,
+    val onNext: () -> Unit,
+    val onPrevious: () -> Unit,
+    val onBlockedControl: () -> Unit,
+    val onSeek: (Long) -> Unit,
+    val onSeekFraction: (Float) -> Unit,
+    val onToggleShuffle: () -> Unit,
+    val onCycleRepeat: () -> Unit,
+    val onToggleAutoplay: () -> Unit,
+    val onJumpTo: (Int) -> Unit,
+    val onRemoveFromQueue: (Int) -> Unit,
+    val onMoveInQueue: (Int, Int) -> Unit,
+    val onQueueDragActiveChange: (Boolean) -> Unit,
+    val onClearQueue: () -> Unit,
+    val onOpenMenu: () -> Unit,
+    val onOpenAlbum: (String) -> Unit,
+    val onOpenArtist: (browseId: String?, name: String) -> Unit,
+    val onOpenPlaybackSource: () -> Unit,
+    val onListenTogether: () -> Unit,
+    val lyrics: List<LyricLine>?,
+    val lyricsSource: LyricsSource?,
+    val lyricsProviderStates: Map<LyricsSource, LyricsProviderState>,
+    val onSelectLyricsProvider: (LyricsSource) -> Unit,
+    val lyricsUnavailable: Boolean,
+    val lyricsOffsetOpen: Boolean,
+    val onDismissLyricsOffset: () -> Unit,
+    val windowWidth: Dp,
+    val windowHeight: Dp,
+    val modifier: Modifier,
+)
+
+private class NowPlayingActionsState(
+    val lyricsOpen: Boolean,
+    val queueOpen: Boolean,
+    val shuffleEnabled: Boolean,
+    val repeatMode: Int,
+    val autoplayEnabled: Boolean,
+    val accountName: String?,
+    val onToggleLyrics: () -> Unit,
+    val onToggleQueue: () -> Unit,
+    val onToggleShuffle: () -> Unit,
+    val onCycleRepeat: () -> Unit,
+    val onToggleAutoplay: () -> Unit,
+    val onOpenOutput: () -> Unit,
+    val onListenTogether: () -> Unit,
+    val onOpenListenTogetherMembers: () -> Unit,
+)
+
+@Composable
+private fun NowPlayingActions(state: NowPlayingActionsState): Unit = with(state) {
+    PlayerActionRow(
+        lyricsOpen = lyricsOpen,
+        queueOpen = queueOpen,
+        shuffleEnabled = shuffleEnabled,
+        repeatMode = repeatMode,
+        autoplayEnabled = autoplayEnabled,
+        onToggleLyrics = onToggleLyrics,
+        onToggleQueue = onToggleQueue,
+        onToggleShuffle = onToggleShuffle,
+        onCycleRepeat = onCycleRepeat,
+        onToggleAutoplay = onToggleAutoplay,
+        onOpenOutput = onOpenOutput,
+        onListenTogether = onListenTogether,
+        onOpenListenTogetherMembers = onOpenListenTogetherMembers,
+    )
+    Spacer(Modifier.height(18.dp))
+    Box(
+        modifier = Modifier.fillMaxWidth().height(20.dp),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        OutputCaption(
+            accountName = accountName,
+            onOpenOutput = onOpenOutput,
+            onOpenMembers = onOpenListenTogetherMembers,
+        )
+    }
+}
+
+private class NowPlayingOverlayState(
+    val hazeState: HazeState,
+    val showAudioOutput: Boolean,
+    val accountName: String?,
+    val onDismissAudioOutput: () -> Unit,
+    val onOpenPipeline: () -> Unit,
+    val onOpenCast: () -> Unit,
+    val showLyricsProviders: Boolean,
+    val lyricsSource: LyricsSource?,
+    val lyricsProviderStates: Map<LyricsSource, LyricsProviderState>,
+    val onSelectLyricsProvider: (LyricsSource) -> Unit,
+    val onDismissLyricsProviders: () -> Unit,
+    val showAudioPipeline: Boolean,
+    val isPlaying: Boolean,
+    val onDismissAudioPipeline: () -> Unit,
+    val showCast: Boolean,
+    val onDismissCast: () -> Unit,
+    val showListenTogetherMembers: Boolean,
+    val onDismissListenTogetherMembers: () -> Unit,
+    val onManageListenTogether: () -> Unit,
+    val lyricsOffsetOpen: Boolean,
+    val onDismissLyricsOffset: () -> Unit,
+    val lyricsShare: LyricsShareRequest?,
+    val onDismissLyricsShare: () -> Unit,
+)
+
+@Composable
+private fun NowPlayingOverlays(state: NowPlayingOverlayState): Unit = with(state) {
+    if (showAudioOutput) {
+        AudioOutputSheet(
+            hazeState = hazeState,
+            accountName = accountName,
+            onDismiss = onDismissAudioOutput,
+            onOpenPipeline = onOpenPipeline,
+            onOpenCast = onOpenCast,
+        )
+    }
+    if (showLyricsProviders) {
+        LyricsProviderSheet(
+            hazeState = hazeState,
+            currentSource = lyricsSource,
+            states = lyricsProviderStates,
+            onSelect = onSelectLyricsProvider,
+            onDismiss = onDismissLyricsProviders,
+        )
+    }
+    if (showAudioPipeline) {
+        AudioPipelineDialog(
+            hazeState = hazeState,
+            isPlaying = isPlaying,
+            onDismiss = onDismissAudioPipeline,
+        )
+    }
+    if (showCast) {
+        PlayerPlatform.host.CastDialog(
+            hazeState = hazeState,
+            onDismiss = onDismissCast,
+        )
+    }
+    if (showListenTogetherMembers) {
+        ListenTogetherMembersSheet(
+            hazeState = hazeState,
+            onDismiss = onDismissListenTogetherMembers,
+            onManage = onManageListenTogether,
+        )
+    }
+    if (lyricsOffsetOpen) {
+        LyricsOffsetSheet(
+            hazeState = hazeState,
+            onDismiss = onDismissLyricsOffset,
+        )
+    }
+    lyricsShare?.let { request ->
+        PlayerPlatform.host.LyricsShareSheet(
+            hazeState = hazeState,
+            request = request,
+            onDismiss = onDismissLyricsShare,
+        )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalHazeApi::class, ExperimentalHazeMaterialsApi::class)
+private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state) {
     val density = LocalDensity.current
     val haptics = rememberHaptics()
 
@@ -1474,95 +1710,51 @@ fun NowPlayingScreen(
     // Lyrics, output and queue, with the output name under them — the row both
     // layouts end on, and the only thing in the landscape player's left column
     // besides the sleeve.
-    val playerActions: @Composable () -> Unit = {
-        PlayerActionRow(
-            lyricsOpen = lyricsOpen,
-            queueOpen = queueOpen,
-            shuffleEnabled = shuffleEnabled,
-            repeatMode = repeatMode,
-            autoplayEnabled = autoplayEnabled,
-            onToggleLyrics = toggleLyrics,
-            onToggleQueue = toggleQueue,
-            onToggleShuffle = onToggleShuffle,
-            onCycleRepeat = onCycleRepeat,
-            onToggleAutoplay = onToggleAutoplay,
-            onOpenOutput = openAudioOutput,
-            onListenTogether = onListenTogether,
-            onOpenListenTogetherMembers = openListenTogetherMembers,
-        )
-        // Keep the current output caption visible in every state.
-        Spacer(Modifier.height(18.dp))
-        Box(
-            modifier = Modifier.fillMaxWidth().height(20.dp),
-            contentAlignment = Alignment.TopCenter,
-        ) {
-            OutputCaption(
-                accountName = accountName,
-                onOpenOutput = openAudioOutput,
-                onOpenMembers = openListenTogetherMembers,
-            )
-        }
-    }
+    val playerActionsState = NowPlayingActionsState(
+        lyricsOpen = lyricsOpen,
+        queueOpen = queueOpen,
+        shuffleEnabled = shuffleEnabled,
+        repeatMode = repeatMode,
+        autoplayEnabled = autoplayEnabled,
+        accountName = accountName,
+        onToggleLyrics = toggleLyrics,
+        onToggleQueue = toggleQueue,
+        onToggleShuffle = onToggleShuffle,
+        onCycleRepeat = onCycleRepeat,
+        onToggleAutoplay = onToggleAutoplay,
+        onOpenOutput = openAudioOutput,
+        onListenTogether = onListenTogether,
+        onOpenListenTogetherMembers = openListenTogetherMembers,
+    )
 
-    // The drawers and dialogs the player raises over itself. Mounted by
-    // whichever layout is on screen — they are overlays over the player, not
-    // part of either shape of it.
-    val playerOverlays: @Composable () -> Unit = {
-        if (showAudioOutput) {
-            AudioOutputSheet(
-                hazeState = playerHaze,
-                accountName = accountName,
-                onDismiss = { showAudioOutput = false },
-                onOpenPipeline = { showAudioPipeline = true },
-                onOpenCast = { showCast = true },
-            )
-        }
-        if (showLyricsProviders) {
-            LyricsProviderSheet(
-                hazeState = playerHaze,
-                currentSource = lyricsSource,
-                states = lyricsProviderStates,
-                onSelect = onSelectLyricsProvider,
-                onDismiss = { showLyricsProviders = false },
-            )
-        }
-        if (showAudioPipeline) {
-            AudioPipelineDialog(
-                hazeState = playerHaze,
-                isPlaying = isPlaying,
-                onDismiss = { showAudioPipeline = false },
-            )
-        }
-        if (showCast) {
-            PlayerPlatform.host.CastDialog(
-                hazeState = playerHaze,
-                onDismiss = { showCast = false },
-            )
-        }
-        if (showListenTogetherMembers) {
-            ListenTogetherMembersSheet(
-                hazeState = playerHaze,
-                onDismiss = { showListenTogetherMembers = false },
-                onManage = {
-                    showListenTogetherMembers = false
-                    onListenTogether()
-                },
-            )
-        }
-        if (lyricsOffsetOpen) {
-            LyricsOffsetSheet(
-                hazeState = playerHaze,
-                onDismiss = onDismissLyricsOffset,
-            )
-        }
-        lyricsShare?.let { request ->
-            PlayerPlatform.host.LyricsShareSheet(
-                hazeState = playerHaze,
-                request = request,
-                onDismiss = { lyricsShare = null },
-            )
-        }
-    }
+    val playerOverlaysState = NowPlayingOverlayState(
+        hazeState = playerHaze,
+        showAudioOutput = showAudioOutput,
+        accountName = accountName,
+        onDismissAudioOutput = { showAudioOutput = false },
+        onOpenPipeline = { showAudioPipeline = true },
+        onOpenCast = { showCast = true },
+        showLyricsProviders = showLyricsProviders,
+        lyricsSource = lyricsSource,
+        lyricsProviderStates = lyricsProviderStates,
+        onSelectLyricsProvider = onSelectLyricsProvider,
+        onDismissLyricsProviders = { showLyricsProviders = false },
+        showAudioPipeline = showAudioPipeline,
+        isPlaying = isPlaying,
+        onDismissAudioPipeline = { showAudioPipeline = false },
+        showCast = showCast,
+        onDismissCast = { showCast = false },
+        showListenTogetherMembers = showListenTogetherMembers,
+        onDismissListenTogetherMembers = { showListenTogetherMembers = false },
+        onManageListenTogether = {
+            showListenTogetherMembers = false
+            onListenTogether()
+        },
+        lyricsOffsetOpen = lyricsOffsetOpen,
+        onDismissLyricsOffset = onDismissLyricsOffset,
+        lyricsShare = lyricsShare,
+        onDismissLyricsShare = { lyricsShare = null },
+    )
 
     // A landscape window — a tablet, or a phone on its side — takes an entirely
     // different shape from the portrait player below: two columns rather than
@@ -1852,7 +2044,7 @@ fun NowPlayingScreen(
                         )
                     }
                 },
-                actions = playerActions,
+                actions = { NowPlayingActions(playerActionsState) },
                 mainPane = { compact ->
                     LandscapeMainPane(
                         compact = compact,
@@ -2017,7 +2209,7 @@ fun NowPlayingScreen(
                     )
                 },
             )
-            playerOverlays()
+            NowPlayingOverlays(playerOverlaysState)
         }
         return
     }
@@ -3584,14 +3776,14 @@ fun NowPlayingScreen(
             // Balance that invisible inset with the caption gap below the icons.
             Spacer(Modifier.height(6.dp))
 
-            playerActions()
+            NowPlayingActions(playerActionsState)
             Spacer(Modifier.height(18.dp))
             }
             }
             }
             }
         }
-        playerOverlays()
+        NowPlayingOverlays(playerOverlaysState)
     }
 }
 

@@ -517,6 +517,33 @@ internal fun CurrentLyricStrip(
     loadingText: String,
     onClick: () -> Unit,
 ) {
+    CurrentLyricStripContent(
+        CurrentLyricStripUiState(
+            lines = lines,
+            trackKey = trackKey,
+            playhead = playhead,
+            isPlaying = isPlaying,
+            durationMs = durationMs,
+            lyricsUnavailable = lyricsUnavailable,
+            loadingText = loadingText,
+            onClick = onClick,
+        ),
+    )
+}
+
+private class CurrentLyricStripUiState(
+    val lines: List<LyricLine>,
+    val trackKey: String,
+    val playhead: LyricPlayhead,
+    val isPlaying: Boolean,
+    val durationMs: Long,
+    val lyricsUnavailable: Boolean,
+    val loadingText: String,
+    val onClick: () -> Unit,
+)
+
+@Composable
+private fun CurrentLyricStripContent(state: CurrentLyricStripUiState): Unit = with(state) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -1576,6 +1603,56 @@ internal fun LyricsPanel(
     onTogglePick: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    LyricsPanelContent(
+        LyricsPanelUiState(
+            lines = lines,
+            subLines = subLines,
+            trackKey = trackKey,
+            playhead = playhead,
+            looking = looking,
+            isPlaying = isPlaying,
+            active = active,
+            onSeekToLine = onSeekToLine,
+            controlsOpen = controlsOpen,
+            onRevealControls = onRevealControls,
+            onHideControls = onHideControls,
+            translationProgress = translationProgress,
+            onScrollingChange = onScrollingChange,
+            canPick = canPick,
+            picking = picking,
+            picked = picked,
+            onPickLine = onPickLine,
+            onTogglePick = onTogglePick,
+            modifier = modifier,
+        ),
+    )
+}
+
+private class LyricsPanelUiState(
+    val lines: List<LyricLine>,
+    val subLines: List<LyricLine>?,
+    val trackKey: String,
+    val playhead: LyricPlayhead,
+    val looking: Boolean,
+    val isPlaying: Boolean,
+    val active: Boolean,
+    val onSeekToLine: (Long) -> Unit,
+    val controlsOpen: Boolean,
+    val onRevealControls: () -> Unit,
+    val onHideControls: () -> Unit,
+    val translationProgress: State<Float>?,
+    val onScrollingChange: (Boolean) -> Unit,
+    val canPick: Boolean,
+    val picking: Boolean,
+    val picked: Set<Int>,
+    val onPickLine: (Int) -> Unit,
+    val onTogglePick: (Int) -> Unit,
+    val modifier: Modifier,
+)
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun LyricsPanelContent(state: LyricsPanelUiState): Unit = with(state) {
     val panelPlaying = isPlaying && active
     val clock = rememberLyricClock(trackKey, playhead, panelPlaying)
     val subReveal = rememberSubLyricsReveal(subLines, trackKey)
