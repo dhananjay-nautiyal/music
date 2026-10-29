@@ -52,7 +52,7 @@ internal class DiscordPresenceController(
                     }
                     rpc = null
 
-                    if (token == null) return@collect
+                    if (token == null) return@collectLatest
                     rpc = DiscordRPC(context, token)
                     player()?.takeIf { it.isPlaying }?.let(::publish)
                 }
