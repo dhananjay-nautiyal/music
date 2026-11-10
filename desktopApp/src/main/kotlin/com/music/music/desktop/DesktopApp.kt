@@ -4198,7 +4198,7 @@ private fun DesktopTopBar(
                 Image(
                     painter = painterResource(Res.drawable.logo_mark),
                     contentDescription = "Music",
-                    modifier = Modifier.size(width = 28.dp, height = 18.dp),
+                    modifier = Modifier.size(22.dp),
                 )
                 Spacer(Modifier.width(14.dp))
                 DesktopToolbarButton(onClick = onBack, enabled = canGoBack, size = 32.dp) {
