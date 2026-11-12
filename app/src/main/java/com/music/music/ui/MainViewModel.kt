@@ -953,6 +953,69 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /**
+     * Adds every song of [songs] to each playlist in [playlists] — the queue's
+     * Save button, where [addToPlaylists] is a single track's menu.
+     *
+     * A playlist reports [AddOutcome.ADDED] as soon as one song went in and
+     * [AddOutcome.ALREADY_THERE] only when all of them were already there, so
+     * the caller still reads one line off the whole batch the way the
+     * single-track flow does.
+     */
+    fun addQueueToPlaylists(
+        playlists: List<UserPlaylist>,
+        songs: List<Song>,
+        onResult: (added: Int, alreadyThere: Int, failed: Int) -> Unit = { _, _, _ -> },
+    ) {
+        if (!requireSignIn() || playlists.isEmpty() || songs.isEmpty()) return
+        viewModelScope.launch {
+            val outcomes = playlists.map { addQueued(it, songs) }
+            onResult(
+                outcomes.count { it == AddOutcome.ADDED },
+                outcomes.count { it == AddOutcome.ALREADY_THERE },
+                outcomes.count { it == AddOutcome.FAILED },
+            )
+        }
+    }
+
+    /**
+     * [addOne] for a queue: one lookup for what the playlist already holds,
+     * then whatever is missing goes in chunks of 50 — the batch YouTube's
+     * endpoint takes, so a long queue is a handful of requests rather than
+     * one per song.
+     */
+    private suspend fun addQueued(playlist: UserPlaylist, songs: List<Song>): AddOutcome {
+        val openSongs = (_detailStack.value.firstOrNull { it.browseId == playlist.browseId }
+            ?.songs as? UiState.Success)?.data
+        val known = openSongs
+            ?: YtMusicRepository.allSongs(playlist.browseId).getOrNull()
+        val held = known?.map { it.videoId }?.toSet().orEmpty()
+        val missing = songs.filterNot { it.videoId in held }
+        if (missing.isEmpty()) return AddOutcome.ALREADY_THERE
+
+        val byId = songs.associateBy(Song::videoId)
+        var added = 0
+        missing.map { it.videoId }.chunked(50).forEach { chunk ->
+            YtMusicRepository.addToPlaylist(playlist.playlistId, chunk).fold(
+                onSuccess = { setIds ->
+                    added += setIds.size
+                    // The playlist's page may be open behind the picker — for
+                    // the same reason [addOne] keeps it in step.
+                    setIds.forEach { (videoId, setVideoId) ->
+                        byId[videoId]?.let { appendToOpenPlaylist(playlist.browseId, it, setVideoId) }
+                    }
+                },
+                // Counted rather than raised: `added` below decides the outcome, so
+                // a refused chunk reads as fewer songs that went in instead of an
+                // error that hides the ones which did.
+                onFailure = {},
+            )
+        }
+        if (added == 0) return AddOutcome.FAILED
+        libraryStale = true
+        return AddOutcome.ADDED
+    }
+
     private enum class AddOutcome { ADDED, ALREADY_THERE, FAILED }
 
     private suspend fun addOne(playlist: UserPlaylist, song: Song): AddOutcome {

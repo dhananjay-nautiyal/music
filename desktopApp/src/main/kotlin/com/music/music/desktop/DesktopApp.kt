@@ -622,6 +622,10 @@ fun MusicDesktopApp() {
     var replaySummary by remember { mutableStateOf(DesktopListeningStats.summary()) }
     var statsCountedSongs by remember { mutableStateOf<Set<String>>(emptySet()) }
     var playlistTarget by remember { mutableStateOf<Song?>(null) }
+    // The queue's Save button: the whole running order to be filed, which has no
+    // one track to show in the dialog. Null whenever the dialog isn't about the
+    // queue, so [playlistTarget] alone still says what a single-track open is.
+    var playlistQueue by remember { mutableStateOf<List<Song>?>(null) }
     // One busy flag and one message for every playlist edit: only one of them can be in flight,
     // because each is driven by a dialog that is modal.
     var playlistBusy by remember { mutableStateOf(false) }
@@ -1415,21 +1419,32 @@ fun MusicDesktopApp() {
     fun closePlaylistDialogs() {
         overlays.playlistDialog = false
         playlistTarget = null
+        playlistQueue = null
         overlays.rename = false
         overlays.delete = false
         playlistError = null
         playlistBusy = false
     }
 
+    /** Opens the playlist dialog on [queue] — the queue header's Save button. */
+    fun saveQueueAsPlaylist(queue: List<Song>) {
+        playlistTarget = null
+        playlistQueue = queue
+        overlays.playlistDialog = true
+    }
+
     /** Creates a playlist — on the account when there is one, otherwise here. */
     fun createPlaylist(title: String, privacy: PlaylistPrivacy) {
         val name = title.trim()
         if (name.isBlank()) return
-        val seed = playlistTarget
+        // What it starts with: the queue when the dialog was opened from the queue's
+        // Save button, the one track it was opened on otherwise, nothing at all if
+        // neither — which is the "New playlist" row on an empty library.
+        val songs = playlistQueue ?: listOfNotNull(playlistTarget)
         // A track from another source cannot go in an account playlist, so the playlist made to
-        // hold it is one kept here.
-        if (!DesktopYouTubeAuth.isSignedIn || (seed != null && !DesktopSearchClient.isVideoId(seed.videoId))) {
-            playlists = playlists + DesktopPlaylist(title = name, songs = listOfNotNull(seed))
+        // hold it is one kept here — and so is one holding a queue with such a track in it.
+        if (!DesktopYouTubeAuth.isSignedIn || songs.any { !DesktopSearchClient.isVideoId(it.videoId) }) {
+            playlists = playlists + DesktopPlaylist(title = name, songs = songs)
             persistence.savePlaylists(playlists)
             closePlaylistDialogs()
             return
@@ -1437,7 +1452,7 @@ fun MusicDesktopApp() {
         playlistBusy = true
         playlistError = null
         scope.launch {
-            DesktopSearchClient.createPlaylist(name, privacy, listOfNotNull(seed?.videoId))
+            DesktopSearchClient.createPlaylist(name, privacy, songs.map(Song::videoId))
                 .onSuccess { playlistId ->
                     closePlaylistDialogs()
                     editPlaylistShelf { items ->
@@ -1446,8 +1461,12 @@ fun MusicDesktopApp() {
                             // Only what this request itself establishes: an unseeded playlist gets
                             // a card of just its name rather than a guess at what the feed will
                             // call it.
-                            subtitle = if (seed != null) "1 song" else "",
-                            thumbnailUrl = seed?.thumbnailUrl,
+                            subtitle = when (songs.size) {
+                                0 -> ""
+                                1 -> "1 song"
+                                else -> "${songs.size} songs"
+                            },
+                            thumbnailUrl = songs.firstOrNull()?.thumbnailUrl,
                             videoId = null,
                             browseId = "VL$playlistId",
                         )
@@ -1518,27 +1537,45 @@ fun MusicDesktopApp() {
         }
     }
 
+    /**
+     * What a playlist pick is filing: the queue when the dialog was opened from the
+     * queue's Save button, the single track it was opened on otherwise. Null when
+     * there is nothing to file, so the callers can simply give up.
+     */
+    fun queuedOrTarget(): List<Song>? =
+        (playlistQueue ?: playlistTarget?.let { listOf(it) })?.takeIf { it.isNotEmpty() }
+
     fun addToPlaylist(playlist: DesktopPlaylist) {
-        val song = playlistTarget ?: return
+        val songs = queuedOrTarget() ?: return
         playlists = playlists.map { current ->
-            if (current.id == playlist.id) current.copy(songs = (current.songs + song).distinctBy(Song::videoId)) else current
+            if (current.id == playlist.id) {
+                current.copy(songs = (current.songs + songs).distinctBy(Song::videoId))
+            } else current
         }
         persistence.savePlaylists(playlists)
-        playlistTarget = null
+        closePlaylistDialogs()
     }
 
     fun addToAccountPlaylist(playlist: UserPlaylist) {
-        val song = playlistTarget ?: return
+        val songs = queuedOrTarget() ?: return
         playlistBusy = true
         playlistError = null
         scope.launch {
-            DesktopSearchClient.addToPlaylist(playlist.playlistId, listOf(song.videoId))
-                .onSuccess { closePlaylistDialogs() }
-                .onFailure {
-                    DesktopTrackLog.log("playlist: could not add ${song.videoId}: ${it.message}")
-                    playlistBusy = false
-                    playlistError = it.message ?: "Could not add to ${playlist.title}"
-                }
+            // 50 at a time — the batch the edit endpoint takes, and a queue is
+            // longer than one of them.
+            val results = songs.map(Song::videoId).chunked(50).map { chunk ->
+                DesktopSearchClient.addToPlaylist(playlist.playlistId, chunk)
+            }
+            val refused = results.firstOrNull { it.isFailure }?.exceptionOrNull()
+            if (refused != null) {
+                DesktopTrackLog.log(
+                    "playlist: could not add ${songs.size} song(s) to ${playlist.playlistId}: ${refused.message}",
+                )
+                playlistBusy = false
+                playlistError = refused.message ?: "Could not add to ${playlist.title}"
+            } else {
+                closePlaylistDialogs()
+            }
         }
     }
 
@@ -3177,6 +3214,7 @@ fun MusicDesktopApp() {
                                 onRemove = ::removeFromQueue,
                                 onMove = ::moveInQueue,
                                 onClear = ::clearQueue,
+                                onSaveQueueAsPlaylist = { saveQueueAsPlaylist(liveQueue.songs) },
                                 modifier = Modifier.fillMaxSize(),
                             )
                         }
@@ -3260,6 +3298,7 @@ fun MusicDesktopApp() {
                             onRemoveFromQueue = ::removeFromQueue,
                             onMoveInQueue = ::moveInQueue,
                             onClearQueue = ::clearQueue,
+                            onSaveQueueAsPlaylist = { saveQueueAsPlaylist(liveQueue.songs) },
                             onOpenMenu = { playerMenuOpen = true },
                             onOpenAlbum = { id ->
                                 overlays.nowPlaying = false
@@ -3443,14 +3482,16 @@ fun MusicDesktopApp() {
                             },
                         )
                     }
-                    if (overlays.playlistDialog || playlistTarget != null) {
+                    if (overlays.playlistDialog || playlistTarget != null || playlistQueue != null) {
                         DesktopPlaylistDialog(
                             song = playlistTarget,
+                            queueSongs = playlistQueue,
                             accountPlaylists = accountPlaylists,
                             localPlaylists = playlists,
                             signedIn = youtubeSignedIn,
-                            canUseAccount = playlistTarget
-                                ?.let { DesktopSearchClient.isVideoId(it.videoId) } ?: true,
+                            canUseAccount = playlistQueue?.all { DesktopSearchClient.isVideoId(it.videoId) }
+                                ?: playlistTarget?.let { DesktopSearchClient.isVideoId(it.videoId) }
+                                ?: true,
                             busy = playlistBusy,
                             error = playlistError,
                             onPickAccount = ::addToAccountPlaylist,

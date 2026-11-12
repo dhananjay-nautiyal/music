@@ -701,6 +701,12 @@ fun NowPlayingScreen(
      */
     onQueueDragActiveChange: (Boolean) -> Unit = {},
     onClearQueue: () -> Unit,
+    /**
+     * Saves the whole queue as a playlist — the queue's own header offers it
+     * beside Clear. The songs never travel back up: the caller already holds
+     * the queue it passed down.
+     */
+    onSaveQueueAsPlaylist: () -> Unit,
     onOpenMenu: () -> Unit,
     onOpenAlbum: (String) -> Unit,
     /**
@@ -772,6 +778,7 @@ fun NowPlayingScreen(
             onMoveInQueue = onMoveInQueue,
             onQueueDragActiveChange = onQueueDragActiveChange,
             onClearQueue = onClearQueue,
+            onSaveQueueAsPlaylist = onSaveQueueAsPlaylist,
             onOpenMenu = onOpenMenu,
             onOpenAlbum = onOpenAlbum,
             onOpenArtist = onOpenArtist,
@@ -825,6 +832,7 @@ private class NowPlayingUiState(
     val onMoveInQueue: (Int, Int) -> Unit,
     val onQueueDragActiveChange: (Boolean) -> Unit,
     val onClearQueue: () -> Unit,
+    val onSaveQueueAsPlaylist: () -> Unit,
     val onOpenMenu: () -> Unit,
     val onOpenAlbum: (String) -> Unit,
     val onOpenArtist: (browseId: String?, name: String) -> Unit,
@@ -2204,6 +2212,7 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
                         onRemove = onRemoveFromQueue,
                         onMove = onMoveInQueue,
                         onClear = onClearQueue,
+                        onSaveQueueAsPlaylist = onSaveQueueAsPlaylist,
                         onDragActiveChange = onQueueDragActiveChange,
                         modifier = Modifier.fillMaxSize(),
                     )
@@ -3614,6 +3623,7 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
                             onRemove = onRemoveFromQueue,
                             onMove = onMoveInQueue,
                             onClear = onClearQueue,
+                            onSaveQueueAsPlaylist = onSaveQueueAsPlaylist,
                             onScrollingChange = { queueScrolling = it },
                             onDragActiveChange = onQueueDragActiveChange,
                             collapsePlayerOnScroll = true,
