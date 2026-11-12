@@ -216,6 +216,11 @@ internal fun InlineQueue(
     onRemove: (Int) -> Unit,
     onMove: (Int, Int) -> Unit,
     onClear: () -> Unit,
+    /**
+     * Saves the queue as a playlist. The songs are the caller's already — it
+     * handed this composable the queue — so all this has to say is *when*.
+     */
+    onSaveQueueAsPlaylist: () -> Unit,
     onScrollingChange: (Boolean) -> Unit = {},
     onDragActiveChange: (Boolean) -> Unit = {},
     /** Phone only: let queue scrolling dismiss/restore the lower half player. */
@@ -259,20 +264,13 @@ internal fun InlineQueue(
     }
 
     Column(modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(Res.string.queue),
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White,
-                modifier = Modifier.weight(1f),
-            )
-            if (tracks.user.isNotEmpty()) {
-                QueueClearButton(MaterialTheme.typography.titleMedium, controlsLocked, onClear)
-            }
-        }
+        QueueHeader(
+            hasQueue = queue.isNotEmpty(),
+            hasUserTracks = tracks.user.isNotEmpty(),
+            locked = controlsLocked,
+            onClear = onClear,
+            onSave = onSaveQueueAsPlaylist,
+        )
         Spacer(Modifier.height(4.dp))
         Box(
             modifier = Modifier
@@ -314,7 +312,12 @@ internal fun InlineQueue(
                             title = stringResource(Res.string.next_in_queue),
                             modifier = Modifier.padding(top = 16.dp, bottom = 6.dp).then(queueMotion()),
                         ) {
-                            QueueClearButton(MaterialTheme.typography.labelLarge, controlsLocked, onClear)
+                            QueueHeaderAction(
+                                text = stringResource(Res.string.clear),
+                                style = MaterialTheme.typography.labelLarge,
+                                locked = controlsLocked,
+                                onClick = onClear,
+                            )
                         }
                     }
                     queueSection(tracks.user, QueueSection.USER, drag, controlsLocked, onJumpTo, onRemove)
@@ -339,23 +342,31 @@ internal fun InlineQueue(
                     queueSection(tracks.autoplay, QueueSection.AUTOPLAY, drag, controlsLocked, onJumpTo, onRemove)
                 }
             }
-            // The held row, drawn over the list where the finger is. Positioned
-            // from the finger alone, so nothing the list does underneath — a
-            // swap, a relayout, a scroll — can move it.
-            drag.held?.let { held ->
-                Box(Modifier.matchParentSize().padding(horizontal = PLAYER_GUTTER)) {
-                    InlineQueueRow(
-                        song = held.song,
-                        isCurrent = false,
-                        onClick = {},
-                        onRemove = {},
-                        draggable = true,
-                        lifted = true,
-                        modifier = Modifier.offset { IntOffset(0, drag.heldTop.roundToInt()) },
-                    )
-                }
-            }
+            // The held row, drawn over the list where the finger is.
+            HeldQueueRow(drag, Modifier.matchParentSize())
         }
+    }
+}
+
+/**
+ * The row being dragged, drawn over the list where the finger is. Positioned
+ * from the finger alone, so nothing the list does underneath — a swap, a
+ * relayout, a scroll — can move it. [modifier] is [Modifier.matchParentSize]
+ * from the caller's [BoxScope]; it cannot be asked for here.
+ */
+@Composable
+private fun HeldQueueRow(drag: QueueDrag, modifier: Modifier) {
+    val held = drag.held ?: return
+    Box(modifier.padding(horizontal = PLAYER_GUTTER)) {
+        InlineQueueRow(
+            song = held.song,
+            isCurrent = false,
+            onClick = {},
+            onRemove = {},
+            draggable = true,
+            lifted = true,
+            modifier = Modifier.offset { IntOffset(0, drag.heldTop.roundToInt()) },
+        )
     }
 }
 
@@ -363,7 +374,7 @@ internal fun InlineQueue(
  * One section's rows. The row being dragged stays in the list as an invisible
  * stand-in: it keeps the gesture and trades slots with its neighbours, which
  * slide aside, while the copy the user sees is drawn over the list by
- * [InlineQueue].
+ * [HeldQueueRow].
  */
 private fun LazyListScope.queueSection(
     rows: List<QueueTrack>,
@@ -412,15 +423,65 @@ private fun QueueHeading(
     }
 }
 
+/**
+ * The queue's title and its two actions: save the running order as a playlist,
+ * clear what was queued by hand. Both dim rather than vanish while the party
+ * owns the running order, so they still read as present but not working.
+ */
 @Composable
-private fun QueueClearButton(style: TextStyle, locked: Boolean, onClear: () -> Unit) {
+private fun QueueHeader(
+    hasQueue: Boolean,
+    hasUserTracks: Boolean,
+    locked: Boolean,
+    onClear: () -> Unit,
+    onSave: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(Res.string.queue),
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.White,
+            modifier = Modifier.weight(1f),
+        )
+        // Save sits beside Clear: one saves the running order, the other drops
+        // what was queued by hand. Save comes first because it creates
+        // something.
+        if (hasQueue) {
+            QueueHeaderAction(
+                text = stringResource(Res.string.save),
+                style = MaterialTheme.typography.titleMedium,
+                locked = locked,
+                onClick = onSave,
+            )
+        }
+        if (hasUserTracks) {
+            QueueHeaderAction(
+                text = stringResource(Res.string.clear),
+                style = MaterialTheme.typography.titleMedium,
+                locked = locked,
+                onClick = onClear,
+            )
+        }
+    }
+}
+
+/**
+ * A text button in a queue heading — the header's own actions, "Save" and
+ * "Clear" among them. Dimmed rather than hidden while the party owns the
+ * running order, so the control still reads as present but not working.
+ */
+@Composable
+private fun QueueHeaderAction(text: String, style: TextStyle, locked: Boolean, onClick: () -> Unit) {
     Text(
-        text = stringResource(Res.string.clear),
+        text = text,
         style = style,
         color = Color.White.copy(alpha = if (locked) 0.25f else 0.75f),
         modifier = Modifier
             .clip(RoundedCornerShape(percent = 50))
-            .clickable(enabled = !locked, onClick = onClear)
+            .clickable(enabled = !locked, onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 4.dp),
     )
 }

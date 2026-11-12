@@ -144,6 +144,8 @@ fun QueueSidePanel(
     onRemove: (Int) -> Unit,
     onMove: (Int, Int) -> Unit,
     onClear: () -> Unit,
+    /** Saves the queue as a playlist — see [InlineQueue]. */
+    onSaveQueueAsPlaylist: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     InlineQueue(
@@ -155,6 +157,7 @@ fun QueueSidePanel(
         onRemove = onRemove,
         onMove = onMove,
         onClear = onClear,
+        onSaveQueueAsPlaylist = onSaveQueueAsPlaylist,
         modifier = modifier,
     )
 }

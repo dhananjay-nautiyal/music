@@ -631,6 +631,12 @@ private fun MusicApp(
     // The picker opened from the Library tab, where there is no track and
     // creating the playlist is the whole errand.
     var creatingPlaylist by remember { mutableStateOf(false) }
+    // The queue the picker is filing, set by the queue header's Save button. Held
+    // as the list rather than read off the player when the sheet composes, so a
+    // track autoplaying in under an open sheet cannot change what gets saved.
+    // Null whenever the picker isn't about the queue, so [playlistTarget] alone
+    // still says what a single-track open is.
+    var queueTarget by remember { mutableStateOf<List<Song>?>(null) }
     var showSpotifyImportDialog by remember { mutableStateOf(false) }
     // Which album or playlist the collection menu is open on, or null when it
     // is shut. One slot for every surface that can open it — the shelves on
@@ -2424,6 +2430,7 @@ private fun MusicApp(
                     QueueCoordinator.clearUserQueue(c)
                 }
             },
+            onSaveQueueAsPlaylist = { queueTarget = player.queue },
         )
     }
 
@@ -4360,14 +4367,37 @@ private fun MusicApp(
         }
 
         // ---- Add to playlist / new playlist ----
-        // One sheet for both, because they are one decision: the list of
+        // One sheet for every way in, because they are one decision: the list of
         // playlists with a way to make another. `creatingPlaylist` opens it
-        // straight onto the form, which is what the Library tile means.
-        if (playlistTarget != null || creatingPlaylist) {
+        // straight onto the form, which is what the Library tile means; a track
+        // opens it on the track; the queue's Save opens it on the list with no
+        // track to show, because the whole running order is what goes in.
+        if (playlistTarget != null || creatingPlaylist || queueTarget != null) {
             val target = playlistTarget
+            // What the queue's Save button filed: the running order as it stood
+            // when it was pressed, held rather than re-read so a track that
+            // autoplays in under an open sheet cannot change the playlist.
+            val queue = queueTarget.orEmpty()
             val dismiss = {
                 playlistTarget = null
                 creatingPlaylist = false
+                queueTarget = null
+            }
+            // One line for the whole batch, saying the outcome that matters
+            // most: what went in, else that it was all there already, else
+            // that it didn't work. Same line whether a track or a queue went.
+            val notice = { added: Int, alreadyThere: Int, failed: Int ->
+                showQueueNotice(
+                    when {
+                        added > 1 -> context.resources.getQuantityString(
+                            R.plurals.added_to_playlists_notice, added, added,
+                        )
+                        added == 1 -> context.getString(R.string.song_added_to_playlist)
+                        alreadyThere > 0 && failed == 0 ->
+                            context.getString(R.string.song_already_in_playlist)
+                        else -> context.getString(R.string.failed)
+                    },
+                )
             }
             ModalBottomSheet(
                 onDismissRequest = dismiss,
@@ -4377,31 +4407,31 @@ private fun MusicApp(
                     playlists = playlists,
                     loading = playlistsLoading,
                     song = target,
-                    startCreating = target == null,
+                    // A queue opens on the list: it is just as likely to be
+                    // filed under an existing playlist as made anew, and the
+                    // list's own "New playlist" row is one tap away either way.
+                    startCreating = target == null && queueTarget == null,
                     onAdd = { picked ->
-                        target?.let { song ->
-                            viewModel.addToPlaylists(picked, song) { added, alreadyThere, failed ->
-                                // One line for the whole batch, saying the
-                                // outcome that matters most: what went in, else
-                                // that it was all there already, else that it
-                                // didn't work.
-                                showQueueNotice(
-                                    when {
-                                        added > 1 -> context.resources.getQuantityString(
-                                            R.plurals.added_to_playlists_notice, added, added,
-                                        )
-                                        added == 1 -> context.getString(R.string.song_added_to_playlist)
-                                        alreadyThere > 0 && failed == 0 ->
-                                            context.getString(R.string.song_already_in_playlist)
-                                        else -> context.getString(R.string.failed)
-                                    },
-                                )
+                        if (queueTarget != null) {
+                            viewModel.addQueueToPlaylists(picked, queue, notice)
+                        } else {
+                            target?.let { song ->
+                                viewModel.addToPlaylists(picked, song, notice)
                             }
                         }
                         dismiss()
                     },
                     onCreate = { title, privacy ->
-                        viewModel.createPlaylist(title, privacy, target)
+                        if (queueTarget != null) {
+                            viewModel.createPlaylistWithVideoIds(
+                                title = title,
+                                privacy = privacy,
+                                videoIds = queue.map(Song::videoId),
+                                songs = queue,
+                            )
+                        } else {
+                            viewModel.createPlaylist(title, privacy, target)
+                        }
                         dismiss()
                     },
                 )

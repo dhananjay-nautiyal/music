@@ -61,10 +61,15 @@ import com.music.music.ui.icons.MusicIcons
 @Composable
 internal fun DesktopPlaylistDialog(
     song: Song?,
+    /**
+     * The queue, when the dialog was opened from the queue's Save button — the whole
+     * running order to file, which has no one track to show. Never both this and [song].
+     */
+    queueSongs: List<Song>? = null,
     accountPlaylists: List<UserPlaylist>,
     localPlaylists: List<DesktopPlaylist>,
     signedIn: Boolean,
-    /** Whether [song] is something YouTube can be asked to hold. */
+    /** Whether what is being filed is something YouTube can be asked to hold. */
     canUseAccount: Boolean,
     busy: Boolean,
     error: String?,
@@ -73,14 +78,18 @@ internal fun DesktopPlaylistDialog(
     onCreate: (String, PlaylistPrivacy) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var creating by remember { mutableStateOf(song == null) }
+    // A queue opens onto the list rather than the form: it is just as likely to be filed
+    // under an existing playlist as made anew, and the list's own "New playlist" row is
+    // one click away either way. A single track still opens onto the form when there is
+    // no track at all, which is how the new-playlist errand has always arrived here.
+    var creating by remember { mutableStateOf(song == null && queueSongs == null) }
 
     DesktopDialogFrame(onDismiss = onDismiss) {
         if (creating) {
             NewPlaylistForm(
                 // Nowhere to go back to when the dialog opened onto the form; its own dismiss is
                 // the way out.
-                onBack = if (song == null) null else ({ creating = false }),
+                onBack = if (song == null && queueSongs == null) null else ({ creating = false }),
                 signedIn = signedIn && canUseAccount,
                 busy = busy,
                 error = error,
@@ -89,13 +98,24 @@ internal fun DesktopPlaylistDialog(
             return@DesktopDialogFrame
         }
 
-        DialogHeading("Add to playlist", song?.let { "${it.title} — ${it.artist}" }.orEmpty())
+        DialogHeading(
+            "Add to playlist",
+            queueSongs?.let { "${it.size} songs" }
+                ?: song?.let { "${it.title} — ${it.artist}" }.orEmpty(),
+        )
         error?.let { DialogError(it) }
         DialogAction(MusicIcons.Plus, "New playlist", enabled = !busy) { creating = true }
 
         if (signedIn && !canUseAccount) {
             Text(
-                DesktopStrings["d_this_track_is_not_from_youtube_music_so_it_can_only_go_i", "This track is not from YouTube Music, so it can only go in a playlist kept here."],
+                if (queueSongs != null) {
+                    DesktopStrings[
+                        "d_some_of_this_queue_is_not_from_youtube_music_so_it_ca",
+                        "Some of this queue is not from YouTube Music, so it can only go in a playlist kept here.",
+                    ]
+                } else {
+                    DesktopStrings["d_this_track_is_not_from_youtube_music_so_it_can_only_go_i", "This track is not from YouTube Music, so it can only go in a playlist kept here."]
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = DesktopSecondary,
                 modifier = Modifier.padding(horizontal = 22.dp, vertical = 4.dp),
@@ -112,9 +132,12 @@ internal fun DesktopPlaylistDialog(
             account.isEmpty() && localPlaylists.isEmpty() -> Text(
                 when {
                     !signedIn -> "No playlists on this computer yet. Sign in to see the ones on your account."
-                    // Signed in, but this track cannot go on the account — so offering to sign in
-                    // would be answering a question nobody asked.
+                    // Signed in, but what is being filed cannot go on the account — so offering
+                    // to sign in would be answering a question nobody asked.
+                    !canUseAccount && queueSongs != null ->
+                        "No playlists on this computer yet. Make one and the queue goes straight into it."
                     !canUseAccount -> "No playlists on this computer yet. Make one and this track goes straight into it."
+                    queueSongs != null -> "No playlists yet. Make one and the queue goes straight into it."
                     else -> "No playlists yet. Make one and this song goes straight into it."
                 },
                 style = MaterialTheme.typography.bodySmall,
