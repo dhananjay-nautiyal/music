@@ -219,6 +219,8 @@
     <string name="accent_purple">Violet</string>
     <string name="accent_pink">Rose</string>
     <string name="accent_indigo">Indigo</string>
+    <string name="audio_visualiser">Visualisation audio</string>
+    <string name="audio_visualiser_subtitle">Barres de spectre en direct au-dessus des contrôles</string>
     <string name="reduce_animation">Réduire les animations</string>
     <string name="reduce_animation_subtitle">Fige le dégradé du lecteur principal au lieu de le faire dériver</string>
     <string name="reduce_dynamic_blur">Réduire le flou dynamique</string>

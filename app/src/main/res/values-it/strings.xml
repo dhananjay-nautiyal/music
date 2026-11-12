@@ -258,6 +258,8 @@
     <string name="accent_purple">Viola</string>
     <string name="accent_pink">Rosa</string>
     <string name="accent_indigo">Indaco</string>
+    <string name="audio_visualiser">Visualizzazione audio</string>
+    <string name="audio_visualiser_subtitle">Barre dello spettro dal vivo sopra i controlli</string>
     <string name="reduce_animation">Riduci animazioni</string>
     <string name="reduce_animation_subtitle">Blocca la sfumatura del player principale invece di farla muovere</string>
     <string name="reduce_dynamic_blur">Riduci sfocatura dinamica</string>

@@ -182,6 +182,7 @@ internal object DesktopPlayerSettings : PlayerSettingsSource {
     override val animatedCanvas = MutableStateFlow(true)
     override val audioQualityCellular = MutableStateFlow(AudioQuality.LOSSLESS)
     override val audioQualityWifi = MutableStateFlow(AudioQuality.LOSSLESS)
+    override val audioVisualiser = MutableStateFlow(DesktopAppearanceSettings.audioVisualiser.value)
     override val canvasOverCellular = MutableStateFlow(true)
     override val fullBleedArtwork = MutableStateFlow(false)
     override val hideSongStatus = MutableStateFlow(false)

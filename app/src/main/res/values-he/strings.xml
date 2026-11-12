@@ -219,6 +219,8 @@
     <string name="accent_purple">סגול</string>
     <string name="accent_pink">ורוד</string>
     <string name="accent_indigo">אינדיגו</string>
+    <string name="audio_visualiser">ויזואליזציית שמע</string>
+    <string name="audio_visualiser_subtitle">עמודות ספקטרום חיות מעל הבקרות</string>
     <string name="reduce_animation">הפחתת אנימציה</string>
     <string name="reduce_animation_subtitle">מקפיא את הגרדיאנט של הנגן הראשי במקום לתת לו לנוע</string>
     <string name="reduce_dynamic_blur">הפחתת טשטוש דינמי</string>

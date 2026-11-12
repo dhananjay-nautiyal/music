@@ -228,6 +228,8 @@
     <string name="accent_purple">Фиолетовый</string>
     <string name="accent_pink">Розовый</string>
     <string name="accent_indigo">Индиго</string>
+    <string name="audio_visualiser">Аудиовизуализация</string>
+    <string name="audio_visualiser_subtitle">Живые столбцы спектра над элементами управления</string>
     <string name="reduce_animation">Уменьшить анимацию</string>
     <string name="reduce_animation_subtitle">Останавливает градиент главного плеера вместо плавного движения</string>
     <string name="reduce_dynamic_blur">Уменьшить динамическое размытие</string>

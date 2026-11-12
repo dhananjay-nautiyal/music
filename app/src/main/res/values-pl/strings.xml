@@ -216,6 +216,8 @@
     <string name="accent_purple">Fioletowy</string>
     <string name="accent_pink">Różowy</string>
     <string name="accent_indigo">Indygo</string>
+    <string name="audio_visualiser">Wizualizacja dźwięku</string>
+    <string name="audio_visualiser_subtitle">Paski widma na żywo nad elementami sterowania</string>
     <string name="reduce_animation">Zmniejsz animację</string>
     <string name="reduce_animation_subtitle">Zatrzymuje gradient głównego odtwarzacza zamiast dryfowania</string>
     <string name="reduce_dynamic_blur">Zmniejsz rozmycie dynamiczne</string>

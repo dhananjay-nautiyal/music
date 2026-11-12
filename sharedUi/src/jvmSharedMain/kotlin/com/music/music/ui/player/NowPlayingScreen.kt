@@ -3674,6 +3674,11 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+            // The live spectrum, first in the deck: it belongs to the artwork
+            // above this block rather than to any one control below it, and
+            // sitting over the lyric line means the line keeps its own place
+            // when the setting is turned on.
+            AudioVisualiserStrip()
             // Current lyric, one line, directly above the scrubber. It stays in
             // the layout — and stays fully visible — whether or not the queue
             // is open: dropping it would shorten this block and the controls

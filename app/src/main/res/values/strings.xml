@@ -333,6 +333,8 @@
     <string name="accent_purple">Purple</string>
     <string name="accent_pink">Pink</string>
     <string name="accent_indigo">Indigo</string>
+    <string name="audio_visualiser">Audio visualiser</string>
+    <string name="audio_visualiser_subtitle">Live spectrum bars above the player controls</string>
     <string name="reduce_animation">Reduce animation</string>
     <string name="reduce_animation_subtitle">Freezes the main player\'s gradient instead of drifting</string>
     <string name="reduce_dynamic_blur">Reduce dynamic blur</string>

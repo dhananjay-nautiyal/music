@@ -234,6 +234,8 @@
     <string name="accent_purple">ม่วง</string>
     <string name="accent_pink">ชมพู</string>
     <string name="accent_indigo">อินดิโก้</string>
+    <string name="audio_visualiser">ตัวแสดงภาพเสียง</string>
+    <string name="audio_visualiser_subtitle">แถบสเปกตรัมสดเหนือปุ่มควบคุม</string>
     <string name="reduce_animation">ลดแอนิเมชัน</string>
     <string name="reduce_animation_subtitle">หยุดเกรเดียนต์ของเครื่องเล่นหลักแทนการเคลื่อนไหว</string>
     <string name="reduce_dynamic_blur">ลดเบลอแบบไดนามิก</string>

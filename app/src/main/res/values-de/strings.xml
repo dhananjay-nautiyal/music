@@ -218,6 +218,8 @@
     <string name="accent_purple">Lila</string>
     <string name="accent_pink">Rosa</string>
     <string name="accent_indigo">Indigo</string>
+    <string name="audio_visualiser">Audio-Visualisierung</string>
+    <string name="audio_visualiser_subtitle">Live-Spektrumbalken über den Bedienelementen</string>
     <string name="reduce_animation">Animationen reduzieren</string>
     <string name="reduce_animation_subtitle">Friert den Farbverlauf des Hauptplayers ein, statt ihn treiben zu lassen</string>
     <string name="reduce_dynamic_blur">Dynamische Unschärfe reduzieren</string>

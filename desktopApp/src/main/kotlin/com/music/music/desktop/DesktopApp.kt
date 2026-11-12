@@ -2932,6 +2932,7 @@ fun MusicDesktopApp() {
     // What the shared player reads as settings, kept in step with the window's own.
     SideEffect {
         DesktopPlayerSettings.animatedCanvas.value = animatedCanvas
+        DesktopPlayerSettings.audioVisualiser.value = DesktopAppearanceSettings.audioVisualiser.value
         DesktopPlayerSettings.fullBleedArtwork.value = fullBleedArtwork
         DesktopPlayerSettings.legacyMeshGradient.value = legacyMeshGradient
         DesktopPlayerSettings.lyricsBlur.value = lyricsBlur
@@ -5982,6 +5983,16 @@ private fun DesktopSettingsScreen(
                             }
                         }
                     }
+                    val audioVisualiser by DesktopAppearanceSettings.audioVisualiser.collectAsState()
+                    SettingsToggle(
+                        DesktopStrings["audio_visualiser", "Audio visualiser"],
+                        DesktopStrings[
+                            "audio_visualiser_subtitle",
+                            "Live spectrum bars above the player controls",
+                        ],
+                        audioVisualiser,
+                        DesktopAppearanceSettings::setAudioVisualiser,
+                    )
                     val reduceDynamicBlur by DesktopAppearanceSettings.reduceDynamicBlur.collectAsState()
                     SettingsToggle(
                         DesktopStrings["reduce_dynamic_blur", "Reduce dynamic blur"],

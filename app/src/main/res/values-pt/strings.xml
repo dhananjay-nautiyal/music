@@ -220,6 +220,8 @@
     <string name="accent_purple">Roxo</string>
     <string name="accent_pink">Rosa</string>
     <string name="accent_indigo">Índigo</string>
+    <string name="audio_visualiser">Visualização de áudio</string>
+    <string name="audio_visualiser_subtitle">Barras de espectro ao vivo acima dos controles</string>
     <string name="reduce_animation">Reduzir animação</string>
     <string name="reduce_animation_subtitle">Congela o gradiente do player principal em vez de mover</string>
     <string name="reduce_dynamic_blur">Reduzir desfoque dinâmico</string>

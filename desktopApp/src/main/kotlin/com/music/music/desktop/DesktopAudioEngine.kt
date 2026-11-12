@@ -6,6 +6,7 @@ import com.music.music.data.settings.MixBlend
 import com.music.music.data.settings.SmartAnalysis
 import com.music.music.data.settings.TrackAnalysisState
 import com.music.music.data.settings.TransitionWindow
+import com.music.music.playback.AudioVisualiser
 import com.music.music.playback.EqCurve
 import com.music.music.playback.TransitionFilter
 import com.music.music.playback.smart.CrossfadeMode
@@ -771,6 +772,10 @@ class DesktopPlaybackEngine(
      */
     private fun play(track: Track, samples: FloatArray, count: Int, skippedFrames: Long = 0L) {
         val rate = sink.format.sampleRate
+        // The visualiser's tap: post-crossfade, post-stretch, pre-gain — the
+        // strip draws the mix the output is about to be handed, and only once
+        // the setting has asked for it.
+        AudioVisualiser.push(samples, count, sink.format.channels, rate)
         if (rate > 0) {
             val deck = deckRate(track)
             playhead.change(

@@ -11,6 +11,7 @@ import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.ForwardingAudioSink
 import com.music.music.BuildConfig
 import com.music.music.playback.AudioOutputStatus
+import com.music.music.playback.AudioVisualiser
 import com.music.music.playback.audio.usb.DirectAudioOutput
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -343,6 +344,17 @@ class PrecisionAudioSink(
 
             // Process normalized Float32 samples through custom DSP chain
             dspChain.process(audioBlock)
+
+            // The visualiser's tap, post-DSP: the bars show what is actually
+            // being handed to the output — EQ, loudness and all — rather than
+            // what the decoder happened to produce. Disabled by default, and
+            // a downmix into a ring when it isn't.
+            AudioVisualiser.push(
+                samples = audioBlock.samples,
+                count = audioBlock.sampleCount,
+                channels = audioBlock.channelCount,
+                sampleRate = configuredSampleRate,
+            )
 
             // Encode processed samples to target PCM output buffer (Float32 or PCM16)
             outputByteBuffer.clear()

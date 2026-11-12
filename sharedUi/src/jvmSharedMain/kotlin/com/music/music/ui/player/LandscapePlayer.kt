@@ -386,6 +386,9 @@ internal fun LandscapeMainPane(
         }
         credits()
         Spacer(Modifier.height(if (compact) 2.dp else 10.dp))
+        // Same strip, same rules as the portrait deck: above the whole control
+        // block, attached to the artwork side of it.
+        AudioVisualiserStrip()
         lyricStrip?.invoke()
         scrubber()
         Spacer(Modifier.height(if (compact) 0.dp else 8.dp))
