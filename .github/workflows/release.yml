@@ -187,7 +187,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14
+          # macos-14 was retired on 2026-11-02; macos-15 is GitHub's pinned
+          # arm64 replacement (same Apple-silicon image line).
+          - os: macos-15
             arch: arm64
           - os: macos-15-intel
             arch: x64
