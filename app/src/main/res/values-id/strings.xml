@@ -204,6 +204,15 @@
     <string name="show_nerd_stats">Tampilkan statistik teknis</string>
     <string name="show_nerd_stats_subtitle">Codec, bitrate, dan sample rate pada pemutar</string>
     <string name="theme">Tema</string>
+    <string name="accent_color">Warna aksen</string>
+    <string name="accent_blue">Biru</string>
+    <string name="accent_red">Merah</string>
+    <string name="accent_orange">Oranye</string>
+    <string name="accent_green">Hijau</string>
+    <string name="accent_teal">Toska</string>
+    <string name="accent_purple">Ungu</string>
+    <string name="accent_pink">Merah muda</string>
+    <string name="accent_indigo">Indigo</string>
     <string name="reduce_animation">Kurangi animasi</string>
     <string name="reduce_animation_subtitle">Membekukan gradien pemutar utama alih-alih bergerak</string>
     <string name="reduce_dynamic_blur">Kurangi blur dinamis</string>

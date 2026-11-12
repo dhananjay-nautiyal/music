@@ -7526,6 +7526,12 @@ private val LocalSettingsQuery = compositionLocalOf { "" }
 /** Where a row tells its group that it survived the filter, so an empty group can hide its name. */
 private val LocalSettingsMatches = compositionLocalOf<MutableList<String>?> { null }
 
+/** An accent's name — the catalogue's if it has one, else English. */
+private fun accentName(accent: AccentColor): String = DesktopStrings[
+    "accent_${accent.name.lowercase()}",
+    accent.name.lowercase().replaceFirstChar { it.uppercase() },
+]
+
 /**
  * Whether a row with this text belongs on screen, and registering it with its group when it does.
  * Rows call this first and return early when it is false.

@@ -207,6 +207,15 @@
     <string name="show_nerd_stats">Pokaż statystyki dla nerdów</string>
     <string name="show_nerd_stats_subtitle">Kodek, bitrate i sample rate na odtwarzaczu</string>
     <string name="theme">Motyw</string>
+    <string name="accent_color">Kolor akcentu</string>
+    <string name="accent_blue">Niebieski</string>
+    <string name="accent_red">Czerwony</string>
+    <string name="accent_orange">Pomarańczowy</string>
+    <string name="accent_green">Zielony</string>
+    <string name="accent_teal">Turkusowy</string>
+    <string name="accent_purple">Fioletowy</string>
+    <string name="accent_pink">Różowy</string>
+    <string name="accent_indigo">Indygo</string>
     <string name="reduce_animation">Zmniejsz animację</string>
     <string name="reduce_animation_subtitle">Zatrzymuje gradient głównego odtwarzacza zamiast dryfowania</string>
     <string name="reduce_dynamic_blur">Zmniejsz rozmycie dynamiczne</string>

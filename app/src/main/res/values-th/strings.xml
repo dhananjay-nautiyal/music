@@ -225,6 +225,15 @@
     <string name="show_nerd_stats">แสดงสถิติเชิงลึก</string>
     <string name="show_nerd_stats_subtitle">โคเดก อัตราบิต และอัตราสุ่มตัวอย่างบนหน้าเครื่องเล่น</string>
     <string name="theme">ธีม</string>
+    <string name="accent_color">สีเน้น</string>
+    <string name="accent_blue">น้ำเงิน</string>
+    <string name="accent_red">แดง</string>
+    <string name="accent_orange">ส้ม</string>
+    <string name="accent_green">เขียว</string>
+    <string name="accent_teal">ฟ้าเขียว</string>
+    <string name="accent_purple">ม่วง</string>
+    <string name="accent_pink">ชมพู</string>
+    <string name="accent_indigo">อินดิโก้</string>
     <string name="reduce_animation">ลดแอนิเมชัน</string>
     <string name="reduce_animation_subtitle">หยุดเกรเดียนต์ของเครื่องเล่นหลักแทนการเคลื่อนไหว</string>
     <string name="reduce_dynamic_blur">ลดเบลอแบบไดนามิก</string>

@@ -40,7 +40,7 @@ internal object DesktopAppearanceSettings {
 
     fun setAccent(value: AccentColor) {
         DesktopPersistence().saveString(KEY_ACCENT, value.name)
-        _accent.value = value
+        _accent = value
     }
 
     /** Stored name, or the brand blue the app ships with when there is none. */

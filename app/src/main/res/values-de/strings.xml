@@ -209,6 +209,15 @@
     <string name="show_nerd_stats">Technische Details anzeigen</string>
     <string name="show_nerd_stats_subtitle">Codec, Bitrate und Abtastrate im Player</string>
     <string name="theme">Design</string>
+    <string name="accent_color">Akzentfarbe</string>
+    <string name="accent_blue">Blau</string>
+    <string name="accent_red">Rot</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_green">Grün</string>
+    <string name="accent_teal">Türkis</string>
+    <string name="accent_purple">Lila</string>
+    <string name="accent_pink">Rosa</string>
+    <string name="accent_indigo">Indigo</string>
     <string name="reduce_animation">Animationen reduzieren</string>
     <string name="reduce_animation_subtitle">Friert den Farbverlauf des Hauptplayers ein, statt ihn treiben zu lassen</string>
     <string name="reduce_dynamic_blur">Dynamische Unschärfe reduzieren</string>
