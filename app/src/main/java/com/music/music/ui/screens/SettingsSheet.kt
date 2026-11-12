@@ -219,6 +219,7 @@ fun SettingsScreen(
     val translationLanguage by AppSettings.translationLanguage.collectAsStateWithLifecycle()
     val theme by AppSettings.themeMode.collectAsStateWithLifecycle()
     val accent by AppSettings.accent.collectAsStateWithLifecycle()
+    val audioVisualiser by AppSettings.audioVisualiser.collectAsStateWithLifecycle()
     val sessionId by AppSettings.audioSessionId.collectAsStateWithLifecycle()
     val outputPcmMode by AppSettings.outputPcmMode.collectAsStateWithLifecycle()
     val preferUsbDac by AppSettings.preferUsbDac.collectAsStateWithLifecycle()
@@ -789,6 +790,25 @@ fun SettingsScreen(
                         )
                     }
                 }
+            }
+            val visualiserTitle = stringResource(R.string.audio_visualiser)
+            row(visualiserTitle, "visualiser", "visualizer", "spectrum", "bars", "equalizer") {
+                SettingsRow(
+                    icon = Icons.Rounded.GraphicEq,
+                    title = visualiserTitle,
+                    subtitle = stringResource(R.string.audio_visualiser_subtitle),
+                    trailing = {
+                        Switch(
+                            checked = audioVisualiser,
+                            onCheckedChange = AppSettings::setAudioVisualiser,
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                checkedBorderColor = MaterialTheme.colorScheme.primary,
+                            ),
+                        )
+                    },
+                    onClick = { AppSettings.setAudioVisualiser(!audioVisualiser) },
+                )
             }
             val amoledBlackTitle = stringResource(R.string.amoled_black)
             row(amoledBlackTitle, "amoled", "black", "oled") {

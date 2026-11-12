@@ -215,6 +215,8 @@
     <string name="accent_purple">紫色</string>
     <string name="accent_pink">粉色</string>
     <string name="accent_indigo">靛藍色</string>
+    <string name="audio_visualiser">音訊視覺化</string>
+    <string name="audio_visualiser_subtitle">控制項上方的即時頻譜條</string>
     <string name="reduce_animation">減少動畫</string>
     <string name="reduce_animation_subtitle">讓主播放器的漸變保持靜止，而不是流動</string>
     <string name="reduce_dynamic_blur">減少動態模糊</string>

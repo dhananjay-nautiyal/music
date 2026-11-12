@@ -213,6 +213,8 @@
     <string name="accent_purple">Ungu</string>
     <string name="accent_pink">Merah muda</string>
     <string name="accent_indigo">Indigo</string>
+    <string name="audio_visualiser">Visualisasi audio</string>
+    <string name="audio_visualiser_subtitle">Batang spektrum langsung di atas kontrol</string>
     <string name="reduce_animation">Kurangi animasi</string>
     <string name="reduce_animation_subtitle">Membekukan gradien pemutar utama alih-alih bergerak</string>
     <string name="reduce_dynamic_blur">Kurangi blur dinamis</string>

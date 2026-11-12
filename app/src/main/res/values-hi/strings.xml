@@ -218,6 +218,8 @@
     <string name="accent_purple">बैंगनी</string>
     <string name="accent_pink">गुलाबी</string>
     <string name="accent_indigo">इंडिगो</string>
+    <string name="audio_visualiser">ऑडियो विज़ुअलाइज़र</string>
+    <string name="audio_visualiser_subtitle">नियंत्रणों के ऊपर लाइव स्पेक्ट्रम बार</string>
     <string name="reduce_animation">एनिमेशन कम करें</string>
     <string name="reduce_animation_subtitle">मुख्य प्लेयर के ग्रेडिएंट को बहने के बजाय स्थिर रखता है</string>
     <string name="reduce_dynamic_blur">डायनामिक ब्लर कम करें</string>

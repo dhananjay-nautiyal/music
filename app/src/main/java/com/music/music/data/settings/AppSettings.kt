@@ -13,6 +13,7 @@ import com.music.music.auth.AuthStore
 import com.music.music.data.canvas.SpotifyToken
 import com.music.music.data.lyrics.LyricsSource
 import com.music.music.data.sources.SourceKind
+import com.music.music.playback.AudioVisualiser
 import com.music.music.playback.EqLayout
 import com.music.music.playback.EqualizerPreset
 import com.music.music.ui.theme.AccentColor
@@ -382,6 +383,13 @@ object AppSettings {
      * otherwise; see [AccentColor] for why it carries a value per theme.
      */
     val accent = MutableStateFlow(AccentColor.BLUE)
+
+    /**
+     * Live spectrum bars between the artwork and the transport controls —
+     * off until asked for, and mirrored into [AudioVisualiser.enabled] so the
+     * audio thread's tap costs nothing while it is off.
+     */
+    val audioVisualiser = MutableStateFlow(false)
 
     /** Keep playing similar music once the queue runs out. */
     val autoplay = MutableStateFlow(true)
@@ -898,6 +906,8 @@ object AppSettings {
         accent.value = runCatching {
             AccentColor.valueOf(prefs.getString(KEY_ACCENT, null) ?: AccentColor.BLUE.name)
         }.getOrDefault(AccentColor.BLUE)
+        audioVisualiser.value = prefs.getBoolean(KEY_AUDIO_VISUALISER, false)
+        AudioVisualiser.enabled = audioVisualiser.value
         autoplay.value = prefs.getBoolean(KEY_AUTOPLAY, true)
         shuffleEnabled.value = prefs.getBoolean(KEY_SHUFFLE_ENABLED, false)
         repeatMode.value = prefs.getInt(KEY_REPEAT_MODE, Player.REPEAT_MODE_OFF)
@@ -1267,6 +1277,12 @@ object AppSettings {
     fun setAccent(value: AccentColor) {
         accent.value = value
         prefs.edit().putString(KEY_ACCENT, value.name).apply()
+    }
+
+    fun setAudioVisualiser(value: Boolean) {
+        audioVisualiser.value = value
+        AudioVisualiser.enabled = value
+        prefs.edit().putBoolean(KEY_AUDIO_VISUALISER, value).apply()
     }
 
     fun setReduceAnimation(value: Boolean) {
@@ -2111,6 +2127,7 @@ object AppSettings {
     private const val KEY_SPEED = "playback_speed"
     private const val KEY_THEME = "theme_mode"
     private const val KEY_ACCENT = "accent_color"
+    private const val KEY_AUDIO_VISUALISER = "audio_visualiser"
     private const val KEY_AUTOPLAY = "autoplay"
     private const val KEY_SHUFFLE_ENABLED = "shuffle_enabled"
     private const val KEY_REPEAT_MODE = "repeat_mode"

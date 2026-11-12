@@ -3,6 +3,7 @@ package com.music.music.desktop
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.music.music.playback.AudioVisualiser
 import com.music.music.ui.theme.AccentColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,6 +49,25 @@ internal object DesktopAppearanceSettings {
         AccentColor.valueOf(DesktopPersistence().string(KEY_ACCENT))
     }.getOrDefault(AccentColor.BLUE)
 
+    private val _audioVisualiser = MutableStateFlow(
+        DesktopPersistence().boolean(KEY_AUDIO_VISUALISER, false),
+    )
+
+    init {
+        // Before the first frame of anything, or the tap would be reading a
+        // setting the process had not been told about yet.
+        AudioVisualiser.enabled = _audioVisualiser.value
+    }
+
+    /** Live spectrum bars between the artwork and the transport controls. */
+    val audioVisualiser: StateFlow<Boolean> = _audioVisualiser
+
+    fun setAudioVisualiser(value: Boolean) {
+        DesktopPersistence().saveBoolean(KEY_AUDIO_VISUALISER, value)
+        AudioVisualiser.enabled = value
+        _audioVisualiser.value = value
+    }
+
     /** Freezes the main player's gradient instead of drifting. */
     val reduceAnimation: StateFlow<Boolean> = _reduceAnimation
 
@@ -78,4 +98,5 @@ internal object DesktopAppearanceSettings {
     internal const val KEY_HIDE_VOLUME_BAR = "hide_volume_bar"
     internal const val KEY_AMBIENT_BACKDROP = "ambient_backdrop"
     internal const val KEY_ACCENT = "accent_color"
+    internal const val KEY_AUDIO_VISUALISER = "audio_visualiser"
 }

@@ -244,6 +244,8 @@
     <string name="accent_purple">Tím</string>
     <string name="accent_pink">Hồng</string>
     <string name="accent_indigo">Chàm</string>
+    <string name="audio_visualiser">Hiệu ứng hình ảnh âm thanh</string>
+    <string name="audio_visualiser_subtitle">Thanh phổ trực tiếp trên các điều khiển</string>
     <string name="reduce_animation">Giảm hiệu ứng chuyển động</string>
     <string name="reduce_animation_subtitle">Cố định dải màu của trình phát thay vì chuyển động</string>
     <string name="reduce_dynamic_blur">Giảm độ mờ động</string>

@@ -240,6 +240,8 @@
     <string name="accent_purple">Mor</string>
     <string name="accent_pink">Pembe</string>
     <string name="accent_indigo">İndigo</string>
+    <string name="audio_visualiser">Ses görselleştirici</string>
+    <string name="audio_visualiser_subtitle">Denetimlerin üzerindeki canlı spektrum çubukları</string>
     <string name="reduce_animation">Animasyonu azalt</string>
     <string name="reduce_animation_subtitle">Ana oynatıcının gradyanını kaymak yerine dondurur</string>
     <string name="reduce_dynamic_blur">Dinamik bulanıklığı azalt</string>
