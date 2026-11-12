@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateListOf
 import com.music.music.ui.components.PAGE_GUTTER
 import com.music.music.ui.components.trackColumnWidth
 import com.music.music.ui.replay.ReplayCreditCard
+import com.music.music.ui.theme.AccentColor
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import com.music.music.data.YtMusicRepository
@@ -355,25 +356,39 @@ private val LocalDesktopBottomInset = staticCompositionLocalOf { 0.dp }
 
 /** Android's own edge on these bars: `Color.White.copy(alpha = 0.10f)`. */
 private val DesktopBarEdge = Color(0x1AFFFFFF)
-internal val DesktopAccent = Color.White
+
+/**
+ * The accent the chrome's interactive marks are painted in — spinners, checks,
+ * ticks, filled buttons — and [DesktopOnAccent] what sits on top of it.
+ *
+ * Getters rather than values because the picker changes them: every mark reads
+ * one during composition, so a snapshot read is what redraws the seventy-odd
+ * sites when an accent is chosen. See [DesktopAppearanceSettings.accent].
+ */
+internal val DesktopAccent: Color
+    get() = DesktopAppearanceSettings.accent.dark
+
+/** What sits on top of [DesktopAccent] — white on the deep accents, black on the pale ones. */
+internal val DesktopOnAccent: Color
+    get() = DesktopAppearanceSettings.accent.onDark
 
 /** Deleting, signing out, and anything that failed — the one place a colour survives, as on Android. */
 internal val DesktopDestructive = Color(0xFFFF453A)
 
-/** A chip the way Android draws a chosen segment: solid white with black on it, or nothing at all. */
+/** A chip the way Android draws a chosen segment: the accent with its own foreground on it, or nothing at all. */
 @Composable
 internal fun desktopChipColors() = FilterChipDefaults.filterChipColors(
     containerColor = Color.Transparent,
     labelColor = DesktopSecondary,
-    selectedContainerColor = Color.White,
-    selectedLabelColor = Color.Black,
+    selectedContainerColor = DesktopAccent,
+    selectedLabelColor = DesktopOnAccent,
 )
 
-/** Android's switch: a white track with a black knob on, a faint wash off. */
+/** Android's switch: the accent track with its own foreground as the knob, a faint wash off. */
 @Composable
 internal fun desktopSwitchColors() = SwitchDefaults.colors(
-    checkedTrackColor = Color.White,
-    checkedThumbColor = Color.Black,
+    checkedTrackColor = DesktopAccent,
+    checkedThumbColor = DesktopOnAccent,
     checkedBorderColor = Color.Transparent,
     uncheckedTrackColor = Color.White.copy(alpha = 0.10f),
     uncheckedThumbColor = Color.White.copy(alpha = 0.35f),
@@ -422,8 +437,8 @@ private const val AUTOPLAY_EMPTY_REFRESH_DELAY_MS = 2_000L
 /** The phone's dark scheme, which the shared pages are drawn against. */
 internal fun desktopColorScheme() = darkColorScheme(
     primary = DesktopAccent,
-    // Black on the accent, now that the accent is white.
-    onPrimary = Color.Black,
+    // The accent's own foreground: white on the deep accents, black on the pale ones.
+    onPrimary = DesktopOnAccent,
     primaryContainer = Color.White.copy(alpha = 0.16f),
     onPrimaryContainer = Color.White,
     background = DesktopBackground,
@@ -5933,6 +5948,40 @@ private fun DesktopSettingsScreen(
             }
             if (section == DesktopSettingsSection.APPEARANCE) item {
                 SettingsGroup(DesktopStrings["appearance", "Appearance"]) {
+                    // The accent first: it is the rest of this section's own
+                    // subject — the blur and the window material are both
+                    // things it colours.
+                    val accent = DesktopAppearanceSettings.accent
+                    val accentTitle = DesktopStrings["accent_color", "Accent color"]
+                    val accentSubtitle = accentName(accent)
+                    if (settingsRowVisible(accentTitle, accentSubtitle)) {
+                        Column(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                            Text(accentTitle, fontWeight = FontWeight.Medium)
+                            Text(accentSubtitle, color = DesktopSecondary, style = MaterialTheme.typography.bodySmall)
+                            Spacer(Modifier.height(10.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                AccentColor.entries.forEach { option ->
+                                    val chosen = option == accent
+                                    Box(
+                                        Modifier
+                                            .size(26.dp)
+                                            .clip(CircleShape)
+                                            .background(option.dark)
+                                            // The ring is what says "chosen", not the fill: a row of
+                                            // colours is read by people who cannot tell two of them
+                                            // apart, so the selection has to be a shape, not a hue.
+                                            .border(
+                                                2.dp,
+                                                if (chosen) Color.White else Color.Transparent,
+                                                CircleShape,
+                                            )
+                                            .clickable { DesktopAppearanceSettings.setAccent(option) }
+                                            .semantics { contentDescription = accentName(option) },
+                                    )
+                                }
+                            }
+                        }
+                    }
                     val reduceDynamicBlur by DesktopAppearanceSettings.reduceDynamicBlur.collectAsState()
                     SettingsToggle(
                         DesktopStrings["reduce_dynamic_blur", "Reduce dynamic blur"],
@@ -6358,7 +6407,7 @@ private fun DesktopLicensesPage(onDismiss: () -> Unit) {
             Button(
                 onClick = onDismiss,
                 shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = DesktopAccent, contentColor = Color.Black),
+                colors = ButtonDefaults.buttonColors(containerColor = DesktopAccent, contentColor = DesktopOnAccent),
             ) { Text(DesktopStrings["done", "Done"]) }
         }
     }
@@ -7477,6 +7526,12 @@ private val LocalSettingsQuery = compositionLocalOf { "" }
 /** Where a row tells its group that it survived the filter, so an empty group can hide its name. */
 private val LocalSettingsMatches = compositionLocalOf<MutableList<String>?> { null }
 
+/** An accent's name — the catalogue's if it has one, else English. */
+private fun accentName(accent: AccentColor): String = DesktopStrings[
+    "accent_${accent.name.lowercase()}",
+    accent.name.lowercase().replaceFirstChar { it.uppercase() },
+]
+
 /**
  * Whether a row with this text belongs on screen, and registering it with its group when it does.
  * Rows call this first and return early when it is false.
@@ -7538,8 +7593,8 @@ internal fun DesktopBareSlider(
     onValueChangeFinished: (() -> Unit)? = null,
 ) {
     val colors = SliderDefaults.colors(
-        thumbColor = Color.White,
-        activeTrackColor = Color.White,
+        thumbColor = DesktopAccent,
+        activeTrackColor = DesktopAccent,
         inactiveTrackColor = Color.White.copy(alpha = 0.24f),
     )
     Slider(
@@ -7621,9 +7676,9 @@ private fun DesktopActionButton(
     onClick: () -> Unit,
 ) {
     Row(modifier.clip(CircleShape).background(DesktopAccent).clickable(onClick = onClick).padding(horizontal = 18.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, tint = Color.Black, modifier = Modifier.size(18.dp))
+        Icon(icon, null, tint = DesktopOnAccent, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
-        Text(label, color = Color.Black, fontWeight = FontWeight.SemiBold)
+        Text(label, color = DesktopOnAccent, fontWeight = FontWeight.SemiBold)
     }
 }
 

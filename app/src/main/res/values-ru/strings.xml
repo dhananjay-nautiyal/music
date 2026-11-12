@@ -219,6 +219,15 @@
     <string name="show_nerd_stats">Показывать техническую статистику</string>
     <string name="show_nerd_stats_subtitle">Кодек, битрейт и частота дискретизации в плеере</string>
     <string name="theme">Тема</string>
+    <string name="accent_color">Акцентный цвет</string>
+    <string name="accent_blue">Синий</string>
+    <string name="accent_red">Красный</string>
+    <string name="accent_orange">Оранжевый</string>
+    <string name="accent_green">Зелёный</string>
+    <string name="accent_teal">Бирюзовый</string>
+    <string name="accent_purple">Фиолетовый</string>
+    <string name="accent_pink">Розовый</string>
+    <string name="accent_indigo">Индиго</string>
     <string name="reduce_animation">Уменьшить анимацию</string>
     <string name="reduce_animation_subtitle">Останавливает градиент главного плеера вместо плавного движения</string>
     <string name="reduce_dynamic_blur">Уменьшить динамическое размытие</string>

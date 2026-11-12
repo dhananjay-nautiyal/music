@@ -12,6 +12,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,6 +63,7 @@ import androidx.compose.material.icons.rounded.LocalOffer
 import androidx.compose.material.icons.rounded.MusicOff
 import androidx.compose.material.icons.rounded.MotionPhotosOff
 import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PlaylistPlay
 import androidx.compose.material.icons.rounded.SignalCellularAlt
@@ -112,6 +114,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -147,6 +151,7 @@ import com.music.music.data.sources.DeviceCodecs
 import com.music.music.data.settings.AudioQuality
 import com.music.music.data.settings.DownloadQuality
 import com.music.music.data.settings.ThemeMode
+import com.music.music.ui.theme.AccentColor
 import com.music.music.data.stats.Backup
 import com.music.music.playback.AudioCache
 import com.music.music.ui.player.fullBleedArtworkAvailable
@@ -213,6 +218,7 @@ fun SettingsScreen(
     val lyricsSources by AppSettings.lyricsSources.collectAsStateWithLifecycle()
     val translationLanguage by AppSettings.translationLanguage.collectAsStateWithLifecycle()
     val theme by AppSettings.themeMode.collectAsStateWithLifecycle()
+    val accent by AppSettings.accent.collectAsStateWithLifecycle()
     val sessionId by AppSettings.audioSessionId.collectAsStateWithLifecycle()
     val outputPcmMode by AppSettings.outputPcmMode.collectAsStateWithLifecycle()
     val preferUsbDac by AppSettings.preferUsbDac.collectAsStateWithLifecycle()
@@ -754,6 +760,35 @@ fun SettingsScreen(
                     onSelect = { AppSettings.setThemeMode(ThemeMode.entries[it]) },
                     modifier = Modifier.padding(start = ROW_INSET, end = ROW_INSET, bottom = 14.dp),
                 )
+            }
+            val accentTitle = stringResource(R.string.accent_color)
+            row(accentTitle, "accent", "color", "tint", "highlight") {
+                // The swatches show the colour each accent is actually going to
+                // paint, which is not the same in both themes — the light
+                // theme's is the darker of the pair.
+                val darkTheme = when (theme) {
+                    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                    ThemeMode.LIGHT -> false
+                    ThemeMode.DARK -> true
+                }
+                SettingsRow(
+                    icon = Icons.Rounded.Palette,
+                    title = accentTitle,
+                    subtitle = accent.localizedLabel(),
+                )
+                Row(
+                    modifier = Modifier.padding(start = ROW_INSET, end = ROW_INSET, bottom = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    AccentColor.entries.forEach { option ->
+                        AccentSwatch(
+                            color = option.primary(darkTheme),
+                            selected = option == accent,
+                            label = option.localizedLabel(),
+                            onClick = { AppSettings.setAccent(option) },
+                        )
+                    }
+                }
             }
             val amoledBlackTitle = stringResource(R.string.amoled_black)
             row(amoledBlackTitle, "amoled", "black", "oled") {
@@ -1854,6 +1889,20 @@ private fun ThemeMode.localizedLabel(): String = stringResource(
 )
 
 @Composable
+private fun AccentColor.localizedLabel(): String = stringResource(
+    when (this) {
+        AccentColor.BLUE -> R.string.accent_blue
+        AccentColor.RED -> R.string.accent_red
+        AccentColor.ORANGE -> R.string.accent_orange
+        AccentColor.GREEN -> R.string.accent_green
+        AccentColor.TEAL -> R.string.accent_teal
+        AccentColor.PURPLE -> R.string.accent_purple
+        AccentColor.PINK -> R.string.accent_pink
+        AccentColor.INDIGO -> R.string.accent_indigo
+    },
+)
+
+@Composable
 private fun AutomixPerformanceMode.localizedLabel(): String = stringResource(
     when (this) {
         AutomixPerformanceMode.EFFICIENT -> R.string.automix_mode_efficient
@@ -2646,6 +2695,40 @@ internal fun DestructiveRow(
 }
 
 /** Sliding pill selector, for the handful of settings with two or three states. */
+/**
+ * One accent as a dot you can tap.
+ *
+ * The ring is what says "chosen", not the fill: a row of colours is read by
+ * people who cannot tell two of them apart, so the selection has to be a shape
+ * rather than a hue. The label is the colour's name — for TalkBack, and so the
+ * tap says what it picked instead of "unlabelled button".
+ */
+@Composable
+private fun AccentSwatch(
+    color: Color,
+    selected: Boolean,
+    label: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .size(30.dp)
+            .clip(CircleShape)
+            .background(color)
+            .border(
+                width = 2.dp,
+                color = if (selected) MaterialTheme.colorScheme.onBackground else Color.Transparent,
+                shape = CircleShape,
+            )
+            .clickable(onClickLabel = label, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        // Nothing inside: the ring is the whole mark. The box exists to hold
+        // the fill and the ring at a tappable 30dp.
+    }
+}
+
 @Composable
 internal fun SegmentedControl(
     options: List<String>,

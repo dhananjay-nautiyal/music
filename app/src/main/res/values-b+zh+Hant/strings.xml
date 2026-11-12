@@ -206,6 +206,15 @@
     <string name="show_nerd_stats">顯示技術統計資訊</string>
     <string name="show_nerd_stats_subtitle">在播放器上顯示編解碼器、位元率和取樣率</string>
     <string name="theme">主題</string>
+    <string name="accent_color">強調色</string>
+    <string name="accent_blue">藍色</string>
+    <string name="accent_red">紅色</string>
+    <string name="accent_orange">橙色</string>
+    <string name="accent_green">綠色</string>
+    <string name="accent_teal">青綠色</string>
+    <string name="accent_purple">紫色</string>
+    <string name="accent_pink">粉色</string>
+    <string name="accent_indigo">靛藍色</string>
     <string name="reduce_animation">減少動畫</string>
     <string name="reduce_animation_subtitle">讓主播放器的漸變保持靜止，而不是流動</string>
     <string name="reduce_dynamic_blur">減少動態模糊</string>

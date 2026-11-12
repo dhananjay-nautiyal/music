@@ -1,5 +1,9 @@
 package com.music.music.desktop
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.music.music.ui.theme.AccentColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -18,6 +22,31 @@ internal object DesktopAppearanceSettings {
     private val _reduceDynamicBlur = flag(KEY_REDUCE_DYNAMIC_BLUR, false)
     private val _hideVolumeBar = flag(KEY_HIDE_VOLUME_BAR, false)
     private val _ambientBackdrop = flag(KEY_AMBIENT_BACKDROP, false)
+
+    /**
+     * The accent in force — the colour the chrome's spinners, checks, ticks and
+     * buttons are painted in.
+     *
+     * Snapshot state rather than a flow like the flags above, because
+     * [DesktopAccent] reads it as a plain value at seventy-odd call sites and
+     * only a snapshot read redraws the ones already on screen; a flow would
+     * have to be collected at every one of them.
+     */
+    private var _accent by mutableStateOf(readAccent())
+
+    /** The accent in force. See [_accent] for why this is not a flow. */
+    val accent: AccentColor
+        get() = _accent
+
+    fun setAccent(value: AccentColor) {
+        DesktopPersistence().saveString(KEY_ACCENT, value.name)
+        _accent = value
+    }
+
+    /** Stored name, or the brand blue the app ships with when there is none. */
+    private fun readAccent(): AccentColor = runCatching {
+        AccentColor.valueOf(DesktopPersistence().string(KEY_ACCENT))
+    }.getOrDefault(AccentColor.BLUE)
 
     /** Freezes the main player's gradient instead of drifting. */
     val reduceAnimation: StateFlow<Boolean> = _reduceAnimation
@@ -48,4 +77,5 @@ internal object DesktopAppearanceSettings {
     internal const val KEY_REDUCE_DYNAMIC_BLUR = "reduce_dynamic_blur"
     internal const val KEY_HIDE_VOLUME_BAR = "hide_volume_bar"
     internal const val KEY_AMBIENT_BACKDROP = "ambient_backdrop"
+    internal const val KEY_ACCENT = "accent_color"
 }

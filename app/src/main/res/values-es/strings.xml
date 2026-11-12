@@ -219,6 +219,15 @@
     <string name="show_nerd_stats">Mostrar datos técnicos</string>
     <string name="show_nerd_stats_subtitle">Códec, tasa de bits y frecuencia de muestreo en el reproductor</string>
     <string name="theme">Tema</string>
+    <string name="accent_color">Color de acento</string>
+    <string name="accent_blue">Azul</string>
+    <string name="accent_red">Rojo</string>
+    <string name="accent_orange">Naranja</string>
+    <string name="accent_green">Verde</string>
+    <string name="accent_teal">Turquesa</string>
+    <string name="accent_purple">Morado</string>
+    <string name="accent_pink">Rosa</string>
+    <string name="accent_indigo">Índigo</string>
     <string name="reduce_animation">Reducir animaciones</string>
     <string name="reduce_animation_subtitle">Detiene el degradado del reproductor principal</string>
     <string name="reduce_dynamic_blur">Reducir desenfoque dinámico</string>

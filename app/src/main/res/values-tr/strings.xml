@@ -231,6 +231,15 @@
     <string name="show_nerd_stats">Meraklılar için istatistikleri göster</string>
     <string name="show_nerd_stats_subtitle">Oynatıcıda codec, bit hızı ve örnekleme oranı</string>
     <string name="theme">Tema</string>
+    <string name="accent_color">Vurgu rengi</string>
+    <string name="accent_blue">Mavi</string>
+    <string name="accent_red">Kırmızı</string>
+    <string name="accent_orange">Turuncu</string>
+    <string name="accent_green">Yeşil</string>
+    <string name="accent_teal">Turkuaz</string>
+    <string name="accent_purple">Mor</string>
+    <string name="accent_pink">Pembe</string>
+    <string name="accent_indigo">İndigo</string>
     <string name="reduce_animation">Animasyonu azalt</string>
     <string name="reduce_animation_subtitle">Ana oynatıcının gradyanını kaymak yerine dondurur</string>
     <string name="reduce_dynamic_blur">Dinamik bulanıklığı azalt</string>

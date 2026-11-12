@@ -210,6 +210,15 @@
     <string name="show_nerd_stats">Afficher les statistiques techniques</string>
     <string name="show_nerd_stats_subtitle">Codec, débit et fréquence d\'échantillonnage sur le lecteur</string>
     <string name="theme">Thème</string>
+    <string name="accent_color">Couleur d\'accent</string>
+    <string name="accent_blue">Bleu</string>
+    <string name="accent_red">Rouge</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_green">Vert</string>
+    <string name="accent_teal">Turquoise</string>
+    <string name="accent_purple">Violet</string>
+    <string name="accent_pink">Rose</string>
+    <string name="accent_indigo">Indigo</string>
     <string name="reduce_animation">Réduire les animations</string>
     <string name="reduce_animation_subtitle">Fige le dégradé du lecteur principal au lieu de le faire dériver</string>
     <string name="reduce_dynamic_blur">Réduire le flou dynamique</string>

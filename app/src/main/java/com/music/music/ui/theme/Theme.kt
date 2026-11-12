@@ -8,6 +8,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -22,12 +23,12 @@ import com.music.music.R
 // spots (Replay's rank badge) that want that specific red regardless of theme.
 val AccentRed = Color(0xFFFA2D48)
 
-private val DarkColors = darkColorScheme(
-    // Brand blue: the default accent across buttons, sliders, progress and
-    // links, matched to the glass-note icon. Artwork-driven surfaces still
-    // re-tint per album; this is the resting identity underneath them.
-    primary = Color(0xFF5B9CFF),
-    onPrimary = Color.White,
+private fun darkColors(accent: AccentColor) = darkColorScheme(
+    // The accent across buttons, sliders, progress and links — brand blue until
+    // the picker says otherwise. Artwork-driven surfaces still re-tint per
+    // album; this is the resting identity underneath them.
+    primary = accent.dark,
+    onPrimary = accent.onDark,
     background = Color(0xFF05080F),
     onBackground = Color.White,
     surface = Color(0xFF0B1220),
@@ -37,8 +38,10 @@ private val DarkColors = darkColorScheme(
     outline = Color(0xFF1E2C4A),
 )
 
-private val LightColors = lightColorScheme(
-    primary = Color(0xFF0B3D91),
+private fun lightColors(accent: AccentColor) = lightColorScheme(
+    primary = accent.light,
+    // White, not the accent's own foreground: every light variant is dark
+    // enough for it — see [AccentColor].
     onPrimary = Color.White,
     background = Color.White,
     onBackground = Color.Black,
@@ -51,11 +54,11 @@ private val LightColors = lightColorScheme(
 
 /**
  * Pure-black variant of the dark scheme for OLED screens: every pixel off
- * where the navy theme paints surfaces, same blue primary on top.
+ * where the navy theme paints surfaces, same accent on top.
  */
-private val AmoledColors = darkColorScheme(
-    primary = Color(0xFF5B9CFF),
-    onPrimary = Color.White,
+private fun amoledColors(accent: AccentColor) = darkColorScheme(
+    primary = accent.dark,
+    onPrimary = accent.onDark,
     background = Color.Black,
     onBackground = Color.White,
     surface = Color.Black,
@@ -114,14 +117,21 @@ private fun Typography.withFamily(family: FontFamily) = Typography(
 fun MusicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     amoledBlack: Boolean = false,
+    /** The accent the picker last chose; brand blue until it is changed. */
+    accent: AccentColor = AccentColor.BLUE,
     content: @Composable () -> Unit,
 ) {
+    // Remembered against the three inputs it is built from: a scheme is a few
+    // dozen Colors, and recomposing the player re-runs this often.
+    val colorScheme = remember(darkTheme, amoledBlack, accent) {
+        when {
+            darkTheme && amoledBlack -> amoledColors(accent)
+            darkTheme -> darkColors(accent)
+            else -> lightColors(accent)
+        }
+    }
     MaterialTheme(
-        colorScheme = when {
-            darkTheme && amoledBlack -> AmoledColors
-            darkTheme -> DarkColors
-            else -> LightColors
-        },
+        colorScheme = colorScheme,
         typography = MusicTypography,
         content = content,
     )
