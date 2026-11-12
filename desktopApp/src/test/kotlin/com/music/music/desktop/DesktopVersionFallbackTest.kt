@@ -18,7 +18,7 @@ class DesktopVersionFallbackTest {
      * The newest release actually published. Advance it when a release ships; it must never
      * fall below [DesktopUpdateChecker.FALLBACK_VERSION], only the other way around.
      */
-    private val latestPublished = "1.1.3"
+    private val latestPublished = "1.2.0"
 
     @Test
     fun theFallbackIsNeverAboveTheLatestPublishedRelease() {
