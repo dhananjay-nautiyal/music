@@ -156,7 +156,9 @@ private fun ModeTabs(mode: DesktopEqualizerMode, onSelect: (DesktopEqualizerMode
                 Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(7.dp))
-                    .background(if (selected) Color.White.copy(alpha = 0.92f) else Color.Transparent)
+                    // The chosen segment, the way Android's SegmentedControl draws
+                    // it: the accent with its own foreground on it.
+                    .background(if (selected) DesktopAccent.copy(alpha = 0.92f) else Color.Transparent)
                     .clickable { onSelect(option) }
                     .padding(vertical = 7.dp),
                 contentAlignment = Alignment.Center,
@@ -168,7 +170,7 @@ private fun ModeTabs(mode: DesktopEqualizerMode, onSelect: (DesktopEqualizerMode
                     },
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (selected) Color.Black else Color.White,
+                    color = if (selected) DesktopOnAccent else Color.White,
                 )
             }
         }

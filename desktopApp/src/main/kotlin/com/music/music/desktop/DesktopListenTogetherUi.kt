@@ -589,10 +589,10 @@ private fun PrimaryButton(
         onClick = onClick,
         enabled = enabled && !busy,
         shape = RoundedCornerShape(50),
-        colors = ButtonDefaults.buttonColors(containerColor = DesktopAccent, contentColor = Color.Black),
+        colors = ButtonDefaults.buttonColors(containerColor = DesktopAccent, contentColor = DesktopOnAccent),
         modifier = modifier.height(46.dp),
     ) {
-        if (busy) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.Black)
+        if (busy) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = DesktopOnAccent)
         else Text(label, fontWeight = FontWeight.SemiBold)
     }
 }

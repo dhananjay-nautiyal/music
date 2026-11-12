@@ -357,7 +357,8 @@ class MainActivity : AppCompatActivity() {
                 ThemeMode.DARK -> true
             }
             val amoledBlack by AppSettings.amoledBlack.collectAsStateWithLifecycle()
-            MusicTheme(darkTheme = darkTheme, amoledBlack = amoledBlack) {
+            val accent by AppSettings.accent.collectAsStateWithLifecycle()
+            MusicTheme(darkTheme = darkTheme, amoledBlack = amoledBlack, accent = accent) {
                 // The glass surfaces sample this layer, and a layer records only
                 // what is drawn into it — which, for Music, is a page that
                 // paints no background of its own. Everywhere a page is not
