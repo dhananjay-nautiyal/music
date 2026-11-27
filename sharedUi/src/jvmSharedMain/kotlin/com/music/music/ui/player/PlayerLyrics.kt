@@ -627,7 +627,7 @@ private fun nanosToMs(nanos: Long): Double = nanos / 1_000_000.0
  * whole line would recompose sixty times a second.
  */
 @Composable
-private fun rememberLyricClock(
+internal fun rememberLyricClock(
     trackKey: Any,
     playhead: LyricPlayhead,
     isPlaying: Boolean,
@@ -1466,7 +1466,7 @@ private fun Modifier.lyricParticles(
  * as it took to find out that it did.
  */
 @Composable
-private fun LyricsSkeleton(modifier: Modifier = Modifier) {
+internal fun LyricsSkeleton(modifier: Modifier = Modifier) {
     val sweep = rememberInfiniteTransition(label = "lyricsSkeleton").animateFloat(
         initialValue = 0f,
         targetValue = 1f,

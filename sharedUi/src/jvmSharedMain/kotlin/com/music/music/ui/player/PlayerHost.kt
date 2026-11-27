@@ -10,7 +10,9 @@ import com.music.music.data.lyrics.LyricLine
 import com.music.music.data.lyrics.LyricsSource
 import com.music.music.data.model.Song
 import com.music.music.data.settings.AudioQuality
+import com.music.music.data.settings.EdgeGlowColorMode
 import com.music.music.data.settings.LastPlayerScreen
+import com.music.music.data.settings.LyricsStyle
 import com.music.music.data.settings.SmartAnalysis
 import com.music.music.data.settings.MixBlend
 import com.music.music.data.settings.TransitionWindow
@@ -142,6 +144,11 @@ interface PlayerSettingsSource {
     /** Live spectrum bars between the artwork and the controls. */
     val audioVisualiser: StateFlow<Boolean>
     val canvasOverCellular: StateFlow<Boolean>
+    val edgeGlowColorMode: StateFlow<EdgeGlowColorMode>
+    /** Soft glow around the player frame; pulses with the music when the PCM tap is on. */
+    val edgeGlowEnabled: StateFlow<Boolean>
+    /** The always-on-top mini widget: a second window on desktop, PiP on Android. */
+    val floatingOverlayEnabled: StateFlow<Boolean>
     val fullBleedArtwork: StateFlow<Boolean>
     val hideSongStatus: StateFlow<Boolean>
     val hideVolumeBar: StateFlow<Boolean>
@@ -150,6 +157,7 @@ interface PlayerSettingsSource {
     val lyricsBlur: StateFlow<Boolean>
     val lyricsOffsetMs: StateFlow<Int>
     val lyricsSourceOrder: StateFlow<List<LyricsSource>>
+    val lyricsStyle: StateFlow<LyricsStyle>
     val meteredConnection: StateFlow<Boolean?>
     val preferUsbDac: StateFlow<Boolean>
     val prioritizeSpotifyCanvas: StateFlow<Boolean>
@@ -168,8 +176,12 @@ interface PlayerSettingsSource {
     val translationLanguage: StateFlow<String>
     val versionAlignmentInProgress: StateFlow<Boolean>
 
+    fun setEdgeGlowColorMode(value: EdgeGlowColorMode)
+    fun setEdgeGlowEnabled(value: Boolean)
+    fun setFloatingOverlayEnabled(value: Boolean)
     fun setLastPlayerScreen(value: LastPlayerScreen)
     fun setLyricsOffsetMs(value: Int)
+    fun setLyricsStyle(value: LyricsStyle)
 }
 
 /** The player's name for the installed host's settings, read where AppSettings used to be. */
