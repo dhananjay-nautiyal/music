@@ -11,7 +11,9 @@ import com.music.music.data.lyrics.LyricsSource
 import com.music.music.data.lyrics.LyricsTranslation
 import com.music.music.data.model.Song
 import com.music.music.data.settings.AudioQuality
+import com.music.music.data.settings.EdgeGlowColorMode
 import com.music.music.data.settings.LastPlayerScreen
+import com.music.music.data.settings.LyricsStyle
 import com.music.music.data.settings.MixBlend
 import com.music.music.data.settings.SmartAnalysis
 import com.music.music.data.settings.TransitionWindow
@@ -184,6 +186,13 @@ internal object DesktopPlayerSettings : PlayerSettingsSource {
     override val audioQualityWifi = MutableStateFlow(AudioQuality.LOSSLESS)
     override val audioVisualiser = MutableStateFlow(DesktopAppearanceSettings.audioVisualiser.value)
     override val canvasOverCellular = MutableStateFlow(true)
+    override val edgeGlowColorMode = MutableStateFlow(
+        runCatching {
+            EdgeGlowColorMode.valueOf(persistence.string(KEY_EDGE_GLOW_COLOR_MODE, EdgeGlowColorMode.ARTWORK.name))
+        }.getOrDefault(EdgeGlowColorMode.ARTWORK),
+    )
+    override val edgeGlowEnabled = MutableStateFlow(persistence.boolean(KEY_EDGE_GLOW, false))
+    override val floatingOverlayEnabled = MutableStateFlow(persistence.boolean(KEY_FLOATING_OVERLAY, false))
     override val fullBleedArtwork = MutableStateFlow(false)
     override val hideSongStatus = MutableStateFlow(false)
     override val hideVolumeBar = MutableStateFlow(false)
@@ -197,6 +206,10 @@ internal object DesktopPlayerSettings : PlayerSettingsSource {
         persistence.int(KEY_LYRICS_OFFSET, 0).coerceIn(MIN_LYRICS_OFFSET_MS, MAX_LYRICS_OFFSET_MS),
     )
     override val lyricsSourceOrder = MutableStateFlow<List<LyricsSource>>(LyricsSource.offered)
+    override val lyricsStyle = MutableStateFlow(
+        runCatching { LyricsStyle.valueOf(persistence.string(KEY_LYRICS_STYLE, LyricsStyle.CLASSICAL.name)) }
+            .getOrDefault(LyricsStyle.CLASSICAL),
+    )
 
     // A desktop is never on a metered link as far as this app can tell.
     override val meteredConnection = MutableStateFlow<Boolean?>(false)
@@ -226,8 +239,32 @@ internal object DesktopPlayerSettings : PlayerSettingsSource {
         persistence.saveInt(KEY_LYRICS_OFFSET, clamped)
     }
 
+    override fun setLyricsStyle(value: LyricsStyle) {
+        lyricsStyle.value = value
+        persistence.saveString(KEY_LYRICS_STYLE, value.name)
+    }
+
+    override fun setEdgeGlowEnabled(value: Boolean) {
+        edgeGlowEnabled.value = value
+        persistence.saveBoolean(KEY_EDGE_GLOW, value)
+    }
+
+    override fun setEdgeGlowColorMode(value: EdgeGlowColorMode) {
+        edgeGlowColorMode.value = value
+        persistence.saveString(KEY_EDGE_GLOW_COLOR_MODE, value.name)
+    }
+
+    override fun setFloatingOverlayEnabled(value: Boolean) {
+        floatingOverlayEnabled.value = value
+        persistence.saveBoolean(KEY_FLOATING_OVERLAY, value)
+    }
+
     private const val KEY_LAST_SCREEN = "last_player_screen"
     private const val KEY_LYRICS_OFFSET = "lyrics_offset_ms"
+    private const val KEY_LYRICS_STYLE = "lyrics_style"
+    private const val KEY_EDGE_GLOW = "edge_glow"
+    private const val KEY_EDGE_GLOW_COLOR_MODE = "edge_glow_color_mode"
+    private const val KEY_FLOATING_OVERLAY = "floating_overlay"
 }
 
 /** Which glyph a mixer gets, from the only thing Java Sound says about it: its name. */

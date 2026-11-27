@@ -33,3 +33,21 @@ enum class LastPlayerScreen {
     LYRICS,
     QUEUE,
 }
+
+/** How the player renders synced lyrics. */
+enum class LyricsStyle {
+    /** The big Apple-style panel that has always been there. */
+    CLASSICAL,
+    /** Chat bubbles: one line per bubble, the playing line filled in. */
+    IMESSAGE,
+}
+
+/** What the ambient edge glow takes its color from. */
+enum class EdgeGlowColorMode {
+    /** The current artwork's palette, drifting with each track. */
+    ARTWORK,
+    /** The theme accent color, steady. */
+    ACCENT,
+    /** A hue that sweeps with the music. */
+    SPECTRUM,
+}

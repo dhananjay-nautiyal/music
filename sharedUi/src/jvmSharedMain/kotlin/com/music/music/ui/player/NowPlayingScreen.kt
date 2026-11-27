@@ -142,6 +142,7 @@ import com.music.music.ui.theme.StatusBarIcons
 import com.music.music.ui.theme.rememberArtworkTopBandLuminance
 import com.music.music.ui.theme.topBandScrimAlpha
 import com.music.music.ui.LyricsProviderState
+import com.music.music.ui.components.ambientEdgeGlow
 import com.music.music.ui.components.optimizedHazeEffect
 import com.music.music.ui.haptics.Haptic
 import com.music.music.ui.haptics.rememberHaptics
@@ -151,6 +152,7 @@ import com.music.music.data.canvas.CanvasSource
 import com.music.music.data.lyrics.LyricLine
 import com.music.music.data.lyrics.LyricsSource
 import com.music.music.data.settings.LastPlayerScreen
+import com.music.music.data.settings.LyricsStyle
 import com.music.music.data.model.LikeStatus
 import com.music.music.data.model.PlaybackSourceType
 import com.music.music.data.model.PLAYER_ART_PX
@@ -857,6 +859,8 @@ private class NowPlayingActionsState(
     val repeatMode: Int,
     val autoplayEnabled: Boolean,
     val accountName: String?,
+    /** The backdrop the quick-toggle row frosts itself over. */
+    val hazeState: HazeState,
     val onToggleLyrics: () -> Unit,
     val onToggleQueue: () -> Unit,
     val onToggleShuffle: () -> Unit,
@@ -884,6 +888,8 @@ private fun NowPlayingActions(state: NowPlayingActionsState): Unit = with(state)
         onListenTogether = onListenTogether,
         onOpenListenTogetherMembers = onOpenListenTogetherMembers,
     )
+    Spacer(Modifier.height(10.dp))
+    PlayerQuickToggleRow(hazeState = hazeState)
     Spacer(Modifier.height(18.dp))
     Box(
         modifier = Modifier.fillMaxWidth().height(20.dp),
@@ -1021,6 +1027,7 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
 
     val syncedLyricsEnabled by PlayerSettings.syncedLyrics.collectAsStateWithLifecycle()
     val lyricsOffsetMs by PlayerSettings.lyricsOffsetMs.collectAsStateWithLifecycle()
+    val lyricsStyle by PlayerSettings.lyricsStyle.collectAsStateWithLifecycle()
     // A lambda, not a value: read by the lyric strip and panel in scopes of
     // their own, so a tick recomposes them and not the player around them.
     val lyricsPlayhead = rememberLyricPlayhead(position)
@@ -1725,6 +1732,7 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
         repeatMode = repeatMode,
         autoplayEnabled = autoplayEnabled,
         accountName = accountName,
+        hazeState = playerHaze,
         onToggleLyrics = toggleLyrics,
         onToggleQueue = toggleQueue,
         onToggleShuffle = onToggleShuffle,
@@ -1960,7 +1968,12 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
             }
         }
 
-        Box(modifier = modifier.fillMaxSize().then(dockHost)) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .then(dockHost)
+                .ambientEdgeGlow(artworkUrl = remoteArt),
+        ) {
             LandscapePlayerLayout(
                 pane = when {
                     lyricsOpen -> PlayerPane.Lyrics
@@ -2180,25 +2193,38 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
                             // bring it back. Here there is nothing hidden for
                             // a tap to reveal, and leaving the reveal gesture
                             // armed would only eat taps meant for the lines.
-                            LyricsPanel(
-                                lines = lyrics.orEmpty(),
-                                subLines = lyricsTranslation.subLines,
-                                trackKey = song.videoId,
-                                playhead = lyricsPlayhead,
-                                looking = !lyricsUnavailable,
-                                isPlaying = isPlaying && position.advancing,
-                                onSeekToLine = seekToLyric,
-                                controlsOpen = true,
-                                onRevealControls = {},
-                                onHideControls = {},
-                                translationProgress = particleProgress,
-                                canPick = lyricsShareEnabled,
-                                picking = lyricPicker.picking,
-                                picked = lyricPicker.picks,
-                                onPickLine = lyricPicker.pick,
-                                onTogglePick = lyricPicker.toggle,
-                                modifier = Modifier.fillMaxSize(),
-                            )
+                            if (lyricsStyle == LyricsStyle.IMESSAGE) {
+                                IMessageLyricsView(
+                                    lines = lyrics.orEmpty(),
+                                    subLines = lyricsTranslation.subLines,
+                                    trackKey = song.videoId,
+                                    playhead = lyricsPlayhead,
+                                    looking = !lyricsUnavailable,
+                                    isPlaying = isPlaying && position.advancing,
+                                    onSeekToLine = seekToLyric,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            } else {
+                                LyricsPanel(
+                                    lines = lyrics.orEmpty(),
+                                    subLines = lyricsTranslation.subLines,
+                                    trackKey = song.videoId,
+                                    playhead = lyricsPlayhead,
+                                    looking = !lyricsUnavailable,
+                                    isPlaying = isPlaying && position.advancing,
+                                    onSeekToLine = seekToLyric,
+                                    controlsOpen = true,
+                                    onRevealControls = {},
+                                    onHideControls = {},
+                                    translationProgress = particleProgress,
+                                    canPick = lyricsShareEnabled,
+                                    picking = lyricPicker.picking,
+                                    picked = lyricPicker.picks,
+                                    onPickLine = lyricPicker.pick,
+                                    onTogglePick = lyricPicker.toggle,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
                         }
                     }
                 },
@@ -2229,7 +2255,10 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
             .fillMaxSize()
             .onSizeChanged { playerBounds = it }
             .then(dockHost)
-            .background(Color.Black),
+            .background(Color.Black)
+            // Last in the chain: the glow draws after the backdrop and every
+            // child, which is the only place an opaque backdrop leaves for it.
+            .ambientEdgeGlow(artworkUrl = remoteArt),
     ) {
         // Anchored to the sleeve's bottom edge, so the screen carries on in the
         // colours the artwork ended in rather than in a quantiser's idea of what
@@ -3493,27 +3522,44 @@ private fun NowPlayingScreenContent(state: NowPlayingUiState): Unit = with(state
                                 // there was what made the collapse stutter.
                                 .graphicsLayer { alpha = if (lyricsPanelVisible) panelFade.value else 0f },
                         ) { particleProgress ->
-                            LyricsPanel(
-                                lines = lyrics.orEmpty(),
-                                subLines = lyricsTranslation.subLines,
-                                trackKey = song.videoId,
-                                playhead = lyricsPlayhead,
-                                looking = !lyricsUnavailable,
-                                isPlaying = isPlaying && position.advancing,
-                                active = lyricsPanelVisible,
-                                onSeekToLine = seekToLyric,
-                                controlsOpen = lyricsControlsOpen,
-                                onRevealControls = { lyricsControlsOpen = true },
-                                onHideControls = { lyricsControlsOpen = false },
-                                translationProgress = particleProgress,
-                                onScrollingChange = { lyricsScrolling = it },
-                                canPick = lyricsShareEnabled,
-                                picking = lyricPicker.picking,
-                                picked = lyricPicker.picks,
-                                onPickLine = lyricPicker.pick,
-                                onTogglePick = lyricPicker.toggle,
-                                modifier = Modifier.fillMaxSize(),
-                            )
+                            if (lyricsStyle == LyricsStyle.IMESSAGE) {
+                                IMessageLyricsView(
+                                    lines = lyrics.orEmpty(),
+                                    subLines = lyricsTranslation.subLines,
+                                    trackKey = song.videoId,
+                                    playhead = lyricsPlayhead,
+                                    looking = !lyricsUnavailable,
+                                    isPlaying = isPlaying && position.advancing,
+                                    active = lyricsPanelVisible,
+                                    onSeekToLine = seekToLyric,
+                                    controlsOpen = lyricsControlsOpen,
+                                    onRevealControls = { lyricsControlsOpen = true },
+                                    onScrollingChange = { lyricsScrolling = it },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            } else {
+                                LyricsPanel(
+                                    lines = lyrics.orEmpty(),
+                                    subLines = lyricsTranslation.subLines,
+                                    trackKey = song.videoId,
+                                    playhead = lyricsPlayhead,
+                                    looking = !lyricsUnavailable,
+                                    isPlaying = isPlaying && position.advancing,
+                                    active = lyricsPanelVisible,
+                                    onSeekToLine = seekToLyric,
+                                    controlsOpen = lyricsControlsOpen,
+                                    onRevealControls = { lyricsControlsOpen = true },
+                                    onHideControls = { lyricsControlsOpen = false },
+                                    translationProgress = particleProgress,
+                                    onScrollingChange = { lyricsScrolling = it },
+                                    canPick = lyricsShareEnabled,
+                                    picking = lyricPicker.picking,
+                                    picked = lyricPicker.picks,
+                                    onPickLine = lyricPicker.pick,
+                                    onTogglePick = lyricPicker.toggle,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
                         }
 
                     // Floated over the foot of the lyrics rather than placed in

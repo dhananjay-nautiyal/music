@@ -19,7 +19,9 @@ import com.music.music.data.lyrics.LyricLine
 import com.music.music.data.lyrics.LyricsTranslation
 import com.music.music.data.model.Song
 import com.music.music.data.settings.AppSettings
+import com.music.music.data.settings.EdgeGlowColorMode
 import com.music.music.data.settings.LastPlayerScreen
+import com.music.music.data.settings.LyricsStyle
 import com.music.music.playback.AudioOutputStatus
 import com.music.music.playback.AudioRouting
 import com.music.music.playback.cast.CastController
@@ -54,6 +56,9 @@ class AndroidPlayerHost(context: Context) : PlayerHost {
         override val audioQualityWifi get() = AppSettings.audioQualityWifi
         override val audioVisualiser get() = AppSettings.audioVisualiser
         override val canvasOverCellular get() = AppSettings.canvasOverCellular
+        override val edgeGlowColorMode get() = AppSettings.edgeGlowColorMode
+        override val edgeGlowEnabled get() = AppSettings.edgeGlowEnabled
+        override val floatingOverlayEnabled get() = AppSettings.floatingOverlayEnabled
         override val fullBleedArtwork get() = AppSettings.fullBleedArtwork
         override val hideSongStatus get() = AppSettings.hideSongStatus
         override val hideVolumeBar get() = AppSettings.hideVolumeBar
@@ -62,6 +67,7 @@ class AndroidPlayerHost(context: Context) : PlayerHost {
         override val lyricsBlur get() = AppSettings.lyricsBlur
         override val lyricsOffsetMs get() = AppSettings.lyricsOffsetMs
         override val lyricsSourceOrder get() = AppSettings.lyricsSourceOrder
+        override val lyricsStyle get() = AppSettings.lyricsStyle
         override val meteredConnection get() = AppSettings.meteredConnection
         override val preferUsbDac get() = AppSettings.preferUsbDac
         override val prioritizeSpotifyCanvas get() = AppSettings.prioritizeSpotifyCanvas
@@ -78,8 +84,12 @@ class AndroidPlayerHost(context: Context) : PlayerHost {
         override val translationLanguage get() = AppSettings.translationLanguage
         override val versionAlignmentInProgress get() = AppSettings.versionAlignmentInProgress
 
+        override fun setEdgeGlowColorMode(value: EdgeGlowColorMode) = AppSettings.setEdgeGlowColorMode(value)
+        override fun setEdgeGlowEnabled(value: Boolean) = AppSettings.setEdgeGlowEnabled(value)
+        override fun setFloatingOverlayEnabled(value: Boolean) = AppSettings.setFloatingOverlayEnabled(value)
         override fun setLastPlayerScreen(value: LastPlayerScreen) = AppSettings.setLastPlayerScreen(value)
         override fun setLyricsOffsetMs(value: Int) = AppSettings.setLyricsOffsetMs(value)
+        override fun setLyricsStyle(value: LyricsStyle) = AppSettings.setLyricsStyle(value)
     }
 
     override fun cachedCanvas(song: Song): CanvasArtwork? = CanvasRepository.cached(song)

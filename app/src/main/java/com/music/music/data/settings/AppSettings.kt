@@ -460,6 +460,18 @@ object AppSettings {
     /** Positive values delay synced lyrics; negative values bring them forward. */
     val lyricsOffsetMs = MutableStateFlow(0)
 
+    /** Which lyrics rendering style the player uses: the classic panel or iMessage bubbles. */
+    val lyricsStyle = MutableStateFlow(LyricsStyle.CLASSICAL)
+
+    /** Soft glow around the player frame; pulses with the music when the PCM tap is on. */
+    val edgeGlowEnabled = MutableStateFlow(false)
+
+    /** What the edge glow takes its color from. */
+    val edgeGlowColorMode = MutableStateFlow(EdgeGlowColorMode.ARTWORK)
+
+    /** Always-on-top mini widget: a second window on desktop, picture-in-picture on Android. */
+    val floatingOverlayEnabled = MutableStateFlow(false)
+
     /**
      * Which language the lyrics translate button translates *into*.
      *
@@ -931,6 +943,18 @@ object AppSettings {
         lyricsBlur.value = prefs.getBoolean(KEY_LYRICS_BLUR, true)
         lyricsOffsetMs.value = prefs.getInt(KEY_LYRICS_OFFSET_MS, 0)
             .coerceIn(MIN_LYRICS_OFFSET_MS, MAX_LYRICS_OFFSET_MS)
+        lyricsStyle.value = runCatching {
+            LyricsStyle.valueOf(
+                prefs.getString(KEY_LYRICS_STYLE, null) ?: LyricsStyle.CLASSICAL.name,
+            )
+        }.getOrDefault(LyricsStyle.CLASSICAL)
+        edgeGlowEnabled.value = prefs.getBoolean(KEY_EDGE_GLOW, false)
+        edgeGlowColorMode.value = runCatching {
+            EdgeGlowColorMode.valueOf(
+                prefs.getString(KEY_EDGE_GLOW_COLOR_MODE, null) ?: EdgeGlowColorMode.ARTWORK.name,
+            )
+        }.getOrDefault(EdgeGlowColorMode.ARTWORK)
+        floatingOverlayEnabled.value = prefs.getBoolean(KEY_FLOATING_OVERLAY, false)
         translationLanguage.value = prefs.getString(KEY_TRANSLATION_LANGUAGE, "").orEmpty()
         if (highPerformanceMode.value) {
             reduceAnimation.value = false
@@ -1374,6 +1398,26 @@ object AppSettings {
     fun setLyricsBlur(value: Boolean) {
         lyricsBlur.value = value
         prefs.edit().putBoolean(KEY_LYRICS_BLUR, value).apply()
+    }
+
+    fun setLyricsStyle(value: LyricsStyle) {
+        lyricsStyle.value = value
+        prefs.edit().putString(KEY_LYRICS_STYLE, value.name).apply()
+    }
+
+    fun setEdgeGlowEnabled(value: Boolean) {
+        edgeGlowEnabled.value = value
+        prefs.edit().putBoolean(KEY_EDGE_GLOW, value).apply()
+    }
+
+    fun setEdgeGlowColorMode(value: EdgeGlowColorMode) {
+        edgeGlowColorMode.value = value
+        prefs.edit().putString(KEY_EDGE_GLOW_COLOR_MODE, value.name).apply()
+    }
+
+    fun setFloatingOverlayEnabled(value: Boolean) {
+        floatingOverlayEnabled.value = value
+        prefs.edit().putBoolean(KEY_FLOATING_OVERLAY, value).apply()
     }
 
     fun setLyricsOffsetMs(value: Int) {
@@ -2149,6 +2193,10 @@ object AppSettings {
     private const val KEY_LIQUID_GLASS = "liquid_glass"
     private const val KEY_LYRICS_BLUR = "lyrics_blur"
     private const val KEY_LYRICS_OFFSET_MS = "lyrics_offset_ms"
+    private const val KEY_LYRICS_STYLE = "lyrics_style"
+    private const val KEY_EDGE_GLOW = "edge_glow"
+    private const val KEY_EDGE_GLOW_COLOR_MODE = "edge_glow_color_mode"
+    private const val KEY_FLOATING_OVERLAY = "floating_overlay"
     private const val KEY_TRANSLATION_LANGUAGE = "translation_language"
     private const val KEY_ANIMATED_CANVAS = "animated_canvas"
     private const val KEY_CANVAS_OVER_CELLULAR = "canvas_over_cellular"

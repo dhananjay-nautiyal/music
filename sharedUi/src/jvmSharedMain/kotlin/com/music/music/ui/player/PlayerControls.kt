@@ -56,8 +56,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeDown
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Forum
 import androidx.compose.material.icons.rounded.Headphones
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.PictureInPicture
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -103,11 +106,14 @@ import com.music.music.ui.haptics.Haptic
 import com.music.music.ui.haptics.rememberHaptics
 import com.music.music.ui.icons.MusicIcons
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.chrisbanes.haze.HazeState
 import com.music.music.data.NerdStats
 import com.music.music.data.listentogether.PartyMember
 import com.music.music.data.settings.TrackAnalysisState
 import com.music.music.data.settings.AudioQuality
+import com.music.music.data.settings.LyricsStyle
 import com.music.music.data.model.Song
+import com.music.music.ui.components.optimizedHazeEffect
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -636,6 +642,91 @@ internal fun PlayerActionRow(
                 onClick = onToggleQueue,
                 highlighted = queueOpen,
                 haptic = if (queueOpen) Haptic.Tap else Haptic.Expand,
+            )
+        }
+    }
+}
+
+/**
+ * The vibe row: lyrics style, edge glow, mini widget — the three switches
+ * that change how the player looks and feels rather than what it plays,
+ * one tap from the player instead of a trip through Settings.
+ *
+ * Frosted over the same source the rest of the player's chrome samples, so
+ * it reads as part of the surface rather than a panel dropped on it — and
+ * three-up at the narrow segment width, the queue modes capsule's spacing,
+ * since three glyphs is exactly what it carries.
+ */
+@Composable
+internal fun PlayerQuickToggleRow(
+    hazeState: HazeState,
+    modifier: Modifier = Modifier,
+) {
+    val lyricsStyle by PlayerSettings.lyricsStyle.collectAsStateWithLifecycle()
+    val edgeGlowEnabled by PlayerSettings.edgeGlowEnabled.collectAsStateWithLifecycle()
+    val floatingOverlayEnabled by PlayerSettings.floatingOverlayEnabled.collectAsStateWithLifecycle()
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        // Clip outside the frost: the blur is drawn before the pill's own
+        // circular clip runs, so without one of its own it would show as a
+        // rectangle behind the capsule.
+        Pill(modifier = Modifier.clip(CircleShape).optimizedHazeEffect(hazeState)) {
+            PillSegment(
+                icon = if (lyricsStyle == LyricsStyle.IMESSAGE) {
+                    Icons.Rounded.Forum
+                } else {
+                    MusicIcons.LyricsQuote
+                },
+                // The state, not the action: which style is showing is the
+                // whole answer to "what does this button do".
+                contentDescription = stringResource(
+                    if (lyricsStyle == LyricsStyle.IMESSAGE) {
+                        Res.string.lyrics_style_imessage
+                    } else {
+                        Res.string.lyrics_style_classic
+                    },
+                ),
+                onClick = {
+                    PlayerSettings.setLyricsStyle(
+                        if (lyricsStyle == LyricsStyle.IMESSAGE) {
+                            LyricsStyle.CLASSICAL
+                        } else {
+                            LyricsStyle.IMESSAGE
+                        },
+                    )
+                },
+                highlighted = lyricsStyle == LyricsStyle.IMESSAGE,
+                haptic = Haptic.Select,
+                width = PILL_SEGMENT_WIDTH_TRIPLE,
+            )
+            PillDivider()
+            PillSegment(
+                icon = Icons.Rounded.AutoAwesome,
+                contentDescription = stringResource(
+                    if (edgeGlowEnabled) Res.string.edge_glow_on else Res.string.edge_glow_off,
+                ),
+                onClick = { PlayerSettings.setEdgeGlowEnabled(!edgeGlowEnabled) },
+                highlighted = edgeGlowEnabled,
+                haptic = if (edgeGlowEnabled) Haptic.ToggleOff else Haptic.ToggleOn,
+                width = PILL_SEGMENT_WIDTH_TRIPLE,
+            )
+            PillDivider()
+            PillSegment(
+                icon = Icons.Rounded.PictureInPicture,
+                contentDescription = stringResource(
+                    if (floatingOverlayEnabled) {
+                        Res.string.close_mini_widget
+                    } else {
+                        Res.string.open_mini_widget
+                    },
+                ),
+                onClick = { PlayerSettings.setFloatingOverlayEnabled(!floatingOverlayEnabled) },
+                highlighted = floatingOverlayEnabled,
+                haptic = if (floatingOverlayEnabled) Haptic.ToggleOff else Haptic.ToggleOn,
+                width = PILL_SEGMENT_WIDTH_TRIPLE,
             )
         }
     }
